@@ -29,6 +29,11 @@
 .dictionary-intro h1 { color: var(--dict-ink); font-size: clamp(2rem, 3vw, 2.8rem); font-weight: 800; line-height: 1.02; letter-spacing: -.065em; }
 .dictionary-intro h1 span { color: var(--dict-cyan); }
 .dictionary-intro__copy { margin-top: 16px; color: var(--dict-muted); font-size: .91rem; line-height: 1.65; }
+.dictionary-update-action { display: inline-flex; min-height: 44px; align-items: center; gap: 9px; margin-top: 16px; padding: 8px 12px; border: 1px solid rgb(0 212 232 / 38%); border-radius: 11px; background: linear-gradient(135deg, rgb(0 212 232 / 15%), rgb(8 127 140 / 17%)); color: #c3f8fb; font-size: .75rem; font-weight: 750; text-decoration: none; box-shadow: inset 0 1px rgb(255 255 255 / 8%); transition: transform .18s, border-color .18s, background .18s; }
+.dictionary-update-action:hover { transform: translateY(-2px); border-color: var(--dict-cyan); background: rgb(0 212 232 / 22%); }
+.dictionary-update-action > span:first-child { color: var(--dict-cyan); font-size: 1.05rem; }
+.dictionary-update-action > span:last-child { color: var(--dict-cyan); }
+.dictionary-update-note { margin-top: 7px; color: #91aabb; font-size: .66rem; line-height: 1.5; }
 .dictionary-note { margin-top: 18px; color: #a9c0cf; font-size: .75rem; line-height: 1.6; }
 .dictionary-illustration { position: relative; display: grid; min-height: 190px; margin: 22px 0 4px; place-items: center; isolation: isolate; }
 .dictionary-illustration__orbit { position: absolute; z-index: -1; width: 152px; aspect-ratio: 1; border: 1px solid rgb(0 212 232 / 26%); border-radius: 50%; box-shadow: 0 0 45px rgb(0 212 232 / 9%), inset 0 0 40px rgb(0 212 232 / 6%); }
@@ -127,6 +132,8 @@
   .dictionary-intro { text-align: center; }
   .dictionary-intro h1 { font-size: clamp(2.25rem, 10vw, 3rem); }
   .dictionary-intro__copy { max-width: 410px; margin: 12px auto 0; }
+  .dictionary-update-action { justify-self: center; margin-top: 13px; }
+  .dictionary-update-note { max-width: 330px; margin: 7px auto 0; }
   .dictionary-intro .dictionary-illustration { min-height: 137px; margin: 5px auto 0; }
   .dictionary-illustration__orbit { width: 122px; }
   .dictionary-illustration__book { width: 118px; height: 78px; }
