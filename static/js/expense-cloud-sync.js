@@ -12,6 +12,7 @@ const emptyDocument = () => ({ schemaVersion: EXPENSE_CLOUD_SCHEMA_VERSION, tran
 export class ExpenseSyncError extends Error {
   constructor(code, status = 0, { phase = "", endpoint = "", error = "" } = {}) {
     const messages = {
+      unverified: "Chưa xác minh được kết quả đồng bộ. Vui lòng kiểm tra lại.",
       empty_token: "Nhập GitHub Personal Access Token để kết nối.",
       invalid_repository: "Expense Sync chỉ kết nối blogco/blogmoi trên nhánh main.",
       private_repository: "blogco/blogmoi phải là repository public để Expense Sync ghi dữ liệu công khai.",
@@ -137,6 +138,10 @@ export function mergeExpenseStates({ base, local, remote, resolutions = {} }, va
   const baseStates = stateMap(baseDocument);
   const localStates = stateMap(localDocument);
   const remoteStates = stateMap(remoteDocument);
+  for (const [id, state] of baseStates) {
+    if (!localStates.has(id)) localStates.set(id, state);
+    if (!remoteStates.has(id)) remoteStates.set(id, state);
+  }
   const mergedStates = new Map();
   const conflicts = [];
   const ids = new Set([...baseStates.keys(), ...localStates.keys(), ...remoteStates.keys()]);
@@ -443,6 +448,19 @@ export class GitHubExpenseSync {
     return this.readDocumentWith(this.token, this.repository);
   }
 
+  async verifyWrite(document, sha) {
+    const receipt = { wrote: true, sha, document, verified: false };
+    try {
+      const latest = await this.readDocument();
+      if (!latest.exists || !sha || latest.sha !== sha || JSON.stringify(latest.document) !== JSON.stringify(document)) throw new Error("readback_mismatch");
+      return { status: "synced", document: latest.document, sha: latest.sha, wrote: true, verified: true };
+    } catch {
+      const error = new ExpenseSyncError("unverified", 0, { phase: "verify_write" });
+      error.receipt = receipt;
+      throw error;
+    }
+  }
+
   async sync({ local, base, resolutions = {} }) {
     if (!this.connected) throw new ExpenseSyncError("empty_token");
     const localDocument = normalizeExpenseDocument(local, this.validateTransaction);
@@ -460,10 +478,10 @@ export class GitHubExpenseSync {
         const merged = mergeExpenseStates({ base: baseDocument, local: localDocument, remote: remoteDocument, resolutions }, this.validateTransaction);
         if (merged.conflicts.length) return { status: "conflict", conflicts: merged.conflicts, document: remoteFile.document, sha: remoteFile.sha };
         if (!remoteFile.exists && !merged.document.transactions.length && !merged.document.tombstones.length) {
-          return { status: "synced", document: merged.document, sha: null, wrote: false };
+          return { status: "synced", document: merged.document, sha: null, wrote: false, verified: true };
         }
         if (remoteFile.exists && JSON.stringify(merged.document) === JSON.stringify(remoteFile.document)) {
-          return { status: "synced", document: merged.document, sha: remoteFile.sha, wrote: uncertainWrite };
+          return { status: "synced", document: merged.document, sha: remoteFile.sha, wrote: uncertainWrite, verified: true };
         }
         const payload = {
           message: "data(expenses): sync transactions",
@@ -475,14 +493,20 @@ export class GitHubExpenseSync {
         uncertainWriteDocument = merged.document;
         const saved = await this.request(this.contentsPath(), { method: "PUT", body: payload, phase: "write" });
         uncertainWriteDocument = null;
-        return { status: "synced", document: merged.document, sha: saved.content?.sha || null, wrote: true };
+        return await this.verifyWrite(merged.document, saved.content?.sha || null);
       } catch (error) {
         const attemptedDocument = uncertainWriteDocument;
         uncertainWriteDocument = null;
         if (error instanceof ExpenseSyncError && error.code === "network" && attemptedDocument) {
-          const latest = await this.readDocument();
+          let latest;
+          try { latest = await this.readDocument(); }
+          catch {
+            const unverified = new ExpenseSyncError("unverified", 0, { phase: "verify_write" });
+            unverified.receipt = { wrote: null, document: attemptedDocument, verified: false };
+            throw unverified;
+          }
           if (latest.exists && JSON.stringify(latest.document) === JSON.stringify(attemptedDocument)) {
-            return { status: "synced", document: latest.document, sha: latest.sha, wrote: true };
+            return { status: "synced", document: latest.document, sha: latest.sha, wrote: true, verified: true };
           }
           throw error;
         }

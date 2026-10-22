@@ -13,14 +13,20 @@
     "test:cms": "node --test tests/cms-core.test.mjs tests/cms-proxy.test.mjs",
     "test:season": "node --test tests/season-resolver.test.mjs",
     "test:dictionary": "node --test tests/dictionary-pipeline.test.mjs",
-    "test:expenses": "node --test tests/expense-tracker.test.mjs tests/expense-report.test.mjs tests/expense-cloud-sync.test.mjs tests/expense-period-regression.test.mjs",
+    "test:expenses": "node --test tests/expense*.test.mjs tests/food-icons.test.mjs",
     "dictionary:sync": "node scripts/extract-dictionary.mjs",
-    "dictionary:import": "node scripts/import-dictionary-entries.mjs"
+    "dictionary:import": "node scripts/import-dictionary-entries.mjs",
+    "lint": "eslint static/js",
+    "test:production": "node --test tests/expense-production.test.mjs"
   },
   "devDependencies": {
     "@11ty/eleventy": "3.1.7",
+    "eslint": "10.13.0",
+    "fake-indexeddb": "6.2.6",
+    "globals": "17.13.0",
     "gray-matter": "npm:@11ty/gray-matter@1.0.0",
     "js-yaml": "4.3.2",
+    "jsdom": "30.1.3",
     "markdown-it": "14.3.3"
   }
 }

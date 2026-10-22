@@ -1,3 +1,4 @@
+import { ExpenseSyncSession, LocalExpenseError, describeExpenseError } from "./expense-sync-session.js";
 import {
   EXPENSE_CLOUD_PATH,
   EXPENSE_REPOSITORY,
@@ -630,18 +631,20 @@ export function prepareImportRows(data, existing, options = {}) {
   return { imported, skipped, total: transactions.length };
 }
 
-function openDatabase() {
+export function openDatabase(factory = globalThis.indexedDB) {
   return new Promise((resolve, reject) => {
-    if (!("indexedDB" in globalThis)) { reject(new Error("IndexedDB không khả dụng trong trình duyệt này.")); return; }
-    const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+    if (!factory) { reject(new LocalExpenseError("storage_unavailable", "open_database")); return; }
+    let request;
+    try { request = factory.open(DATABASE_NAME, DATABASE_VERSION); }
+    catch (cause) { reject(new LocalExpenseError("storage_error", "open_database", cause)); return; }
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME, { keyPath: "id" });
       if (!database.objectStoreNames.contains(SYNC_STORE_NAME)) database.createObjectStore(SYNC_STORE_NAME, { keyPath: "key" });
     };
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error || new Error("Không thể mở kho dữ liệu trên thiết bị."));
-    request.onblocked = () => reject(new Error("Kho dữ liệu đang được dùng ở tab khác. Hãy tải lại tab rồi thử lại."));
+    request.onerror = () => reject(new LocalExpenseError("storage_error", "open_database", request.error));
+    request.onblocked = () => reject(new LocalExpenseError("storage_error", "open_database_blocked"));
   });
 }
 
@@ -655,14 +658,14 @@ function dbRequest(database, mode, action, storeName = STORE_NAME) {
     transaction.oncomplete = () => resolve(result);
     transaction.onerror = () => reject(transaction.error || new Error("Không thể hoàn tất thao tác với dữ liệu."));
     transaction.onabort = () => reject(transaction.error || new Error("Thao tác với dữ liệu đã bị hủy."));
-  });
+  }).catch(cause => { throw cause instanceof LocalExpenseError ? cause : new LocalExpenseError("storage_error", "dbRequest", cause); });
 }
 
 function defaultSyncMeta() {
   return { key: "state", repository: null, base: null, lastSyncedAt: null, remoteSha: null, tombstones: [] };
 }
 
-async function readSyncMeta(database) {
+export async function readSyncMeta(database) {
   return (await dbRequest(database, "readonly", store => store.get("state"), SYNC_STORE_NAME)) || defaultSyncMeta();
 }
 
@@ -676,15 +679,22 @@ function localExpenseDocument(records, tombstones = []) {
   };
 }
 
-async function captureLocalExpenseState(database) {
-  const [records, meta] = await Promise.all([
-    dbRequest(database, "readonly", store => store.getAll()),
-    readSyncMeta(database),
-  ]);
-  return { document: localExpenseDocument(records, meta.tombstones), meta };
+export async function captureLocalExpenseState(database) {
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction([STORE_NAME, SYNC_STORE_NAME], "readonly");
+    const records = tx.objectStore(STORE_NAME).getAll();
+    const metadata = tx.objectStore(SYNC_STORE_NAME).get("state");
+    tx.oncomplete = () => {
+      try {
+        const meta = metadata.result || defaultSyncMeta();
+        resolve({ document: localExpenseDocument(records.result, meta.tombstones), meta });
+      } catch (cause) { reject(new LocalExpenseError("storage_error", "capture_local", cause)); }
+    };
+    tx.onerror = tx.onabort = () => reject(new LocalExpenseError("storage_error", "capture_local", tx.error));
+  }).catch(cause => { throw cause instanceof LocalExpenseError ? cause : new LocalExpenseError("storage_error", "captureLocalExpenseState", cause); });
 }
 
-function writeTransactionsAndRestore(database, records) {
+export function writeTransactionsAndRestore(database, records) {
   return new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME, SYNC_STORE_NAME], "readwrite");
     const store = transaction.objectStore(STORE_NAME);
@@ -700,7 +710,7 @@ function writeTransactionsAndRestore(database, records) {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error || new Error("Không thể cập nhật dữ liệu trên thiết bị."));
     transaction.onabort = () => reject(transaction.error || new Error("Thao tác với dữ liệu đã bị hủy."));
-  });
+  }).catch(cause => { throw cause instanceof LocalExpenseError ? cause : new LocalExpenseError("storage_error", "writeTransactionsAndRestore", cause); });
 }
 
 function deleteExpenseWithTombstone(database, id) {
@@ -719,10 +729,10 @@ function deleteExpenseWithTombstone(database, id) {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error || new Error("Không thể xóa giao dịch."));
     transaction.onabort = () => reject(transaction.error || new Error("Thao tác với dữ liệu đã bị hủy."));
-  });
+  }).catch(cause => { throw cause instanceof LocalExpenseError ? cause : new LocalExpenseError("storage_error", "deleteExpenseWithTombstone", cause); });
 }
 
-function applySyncedDocument(database, snapshot, result, repository) {
+export function applySyncedDocument(database, snapshot, result, repository) {
   return new Promise((resolve, reject) => {
     const transaction = database.transaction([STORE_NAME, SYNC_STORE_NAME], "readwrite");
     const transactionStore = transaction.objectStore(STORE_NAME);
@@ -735,6 +745,7 @@ function applySyncedDocument(database, snapshot, result, repository) {
     const applyIfReady = () => {
       if (applied || records === undefined || currentMeta === undefined) return;
       applied = true;
+      try {
       const current = localExpenseDocument(records, currentMeta.tombstones || []);
       const snapshotStates = new Map();
       const currentStates = new Map();
@@ -761,7 +772,8 @@ function applySyncedDocument(database, snapshot, result, repository) {
         if (state.kind === "record") finalRecords.push(state.value);
         if (state.kind === "deleted") finalTombstones.push(state.value);
       }
-      transactionStore.clear();
+      const retainedIds = new Set(finalRecords.map(record => record.id));
+      for (const record of records) if (!retainedIds.has(record.id)) transactionStore.delete(record.id);
       for (const record of finalRecords) transactionStore.put(record);
       const nextMeta = {
         ...currentMeta,
@@ -771,15 +783,28 @@ function applySyncedDocument(database, snapshot, result, repository) {
         lastSyncedAt: new Date().toISOString(),
         remoteSha: result.sha || null,
         tombstones: finalTombstones,
+        syncAttempt: null,
       };
       metaStore.put(nextMeta);
+      } catch (cause) { transaction.abort(); reject(new LocalExpenseError("storage_error", "apply_local", cause)); }
     };
     recordsRequest.onsuccess = () => { records = recordsRequest.result; applyIfReady(); };
     metaRequest.onsuccess = () => { currentMeta = metaRequest.result || defaultSyncMeta(); applyIfReady(); };
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error || new Error("Không thể áp dụng dữ liệu đồng bộ."));
     transaction.onabort = () => reject(transaction.error || new Error("Không thể áp dụng dữ liệu đồng bộ."));
-  });
+  }).catch(cause => { throw cause instanceof LocalExpenseError ? cause : new LocalExpenseError("storage_error", "applySyncedDocument", cause); });
+}
+
+export async function checkpointExpenseSync(database, syncAttempt) {
+  return new Promise((resolve, reject) => {
+    const tx = database.transaction(SYNC_STORE_NAME, "readwrite");
+    const store = tx.objectStore(SYNC_STORE_NAME);
+    const request = store.get("state");
+    request.onsuccess = () => store.put({ ...(request.result || defaultSyncMeta()), syncAttempt });
+    tx.oncomplete = () => resolve();
+    tx.onerror = tx.onabort = () => reject(new LocalExpenseError("storage_error", "checkpoint_sync", tx.error));
+  }).catch(cause => { throw cause instanceof LocalExpenseError ? cause : new LocalExpenseError("storage_error", "checkpointExpenseSync", cause); });
 }
 
 function makeElement(tagName, className, text) {
@@ -1053,7 +1078,8 @@ function drawMerchantBars(summary) {
   }
 }
 
-function getInsightRecords(transactions, summary, comparison, selection) {
+export function getInsightRecords(transactions, summary, comparison, selection) {
+  const scopeLabel = selection.period === "all" ? "toàn bộ thời gian" : monthLabel(selection.period).toLocaleLowerCase("vi-VN");
   if (!summary.count) return [];
   const insights = [];
   const comparisonCurrent = comparison?.currentMonth
@@ -1369,7 +1395,7 @@ function showStorageError(message) {
   error.hidden = false;
 }
 
-async function startExpenseTracker() {
+export async function startExpenseTracker() {
   const app = document.querySelector("#expense-app");
   if (!app) return;
   let dashboardMode = "all";
@@ -1410,7 +1436,14 @@ async function startExpenseTracker() {
     iconOptions.append(button);
   }
   setFoodIconChoice("other");
-  const database = await openDatabase();
+  let database;
+  try {
+    database = await openDatabase();
+    document.querySelector("#local-storage-status").textContent = "Sẵn sàng";
+  } catch (error) {
+    document.querySelector("#local-storage-status").textContent = error.code === "storage_unavailable" ? "Không khả dụng" : "Lỗi";
+    throw error;
+  }
   let transactions = normalizeTransactions(await dbRequest(database, "readonly", store => store.getAll()));
   let editingId = "";
   const githubSync = new GitHubExpenseSync({ validateTransaction });
@@ -1424,6 +1457,8 @@ async function startExpenseTracker() {
   let syncMeta = await readSyncMeta(database);
   let syncTimer = 0;
   let syncInProgress = false;
+  let syncClickInProgress = false;
+  let pageActive = true;
   let syncAgainRequested = false;
   let pendingSyncBase = null;
   let currentConflicts = [];
@@ -1452,11 +1487,13 @@ async function startExpenseTracker() {
     const pending = countUnsyncedExpenseChanges(local.document, matchesTarget ? syncMeta.base : null, validateTransaction);
     document.querySelector("#cloud-repository-label").textContent = `${EXPENSE_REPOSITORY.owner}/${EXPENSE_REPOSITORY.repository} · ${EXPENSE_REPOSITORY.branch}`;
     document.querySelector("#cloud-last-sync").textContent = formatSyncTimestamp(matchesTarget ? syncMeta.lastSyncedAt : null);
-    document.querySelector("#cloud-pending-count").textContent = `${formatNumber(pending)} giao dịch`;
+    document.querySelector("#cloud-pending-count").textContent = `${formatNumber(pending)} giao dịch (so với lần xác minh trước)`;
+    session.publish({ pending, queue: pending ? "pending" : "completed" });
     return { local, pending };
   };
 
   const setCloudConnected = (connected, username = "") => {
+    session.publish({ auth: connected ? "connected" : "disconnected" });
     cloudForm.hidden = connected;
     cloudControls.hidden = !connected;
     if (connected) {
@@ -1503,7 +1540,7 @@ async function startExpenseTracker() {
     }
     cloudConflicts.hidden = false;
     cloudMigration.hidden = true;
-    updateCloudStatus("error", `Xung đột · ${conflicts.length} giao dịch cần chọn`);
+    updateCloudStatus("failed", `Xung đột · ${conflicts.length} giao dịch cần chọn`);
     document.querySelector("#cloud-resolve").disabled = true;
   };
 
@@ -1513,60 +1550,43 @@ async function startExpenseTracker() {
     cloudMigration.hidden = false;
     cloudConflicts.hidden = true;
     pendingSyncBase = null;
-    updateCloudStatus("connected", "Đã kết nối · chờ xác nhận gộp dữ liệu");
+    session.publish({ cloud: "idle" });
+    cloudMessage.textContent = "Chờ xác nhận gộp dữ liệu; chưa xác minh đồng bộ.";
   };
 
   const runCloudSync = async (baseOverride, resolutions = {}) => {
-    if (!githubSync.connected) return;
-    if (navigator.onLine === false) {
-      updateCloudStatus("offline", "Mất mạng · chờ kết nối");
-      cloudMessage.textContent = "Không có kết nối mạng. Dữ liệu cục bộ vẫn được giữ.";
-      return;
-    }
+    if (!pageActive || !githubSync.connected) return;
     if (syncInProgress) { syncAgainRequested = true; return; }
     syncInProgress = true;
     clearTimeout(syncTimer);
     cloudMessage.textContent = "";
     updateCloudStatus("syncing", "Đang đồng bộ");
     try {
-      const snapshot = await captureLocalExpenseState(database);
-      const base = baseOverride === undefined
-        ? (sameCloudRepository(snapshot.meta.repository) ? snapshot.meta.base : null)
-        : baseOverride;
-      const result = await githubSync.sync({ local: snapshot.document, base, resolutions });
+      const result = await session.sync({ base: baseOverride, resolutions, repositoryMatches: sameCloudRepository });
       if (result.status === "conflict") {
-        pendingSyncBase = base ?? null;
+        pendingSyncBase = baseOverride ?? syncMeta.base ?? null;
         renderCloudConflicts(result.conflicts);
         return;
       }
-      await applySyncedDocument(database, snapshot.document, result, githubSync.repository);
-      await persistAndRender();
+      if (result.error) {
+        cloudMessage.textContent = describeExpenseError(result.error, result.operation);
+        if (result.receipt?.verified) cloudMessage.textContent += " GitHub đã xác nhận dữ liệu; bước cục bộ hoặc giao diện chưa hoàn tất. Hãy thử lại.";
+        if (!githubSync.connected) {
+          setCloudConnected(false);
+          if (result.error.code === "unauthorized") session.publish({ auth: "authentication_error" });
+        }
+        return;
+      }
       const { pending } = await updateCloudMeta();
       clearCloudPrompts();
-      updateCloudStatus(
-        pending || !result.wrote ? "connected" : "synced",
-        pending ? `Đã kết nối · còn ${formatNumber(pending)} thay đổi` : result.wrote ? "Đã đồng bộ" : "Đã kết nối · không có thay đổi",
-      );
-      cloudMessage.textContent = result.wrote
-        ? "GitHub đã xác nhận ghi data/expenses/transactions.json lên blogco/blogmoi@main với commit data(expenses): sync transactions."
-        : "Không có thay đổi cần ghi; dữ liệu GitHub hiện khớp với thiết bị.";
+      cloudMessage.textContent = pending ? "Dữ liệu thay đổi trong khi đồng bộ; các thay đổi mới đang chờ." : result.wrote
+        ? "Đã xác minh dữ liệu đồng bộ thành công."
+        : "Dữ liệu cục bộ và GitHub đã khớp.";
       if (pending) syncAgainRequested = true;
     } catch (error) {
-      const states = {
-        unauthorized: "Token không hợp lệ",
-        forbidden: "Thiếu quyền",
-        rate_limited: "GitHub giới hạn API",
-        fetch_invocation: "Lỗi gọi fetch trong trình duyệt",
-        not_found: "Không truy cập được repository/tệp",
-        version_conflict: "Xung đột phiên bản",
-        conflict_retry: "Xung đột phiên bản",
-        payload_invalid: "GitHub từ chối nội dung",
-      };
-      const requestFailed = error.code === "network" || error.code === "timeout";
-      if (requestFailed && navigator.onLine === false) updateCloudStatus("offline", "Mất mạng · chờ kết nối");
-      else updateCloudStatus("error", states[error.code] || (requestFailed ? "GitHub API không phản hồi" : "Đồng bộ thất bại"));
-      cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đồng bộ. Dữ liệu cục bộ vẫn được giữ.";
-      if (!githubSync.connected) setCloudConnected(false);
+      // Only post-sync metadata/display work is handled here; preserve receipt.
+      if (error instanceof LocalExpenseError) session.publish({ local: "error" });
+      cloudMessage.textContent = describeExpenseError(error, "refresh_sync_metadata");
     } finally {
       syncInProgress = false;
       if (syncAgainRequested && githubSync.connected && cloudConflicts.hidden) {
@@ -1577,18 +1597,22 @@ async function startExpenseTracker() {
   };
 
   function scheduleCloudSync() {
-    updateCloudMeta().catch(() => {});
+    if (!pageActive) return;
+    updateCloudMeta().catch(error => {
+      session.publish({ local: "error", queue: "failed" });
+      cloudMessage.textContent = describeExpenseError(error, "read_local_metadata");
+    });
     if (!githubSync.connected) return;
     if (!cloudConflicts.hidden) {
-      updateCloudStatus("error", `Xung đột · ${currentConflicts.length} giao dịch cần chọn`);
+      updateCloudStatus("failed", `Xung đột · ${currentConflicts.length} giao dịch cần chọn`);
       return;
     }
     if (syncInProgress) { syncAgainRequested = true; return; }
     if (navigator.onLine === false) {
-      updateCloudStatus("offline", "Mất mạng · thay đổi đang chờ");
+      session.publish({ cloud: "idle", queue: "pending" });
       return;
     }
-    updateCloudStatus("connected", "Đã kết nối · chờ đồng bộ");
+    session.publish({ cloud: "idle" });
     clearTimeout(syncTimer);
     syncTimer = window.setTimeout(() => runCloudSync(undefined), 850);
   }
@@ -1611,6 +1635,23 @@ async function startExpenseTracker() {
     parseStatus.removeAttribute("data-tone");
   };
 
+  const session = new ExpenseSyncSession({
+    github: githubSync,
+    capture: () => captureLocalExpenseState(database),
+    checkpoint: attempt => checkpointExpenseSync(database, attempt),
+    apply: (snapshot, result, repository) => applySyncedDocument(database, snapshot, result, repository),
+    render: persistAndRender,
+    online: () => navigator.onLine !== false,
+    onState: state => {
+      if (!pageActive) return;
+      const labels = { idle: "Chưa đồng bộ", syncing: "Đang đồng bộ", success: "Đã xác minh đồng bộ", no_changes: "Dữ liệu hai phía đã khớp", failed: "Đồng bộ thất bại", unverified: "Chưa xác minh kết quả" };
+      updateCloudStatus(state.cloud, labels[state.cloud]);
+      document.querySelector("#github-auth-status").textContent = { connected: "Đã kết nối", disconnected: "Chưa kết nối", authentication_error: "Lỗi xác thực" }[state.auth];
+      document.querySelector("#local-storage-status").textContent = { ready: "Sẵn sàng", loading: "Đang đọc", error: "Lỗi", unavailable: "Không khả dụng" }[state.local];
+      document.querySelector("#queue-processing-status").textContent = { pending: "Đang chờ", processing: "Đang xử lý", completed: "Đã xử lý", failed: "Chưa hoàn tất" }[state.queue];
+    },
+  });
+  session.publish({ local: "ready" });
   await updateCloudMeta();
 
   cloudForm.addEventListener("submit", async event => {
@@ -1622,7 +1663,7 @@ async function startExpenseTracker() {
     connectButton.disabled = true;
     cloudMessage.textContent = "";
     clearCloudPrompts();
-    updateCloudStatus("syncing", "Đang xác thực GitHub");
+    document.querySelector("#github-auth-status").textContent = "Đang xác thực GitHub";
     try {
       const connection = await githubSync.connect(token);
       setCloudConnected(true, connection.username);
@@ -1639,12 +1680,14 @@ async function startExpenseTracker() {
       }
       await updateCloudMeta();
     } catch (error) {
-      githubSync.disconnect();
-      setCloudConnected(false);
-      const states = { unauthorized: "Token không hợp lệ", forbidden: "Thiếu quyền", rate_limited: "GitHub giới hạn API", fetch_invocation: "Lỗi gọi fetch trong trình duyệt", not_found: "Không truy cập được repository/tệp" };
-      const requestFailed = error.code === "network" || error.code === "timeout";
-      updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", states[error.code] || (requestFailed ? "GitHub API không phản hồi" : "Kết nối thất bại"));
-      cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể kết nối GitHub. Dữ liệu cục bộ vẫn được giữ.";
+      if (error.diagnostics?.phase === "authentication" || !githubSync.connected) {
+        githubSync.disconnect();
+        setCloudConnected(false);
+        session.publish({ auth: "authentication_error" });
+      }
+      if (error instanceof LocalExpenseError) session.publish({ local: "error", queue: "failed" });
+      else if (githubSync.connected) session.publish({ cloud: "failed" });
+      cloudMessage.textContent = describeExpenseError(error, "connect_or_preview");
     } finally {
       connectButton.disabled = false;
     }
@@ -1658,21 +1701,26 @@ async function startExpenseTracker() {
 
   document.querySelector("#cloud-sync-now").addEventListener("click", async () => {
     clearCloudPrompts();
-    const metadata = await readSyncMeta(database);
-    if (sameCloudRepository(metadata.repository) && metadata.base) runCloudSync(metadata.base);
-    else {
-      try {
-        const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
-        showMigrationPreview(snapshot.document, remote.document);
-      } catch (error) {
-        const requestFailed = error.code === "network" || error.code === "timeout";
-        const statusMessage = error.code === "fetch_invocation"
-          ? "Lỗi gọi fetch trong trình duyệt"
-          : requestFailed ? "GitHub API không phản hồi" : "Không thể đọc repository/tệp";
-        updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", statusMessage);
-        cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đọc dữ liệu trên GitHub. Dữ liệu cục bộ vẫn được giữ.";
+    if (syncInProgress || syncClickInProgress) return;
+    syncClickInProgress = true;
+    try {
+      const metadata = await readSyncMeta(database);
+      if (sameCloudRepository(metadata.repository) && metadata.base) await runCloudSync(metadata.base);
+      else {
+        try {
+          const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
+          showMigrationPreview(snapshot.document, remote.document);
+        } catch (error) {
+          const requestFailed = error.code === "network" || error.code === "timeout";
+          const statusMessage = error.code === "fetch_invocation"
+            ? "Lỗi gọi fetch trong trình duyệt"
+            : requestFailed ? "GitHub API không phản hồi" : "Không thể đọc repository/tệp";
+          updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", statusMessage);
+          cloudMessage.textContent = describeExpenseError(error, "read_cloud_preview");
+        }
       }
-    }
+    } catch (error) { cloudMessage.textContent = describeExpenseError(error, "read_local_metadata"); }
+    finally { syncClickInProgress = false; }
   });
 
   document.querySelector("#cloud-disconnect").addEventListener("click", () => {
@@ -1681,7 +1729,7 @@ async function startExpenseTracker() {
     document.querySelector("#cloud-token").value = "";
     setCloudConnected(false);
     clearCloudPrompts();
-    updateCloudStatus("disconnected", "Chưa kết nối");
+    session.publish({ cloud: "idle" });
     cloudMessage.textContent = "Đã ngắt kết nối. Dữ liệu và trạng thái đồng bộ cục bộ vẫn được giữ.";
   });
 
@@ -1710,9 +1758,10 @@ async function startExpenseTracker() {
     if (githubSync.connected) scheduleCloudSync();
   });
   window.addEventListener("offline", () => {
-    if (githubSync.connected) updateCloudStatus("offline", "Offline · thay đổi đang chờ");
+    if (githubSync.connected) session.publish({ cloud: "idle", queue: "pending" });
   });
   window.addEventListener("pagehide", () => {
+    pageActive = false;
     clearTimeout(syncTimer);
     githubSync.disconnect();
     document.querySelector("#cloud-token").value = "";
@@ -1880,7 +1929,8 @@ if (typeof document !== "undefined") {
     if (app) app.dataset.state = "error";
     const storageError = document.querySelector("#storage-error");
     if (storageError) {
-      storageError.textContent = `Không thể mở kho giao dịch cục bộ. ${error.message || "Hãy kiểm tra quyền lưu trữ của trình duyệt."}`;
+      storageError.textContent = describeExpenseError(error, "initialize_dashboard");
+      if (error instanceof LocalExpenseError) document.querySelector("#local-storage-status").textContent = error.code === "storage_unavailable" ? "Không khả dụng" : "Lỗi";
       storageError.hidden = false;
     }
   });
