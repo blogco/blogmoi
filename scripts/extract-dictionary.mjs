@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, sep } from "node:path";
 import matter from "gray-matter";
 
@@ -8,6 +8,7 @@ const pendingPath = "data/dictionary/pending.json";
 const reviewedPath = "src/_data/dictionary-data.json";
 const allowedLanguages = new Set(["vi", "ko", "en"]);
 const stopTerms = new Set(["la", "là", "cua", "của", "va", "và", "co", "có", "duoc", "được", "de", "để", "cho", "trong", "the", "một", "những", "các", "with", "from", "this", "that", "blogmoi"]);
+const vietnameseWords = new Set("và là của có được trong một những các này đó với cho từ khi sẽ đã đang không một số trên dưới theo thành cần bài viết người sản phẩm nếu vì như nhưng tại đến giữa giúp dùng".split(" "));
 
 function hash(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -22,12 +23,16 @@ function asList(value) {
   return typeof value === "string" && value.trim() ? [value.trim()] : [];
 }
 
-function languageFor(frontmatter, sourcePath) {
+function languageFor(frontmatter, sourcePath, text) {
   const declared = String(frontmatter.lang || "").toLowerCase().split(/[-_]/)[0];
   if (allowedLanguages.has(declared)) return declared;
   const directory = sourcePath.split(sep)[0];
-  if (["vi", "ko", "en"].includes(directory)) return directory;
-  return "vi";
+  if (directory === "ko" || directory === "en") return directory;
+  if (/[\uac00-\ud7af]/u.test(text)) return "ko";
+  if (/[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/iu.test(text)) return "vi";
+  const words = normalize(text).match(/[\p{L}]+/gu) || [];
+  const viScore = words.reduce((total, word) => total + Number(vietnameseWords.has(word)), 0);
+  return viScore >= 2 ? "vi" : "en";
 }
 
 function articlePath(frontmatter, relativePath) {
@@ -107,51 +112,132 @@ async function readJson(path, fallback) {
   }
 }
 
+function normalizedCandidateStatus(candidate) {
+  if (candidate.status === "pending_review") return "translated";
+  if (candidate.status === "pending_translation") return "extracted";
+  return candidate.status || "extracted";
+}
+
 const [files, previousQueue, reviewedData] = await Promise.all([
   Promise.all(["posts", "en", "ko"].map((folder) => markdownFiles(join(sourceDirectory, folder)))).then((groups) => groups.flat()),
-  readJson(pendingPath, { version: 1, candidates: [] }),
+  readJson(pendingPath, { version: 1, candidates: [], articleCache: {} }),
   readJson(reviewedPath, { version: 1, entries: [] })
 ]);
-const previous = new Map((previousQueue.candidates || []).map((candidate) => [candidate.id, candidate]));
+const previousCandidates = new Map((previousQueue.candidates || []).map((candidate) => [candidate.id, candidate]));
+const oldCache = previousQueue.articleCache || {};
 const reviewed = new Set((reviewedData.entries || [])
-  .filter((entry) => entry.status === "reviewed")
+  .filter((entry) => ["reviewed", "published"].includes(entry.status) || entry.reviewStatus === "reviewed")
   .map((entry) => `${entry.sourceArticle}\u0000${entry.sourceLanguage}\u0000${normalize(entry[entry.sourceLanguage])}`));
-const candidates = [];
+const nextCache = {};
+const candidatesById = new Map();
+let publishedArticlesDiscovered = 0;
+let skippedDraftOrUnpublished = 0;
+let skippedFutureDated = 0;
+let articlesSkippedValidCache = 0;
+let articlesScanned = 0;
 
 for (const file of files.sort()) {
   const source = await readFile(file, "utf8");
   const parsed = matter(source);
   const data = parsed.data || {};
-  if (data.draft === true || data.published === false) continue;
-  const relativePath = relative(sourceDirectory, file);
-  const language = languageFor(data, relativePath);
-  const sourceArticle = articlePath(data, relativePath);
-  const field = asList(data.categories)[0] || "Khác";
-  const articleHash = hash(source);
-  const text = plainText(parsed.content);
-  const fallback = `${data.title || ""}. ${data.description || ""}`;
+  if (data.draft === true || data.published === false) {
+    skippedDraftOrUnpublished += 1;
+    continue;
+  }
+  const rawDate = data.date instanceof Date ? data.date : data.date ? new Date(data.date) : null;
+  if (rawDate && !Number.isNaN(rawDate.getTime()) && rawDate.getTime() > Date.now()) {
+    skippedFutureDated += 1;
+    continue;
+  }
 
-  for (const term of candidateTerms(data, parsed.content)) {
-    const key = `${sourceArticle}\u0000${language}\u0000${normalize(term)}`;
-    if (reviewed.has(key)) continue;
-    const id = hash(key).slice(0, 24);
-    const old = previous.get(id);
-    const unchanged = old?.articleHash === articleHash && old.term === term;
-    candidates.push({
-      id,
-      term,
-      sourceLanguage: language,
-      field,
-      sourceArticle,
-      sourceContext: contextFor(term, text, fallback),
-      articleHash,
-      status: unchanged && old.translationDraft ? "pending_review" : "pending_translation",
-      translationDraft: unchanged ? (old.translationDraft || null) : null,
-      updatedAt: unchanged ? old.updatedAt : new Date().toISOString()
+  publishedArticlesDiscovered += 1;
+  articlesScanned += 1;
+  const relativePath = relative(sourceDirectory, file);
+  const sourceArticle = articlePath(data, relativePath);
+  const cacheKey = relativePath.split(sep).join("/");
+  const articleHash = hash(source);
+  const cached = oldCache[cacheKey];
+  const cachedCandidates = Array.isArray(cached?.candidateIds)
+    ? cached.candidateIds.map((id) => previousCandidates.get(id)).filter(Boolean)
+    : [];
+  const cacheValid = cached?.articleHash === articleHash
+    && cachedCandidates.length === (cached?.candidateIds || []).length
+    && cachedCandidates.every((candidate) => candidate.articleHash === articleHash && candidate.sourceArticle === sourceArticle);
+  let currentCandidates;
+
+  if (cacheValid) {
+    articlesSkippedValidCache += 1;
+    currentCandidates = cachedCandidates;
+  } else {
+    const language = languageFor(data, relativePath, `${data.title || ""} ${data.description || ""} ${parsed.content}`);
+    const field = asList(data.categories)[0] || "Khác";
+    const text = plainText(parsed.content);
+    const fallback = `${data.title || ""}. ${data.description || ""}`;
+    currentCandidates = candidateTerms(data, parsed.content).map((term) => {
+      const key = `${sourceArticle}\u0000${language}\u0000${normalize(term)}`;
+      const id = hash(key).slice(0, 24);
+      const old = previousCandidates.get(id);
+      const unchangedTerm = old?.articleHash === articleHash && old.term === term;
+      return {
+        id,
+        term,
+        sourceLanguage: language,
+        field,
+        sourceArticle,
+        sourceContext: contextFor(term, text, fallback),
+        articleHash,
+        status: unchangedTerm ? normalizedCandidateStatus(old) : "extracted",
+        translationDraft: unchangedTerm ? (old.translationDraft || null) : null,
+        translationError: unchangedTerm ? (old.translationError || null) : null,
+        updatedAt: unchangedTerm ? old.updatedAt : new Date().toISOString()
+      };
     });
   }
+
+  const activeCandidates = currentCandidates.filter((candidate) => {
+    const isReviewed = reviewed.has(`${candidate.sourceArticle}\u0000${candidate.sourceLanguage}\u0000${normalize(candidate.term)}`);
+    if (isReviewed) return false;
+    candidatesById.set(candidate.id, candidate);
+    return true;
+  });
+  nextCache[cacheKey] = {
+    articleHash,
+    sourceArticle,
+    candidateIds: activeCandidates.map((candidate) => candidate.id)
+  };
 }
 
+const candidates = [...candidatesById.values()].sort((a, b) => a.sourceArticle.localeCompare(b.sourceArticle) || a.term.localeCompare(b.term, "und"));
+const previousComparable = JSON.stringify({ candidates: previousQueue.candidates || [], articleCache: previousQueue.articleCache || {} });
+const nextComparable = JSON.stringify({ candidates, articleCache: nextCache });
+const unchangedQueue = previousComparable === nextComparable;
+const queue = {
+  version: 1,
+  generatedAt: unchangedQueue ? (previousQueue.generatedAt || new Date().toISOString()) : new Date().toISOString(),
+  candidates,
+  articleCache: nextCache
+};
+
 await mkdir(dirname(pendingPath), { recursive: true });
-await writeFile(pendingPath, `${JSON.stringify({ version: 1, generatedAt: new Date().toISOString(), candidates }, null, 2)}\n`);
-console.log(`Extracted ${candidates.length} vocabulary candidates from ${files.length} published articles. Review queue: ${pendingPath}`);
+await writeFile(pendingPath, `${JSON.stringify(queue, null, 2)}\n`);
+
+const stats = {
+  markdownFilesDiscovered: files.length,
+  publishedArticlesDiscovered,
+  articlesScanned,
+  articlesSkippedValidCache,
+  skippedDraftOrUnpublished,
+  skippedFutureDated,
+  candidatesExtracted: candidates.length,
+  newlyExtracted: candidates.filter((candidate) => !previousCandidates.has(candidate.id)).length,
+  translationFailed: candidates.filter((candidate) => candidate.status === "translation_failed").length,
+  awaitingTranslation: candidates.filter((candidate) => ["extracted", "pending_translation"].includes(candidate.status)).length,
+  awaitingReview: candidates.filter((candidate) => ["translated", "pending_review"].includes(candidate.status)).length,
+  queueChanged: !unchangedQueue
+};
+
+console.log(`Dictionary scan (${process.env.DICTIONARY_SCAN_MODE || "incremental"}): ${stats.publishedArticlesDiscovered} published, ${stats.articlesSkippedValidCache} article extraction caches valid, ${stats.candidatesExtracted} candidates (${stats.newlyExtracted} new).`);
+console.log(`Draft/unpublished skipped: ${skippedDraftOrUnpublished}; future-dated skipped: ${skippedFutureDated}; queue: ${pendingPath}; changed: ${stats.queueChanged}.`);
+if (process.env.GITHUB_OUTPUT) {
+  await appendFile(process.env.GITHUB_OUTPUT, Object.entries(stats).map(([key, value]) => `${key}=${value}`).join("\n") + "\n");
+}

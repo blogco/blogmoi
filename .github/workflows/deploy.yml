@@ -3,10 +3,23 @@ name: Deploy Eleventy site to GitHub Pages
 on:
   push:
     branches: [main]
+    # The workflow writes its review queue back to the same branch. Ignore that
+    # queue-only commit so persistence cannot create a deployment loop.
+    paths-ignore:
+      - data/dictionary/pending.json
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Scan all published posts and retry unfinished vocabulary translations
+        type: choice
+        options:
+          - backfill
+          - incremental
+        default: backfill
+        required: true
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -22,19 +35,71 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Start deployment timer
         run: date +%s > /tmp/blogmoi-deploy-start
+
       - name: Set up Node.js LTS
         uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit --no-fund
-      - name: Extract dictionary candidates from all published articles
+
+      - name: Extract and cache vocabulary from published articles
+        id: extract
+        env:
+          DICTIONARY_SCAN_MODE: ${{ inputs.mode || 'incremental' }}
         run: npm run dictionary:extract
+
+      - name: Draft translations when provider credentials are configured
+        id: translate
+        continue-on-error: true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DICTIONARY_OPENAI_MODEL: ${{ vars.DICTIONARY_OPENAI_MODEL }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ] || [ -z "$DICTIONARY_OPENAI_MODEL" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Translation is pending. Configure Actions secret OPENAI_API_KEY and repository variable DICTIONARY_OPENAI_MODEL, or edit/review entries locally." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::Dictionary terms were extracted but not translated. Configure OPENAI_API_KEY and DICTIONARY_OPENAI_MODEL; no translations were fabricated."
+            exit 0
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+          npm run dictionary:translate
+
+      - name: Persist dictionary review queue to repository
+        id: persist_queue
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/dictionary/pending.json
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "The persistent review queue is already current."
+            exit 0
+          fi
+          git commit -m "chore(dictionary): persist vocabulary review queue"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Save dictionary review queue artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dictionary-review-queue
+          path: data/dictionary/pending.json
+          if-no-files-found: warn
+          retention-days: 90
+
       - name: Build Eleventy site
         run: |
           build_start=$(date +%s%N)
@@ -42,19 +107,32 @@ jobs:
           build_end=$(date +%s%N)
           build_ms=$(( (build_end - build_start) / 1000000 ))
           echo "Eleventy build: $build_ms ms" >> "$GITHUB_STEP_SUMMARY"
-      - name: Save dictionary review queue
-        uses: actions/upload-artifact@v4
-        with:
-          name: dictionary-review-queue
-          path: data/dictionary/pending.json
-          retention-days: 30
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site/
+
       - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Report dictionary backfill results
+        if: always()
+        env:
+          BACKFILL_MODE: ${{ inputs.mode == 'backfill' && github.event_name == 'workflow_dispatch' }}
+          TRANSLATION_CONFIGURED: ${{ steps.translate.outputs.configured || 'false' }}
+          TRANSLATION_OUTCOME: ${{ steps.translate.outcome || 'skipped' }}
+          TRANSLATED_THIS_RUN: ${{ steps.translate.outputs.translated || '0' }}
+          PERSIST_OUTCOME: ${{ steps.persist_queue.outcome || 'skipped' }}
+          DEPLOY_OUTCOME: ${{ steps.deployment.outcome || 'skipped' }}
+          EXTRACT_OUTCOME: ${{ steps.extract.outcome || 'skipped' }}
+          PUBLISHEDARTICLES_DISCOVERED: ${{ steps.extract.outputs.publishedArticlesDiscovered || '0' }}
+          ARTICLESSCANNED: ${{ steps.extract.outputs.articlesScanned || '0' }}
+          ARTICLESSKIPPEDVALIDCACHE: ${{ steps.extract.outputs.articlesSkippedValidCache || '0' }}
+          CANDIDATESEXTRACTED: ${{ steps.extract.outputs.candidatesExtracted || '0' }}
+        run: node scripts/dictionary-report.mjs
+
       - name: Report total duration
         if: always()
         run: |
