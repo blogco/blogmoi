@@ -5,7 +5,8 @@
   if (!root) return;
 
   const actionsUrl = "https://github.com/blogco/blogmoi/actions";
-  const apiUrl = "https://api.github.com/repos/blogco/blogmoi/actions/workflows/deploy.yml/runs?branch=main&per_page=1";
+  const apiUrl = "https://api.github.com/repos/blogco/blogmoi/actions/runs?branch=main&per_page=100";
+  const productionWorkflowPath = ".github/workflows/deploy.yml";
   const cacheKey = "blogmoi-deploy-status-v1";
   const cacheDuration = 120_000;
   const statusTitle = root.querySelector("[data-status-title]");
@@ -130,7 +131,7 @@
     if (cached) return cached;
 
     const response = await fetchJson(apiUrl);
-    const run = response?.workflow_runs?.[0];
+    const run = response?.workflow_runs?.find((candidate) => candidate.path === productionWorkflowPath && candidate.head_branch === "main");
     if (!run || !Number.isFinite(Number(run.id))) throw new Error("No production workflow run is available.");
 
     const statusNeedsJobSteps = run.status === "in_progress" || run.status === "completed" && run.conclusion !== "success";
