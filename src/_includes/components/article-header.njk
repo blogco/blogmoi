@@ -18,7 +18,9 @@
     <h1 tabindex="-1">{{ title }}</h1>
     {% if description %}<p class="article-deck">{{ description }}</p>{% endif %}
     <div class="article-byline" aria-label="Thông tin bài viết">
-      <time datetime="{{ date | dateIso }}">{{ date | dateReadable }}</time>
+      <time datetime="{{ (publishDate or date) | dateIso }}">{{ (publishDate or date) | dateReadable(resolvedSeason.timeZone) }}</time>
+      <span class="byline-separator" aria-hidden="true"></span>
+      {% set seasonData = resolvedSeason %}{% set seasonVariant = 'article' %}{% include "components/season-label.njk" %}
       <span class="byline-separator" aria-hidden="true"></span>
       <span>{{ author or "Blogmoi" }}</span>
       {% if categories and categories.length %}

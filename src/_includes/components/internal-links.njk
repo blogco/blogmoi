@@ -3,7 +3,7 @@
   {% if relatedPosts and relatedPosts.length %}
     <ul class="internal-links-list">
       {% for post in relatedPosts %}
-        <li><a href="{{ post.url | url }}"><span>{{ (post.data.categories or ["Góc nhìn"])[0] }}</span><strong>{{ post.data.title }}</strong><time datetime="{{ post.date | dateIso }}">{{ post.date | dateReadable }}</time></a></li>
+        <li><a href="{{ post.url | url }}"><span>{{ (post.data.categories or ["Góc nhìn"])[0] }}</span>{% set seasonData = post.data.resolvedSeason %}{% set seasonVariant = 'related' %}{% include "components/season-label.njk" %}<strong>{{ post.data.title }}</strong><time datetime="{{ (post.data.publishDate or post.date) | dateIso }}">{{ (post.data.publishDate or post.date) | dateReadable(post.data.resolvedSeason.timeZone) }}</time></a></li>
       {% endfor %}
     </ul>
   {% else %}

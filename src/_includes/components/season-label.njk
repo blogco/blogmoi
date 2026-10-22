@@ -1,0 +1,7 @@
+{% if seasonData %}
+  <span class="season-label season-label--{{ seasonData.key }} season-label--{{ seasonVariant or 'card' }}" data-season-source="{{ seasonData.classificationSource }}">
+    <svg class="season-label__icon" aria-hidden="true" focusable="false"><use href="{{ ('/icons/season-icons.svg#' + seasonData.icon) | url }}"></use></svg>
+    <span class="season-label__visual" aria-hidden="true">{{ seasonData.vi }} <span>· {{ seasonData.english }}</span></span>
+    <span class="sr-only">{{ seasonData.accessibleLabel }}</span>
+  </span>
+{% endif %}

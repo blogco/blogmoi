@@ -6,7 +6,11 @@
       <p class="eyebrow">{{ (post.data.categories or ['Góc nhìn'])[0] }}</p>
       <h3>{{ post.data.title }}</h3>
       <p>{{ post.data.description or '' }}</p>
-      <div class="card-meta"><time datetime="{{ post.date | dateIso }}">{{ post.date | dateReadable }}</time><span>{{ post.templateContent | readingTime }} phút đọc</span></div>
+      <div class="card-meta">
+        <time datetime="{{ (post.data.publishDate or post.date) | dateIso }}">{{ (post.data.publishDate or post.date) | dateReadable(post.data.resolvedSeason.timeZone) }}</time>
+        {% set seasonData = post.data.resolvedSeason %}{% set seasonVariant = 'card' %}{% include "components/season-label.njk" %}
+        <span>{{ post.templateContent | readingTime }} phút đọc</span>
+      </div>
     </div>
   </a>
 </article>

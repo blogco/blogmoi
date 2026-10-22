@@ -36,7 +36,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addCollection("posts", (api) => {
     const posts = api.getFilteredByGlob("src/posts/**/*.md")
       .filter((post) => !post.data.draft)
-      .sort((a, b) => b.date - a.date);
+      .sort((a, b) => new Date(b.data.publishDate || b.date) - new Date(a.data.publishDate || a.date));
     syncEditorialTopicStatuses(posts);
     return posts;
   });
@@ -63,9 +63,14 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("topicSuggestions", (posts, currentUrl, relatedPosts = []) =>
     resolveTopicSuggestions(posts, currentUrl, relatedPosts));
   eleventyConfig.addFilter("featuredPosts", (posts) => posts.filter((post) => post.data.featured));
-  eleventyConfig.addFilter("dateReadable", (date) => new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "long", timeZone: "Asia/Ho_Chi_Minh"
-  }).format(new Date(date)));
+  eleventyConfig.addFilter("dateReadable", (date, timeZone = "Asia/Ho_Chi_Minh") => {
+    const parsed = new Date(date);
+    const dateOnly = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ||
+      date instanceof Date && parsed.getUTCHours() === 0 && parsed.getUTCMinutes() === 0 && parsed.getUTCSeconds() === 0 && parsed.getUTCMilliseconds() === 0;
+    return new Intl.DateTimeFormat("vi-VN", {
+      dateStyle: "long", timeZone: dateOnly ? "UTC" : timeZone
+    }).format(parsed);
+  });
   eleventyConfig.addFilter("dateIso", (date) => new Date(date).toISOString());
   eleventyConfig.addFilter("dateRfc822", (date) => new Date(date).toUTCString());
   eleventyConfig.addFilter("readingTime", (html) => {
@@ -85,7 +90,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("searchData", (posts) => posts.map((post) => ({
     title: post.data.title,
     description: post.data.description || "",
-    date: post.date.toISOString().slice(0, 10),
+    date: new Date(post.data.publishDate || post.date).toISOString().slice(0, 10),
     url: PATH_PREFIX + post.url.replace(/^\/+/, ""),
     categories: post.data.categories || [],
     tags: post.data.tags || []
