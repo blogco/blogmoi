@@ -1,21 +1,7 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-22T18:30:16.852Z",
+  "generatedAt": "2026-10-22T18:59:48.384Z",
   "candidates": [
-    {
-      "id": "e7f6d235d68e89a3495dccbd",
-      "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
-      "term": "11ty",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
-      "sourceContext": "…elopment - Series: Behind the Build — Hậu trường xây dựng Blogmoi - Tags: Hugo, Eleventy, 11ty, Static Site Generator, GitHub Pages, SEO, Website Migration 1. Vì sao tôi quyết định chuyển từ Hugo sang Ele…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
-    },
     {
       "id": "67ddb9ad33a63d33c58ac3e9",
       "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
@@ -24,34 +10,6 @@
       "field": "Công nghệ",
       "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
       "sourceContext": "… / Web Development - Series: Behind the Build — Hậu trường xây dựng Blogmoi - Tags: Hugo, Eleventy, 11ty, Static Site Generator, GitHub Pages, SEO, Website Migration 1. Vì sao tôi quyết định chuyển từ Hugo sa…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
-    },
-    {
-      "id": "7b370455e14bf5e131819a60",
-      "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
-      "term": "GitHub Actions",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
-      "sourceContext": "…ờng dẫn hợp lệ cho hình ảnh, CSS và JavaScript | | Deploy | Build và xuất bản ổn định qua GitHub Actions | Đây là nguyên tắc tôi sử dụng xuyên suốt quá trình migration: thay đổi hệ thống bên trong, hạn chế thay đổi…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
-    },
-    {
-      "id": "8de0c5456aade58fa9cfd50c",
-      "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
-      "term": "GitHub Pages",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
-      "sourceContext": "… Build — Hậu trường xây dựng Blogmoi - Tags: Hugo, Eleventy, 11ty, Static Site Generator, GitHub Pages, SEO, Website Migration 1. Vì sao tôi quyết định chuyển từ Hugo sang Eleventy? Khi bắt đầu xây dựng một blog …",
       "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
       "status": "extracted",
       "translationDraft": null,
@@ -73,34 +31,6 @@
       "updatedAt": "2026-10-22T17:27:04.117Z"
     },
     {
-      "id": "141c0af5e59a215f9705d447",
-      "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
-      "term": "permalink",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
-      "sourceContext": "…áng cân nhắc. Công cụ này xử lý Markdown, có hệ thống template riêng và cho phép cấu hình permalink theo section. Cấu hình Hugo cũ của Blogmoi đặt baseURL là https://blogco.github.io/blogmoi/, khai báo permali…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
-    },
-    {
-      "id": "a1605fd07d6855ef954421d4",
-      "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
-      "term": "SEO",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
-      "sourceContext": "…iản là thay một công cụ build. Đó còn là quá trình bảo toàn cấu trúc nội dung, đường dẫn, SEO và trải nghiệm của người đọc. - Chuyên mục: Công nghệ / Web Development - Series: Behind the Build — Hậu trườ…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
-    },
-    {
       "id": "4ae449d9c584bec04466975f",
       "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
       "term": "Static Site Generator",
@@ -108,20 +38,6 @@
       "field": "Công nghệ",
       "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
       "sourceContext": "Chuyển đổi Static Site Generator không đơn giản là thay một công cụ build. Đó còn là quá trình bảo toàn cấu trúc nội dung, đường dẫn, SEO và t…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
-    },
-    {
-      "id": "8de8e37f40b596ef7e4efaea",
-      "articleId": "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md",
-      "term": "Website Migration",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
-      "sourceContext": "… xây dựng Blogmoi - Tags: Hugo, Eleventy, 11ty, Static Site Generator, GitHub Pages, SEO, Website Migration 1. Vì sao tôi quyết định chuyển từ Hugo sang Eleventy? Khi bắt đầu xây dựng một blog tĩnh, Hugo là lựa chọn đ…",
       "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
       "status": "extracted",
       "translationDraft": null,
@@ -493,13 +409,7 @@
       "candidateIds": [
         "835229d8e5f03d7a44a23288",
         "67ddb9ad33a63d33c58ac3e9",
-        "141c0af5e59a215f9705d447",
-        "8de0c5456aade58fa9cfd50c",
-        "7b370455e14bf5e131819a60",
-        "e7f6d235d68e89a3495dccbd",
-        "4ae449d9c584bec04466975f",
-        "a1605fd07d6855ef954421d4",
-        "8de8e37f40b596ef7e4efaea"
+        "4ae449d9c584bec04466975f"
       ]
     },
     "posts/top-5-cong-nghe-tao-website-tinh-2026.md": {
@@ -551,15 +461,15 @@
   },
   "lastRun": {
     "mode": "incremental",
-    "trigger": "automatic-publish",
-    "recordedAt": "2026-10-22T18:59:22.686Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39836121364",
+    "trigger": "manual-workflow",
+    "recordedAt": "2026-10-22T18:59:48.384Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39836179889",
     "articlesDiscovered": 5,
     "articlesProcessed": 0,
     "articlesSkippedValidCache": 5,
-    "candidatesExtracted": 34,
+    "candidatesExtracted": 28,
     "newlyExtracted": 0,
-    "awaitingManualTranslation": 34,
-    "publishedEntries": 12
+    "awaitingManualTranslation": 28,
+    "publishedEntries": 18
   }
 }
