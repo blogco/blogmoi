@@ -11,7 +11,6 @@
   {% include "partials/head.njk" %}
   {% if type == 'article' %}<link rel="stylesheet" href="{{ '/css/article.css' | url }}">{% endif %}
   <link rel="stylesheet" href="{{ '/css/reading-navigation.css' | url }}">
-  <link rel="stylesheet" href="{{ '/css/deploy-status.css' | url }}">
   {% if page.url == '/tu-dien-vi-kr/' %}<link rel="stylesheet" href="{{ '/css/dictionary.css' | url }}">{% endif %}
   {% if page.url == '/chi-phi-hang-thang/' %}<link rel="stylesheet" href="{{ '/css/expense-tracker.css' | url }}">{% endif %}
   <title>{{ title }}{% if title != site.title %} · {{ site.title }}{% else %} — Góc nhìn rõ ràng{% endif %}</title>
@@ -21,10 +20,8 @@
   <main id="main-content">{{ content | safe }}</main>
   {% include "partials/footer.njk" %}
   {% include "components/reading-navigation.njk" %}
-  {% include "components/deploy-status.njk" %}
   <script src="{{ '/js/site.js' | url }}" defer></script>
   <script src="{{ '/js/reading-navigation.js' | url }}" defer></script>
-  <script src="{{ '/js/deploy-status.js' | url }}" defer></script>
   {% if page.url == '/tu-dien-vi-kr/' %}<script src="{{ '/js/dictionary.js' | url }}" type="module"></script>{% endif %}
   {% if page.url == '/search/' %}<script src="{{ '/js/search.js' | url }}" defer></script>{% endif %}
   {% if page.url == '/chi-phi-hang-thang/' %}<script type="module" src="{{ '/js/expense-tracker.js' | url }}"></script>{% endif %}
