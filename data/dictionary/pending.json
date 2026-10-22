@@ -529,13 +529,13 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-22T23:32:59.760Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39872459544",
+    "recordedAt": "2026-10-22T23:41:50.557Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39873455192",
     "articlesDiscovered": 6,
-    "articlesProcessed": 1,
-    "articlesSkippedValidCache": 5,
+    "articlesProcessed": 0,
+    "articlesSkippedValidCache": 6,
     "candidatesExtracted": 32,
-    "newlyExtracted": 4,
+    "newlyExtracted": 0,
     "awaitingManualTranslation": 32,
     "publishedEntries": 18
   }
