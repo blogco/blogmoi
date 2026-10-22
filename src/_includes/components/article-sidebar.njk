@@ -1,13 +1,8 @@
-<aside class="article-sidebar" aria-label="Mục lục và chủ đề bài viết">
+<aside class="article-sidebar" aria-label="Thông tin bài viết">
   {% if articleToc %}
-    <section class="article-sidebar__section article-sidebar__section--toc">
-      <details class="article-toc-disclosure" data-responsive-toc open>
-        <summary class="article-toc-disclosure__summary">
-          <span role="heading" aria-level="2">Mục lục bài viết</span>
-          <span class="article-toc-disclosure__icon" aria-hidden="true"></span>
-        </summary>
-        <div class="article-toc-disclosure__content">{{ articleToc | safe }}</div>
-      </details>
+    <section class="article-sidebar__section" aria-labelledby="article-toc-title">
+      <h2 id="article-toc-title">Mục lục bài viết</h2>
+      {{ articleToc | safe }}
     </section>
   {% endif %}
 

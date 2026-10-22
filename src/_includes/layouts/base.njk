@@ -17,9 +17,9 @@
 </head>
 <body>
   {% include "partials/header.njk" %}
-  {% include "components/reading-navigation.njk" %}
   <main id="main-content">{{ content | safe }}</main>
   {% include "partials/footer.njk" %}
+  {% include "components/reading-navigation.njk" %}
   {% include "components/deploy-status.njk" %}
   <script src="{{ '/js/site.js' | url }}" defer></script>
   <script src="{{ '/js/reading-navigation.js' | url }}" defer></script>

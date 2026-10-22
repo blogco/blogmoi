@@ -6,17 +6,6 @@
   const menu = document.querySelector("[data-menu-toggle]");
   const theme = document.querySelector("[data-theme-toggle]");
   const desktop = window.matchMedia("(min-width: 961px)");
-  const responsiveToc = document.querySelector("[data-responsive-toc]");
-  const compactToc = window.matchMedia("(max-width: 1199px)");
-
-  function setTocDisclosure() {
-    if (!responsiveToc) return;
-    if (compactToc.matches) responsiveToc.removeAttribute("open");
-    else responsiveToc.setAttribute("open", "");
-  }
-
-  setTocDisclosure();
-  compactToc.addEventListener("change", setTocDisclosure);
 
   function setMenu(open) {
     if (!nav || !menu) return;
