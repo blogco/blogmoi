@@ -506,10 +506,10 @@
     }
   },
   "lastRun": {
-    "mode": "backfill",
-    "trigger": "local-cli",
-    "recordedAt": "2026-10-22T17:35:42.854Z",
-    "workflowRunUrl": null,
+    "mode": "incremental",
+    "trigger": "automatic-publish",
+    "recordedAt": "2026-10-22T17:36:50.006Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39824212165",
     "articlesDiscovered": 4,
     "articlesProcessed": 0,
     "articlesSkippedValidCache": 4,
