@@ -3,6 +3,33 @@ const DATABASE_VERSION = 1;
 const STORE_NAME = "transactions";
 const CATEGORIES = ["Đồ uống", "Đồ ăn", "Khác"];
 const CATEGORY_COLORS = ["#087f8c", "#2463eb", "#ef8c79"];
+export const FOOD_ICONS = Object.freeze({
+  coffee: Object.freeze({ label: "Cà phê", background: "#F7E9DD", color: "#9A684C" }),
+  matcha: Object.freeze({ label: "Matcha", background: "#E6F1E5", color: "#60936D" }),
+  "milk-tea": Object.freeze({ label: "Trà sữa", background: "#F9EBD9", color: "#BD8B58" }),
+  tea: Object.freeze({ label: "Trà", background: "#E3F3EF", color: "#5A9A91" }),
+  juice: Object.freeze({ label: "Nước ép", background: "#FFF0D7", color: "#E6A34E" }),
+  smoothie: Object.freeze({ label: "Sinh tố", background: "#F6E6F0", color: "#B17B9D" }),
+  cake: Object.freeze({ label: "Bánh ngọt", background: "#FBE8EC", color: "#D78B9A" }),
+  bread: Object.freeze({ label: "Bánh mì", background: "#F7EBD7", color: "#B98B55" }),
+  noodles: Object.freeze({ label: "Mì / Phở", background: "#FFF0DF", color: "#CB8750" }),
+  rice: Object.freeze({ label: "Cơm", background: "#EDF2E3", color: "#7D9D67" }),
+  fried: Object.freeze({ label: "Đồ chiên", background: "#FFF0D2", color: "#CF9940" }),
+  other: Object.freeze({ label: "Khác", background: "#EAF0F6", color: "#7C8DA4" }),
+});
+const FOOD_ICON_KEYWORDS = [
+  ["matcha", ["matcha", "抹茶", "말차"]],
+  ["milk-tea", ["trà sữa trân châu", "trà sữa", "bubble tea", "milk tea", "boba tea", "버블티", "밀크티"]],
+  ["tea", ["trà đào", "green tea", "tea", "녹차", "홍차", "유자차", "보리차", "차"]],
+  ["coffee", ["cà phê", "caphe", "cafe", "coffee", "espresso", "americano", "latte", "커피", "카페", "라떼", "에스프레소", "아메리카노"]],
+  ["smoothie", ["sinh tố", "smoothie", "스무디"]],
+  ["juice", ["nước cam", "nước ép", "orange juice", "juice", "주스", "쥬스"]],
+  ["cake", ["cheesecake", "bánh ngọt", "bánh kem", "bánh dứa", "cake", "케이크"]],
+  ["bread", ["bánh mì", "sandwich", "bread", "빵", "샌드위치"]],
+  ["noodles", ["phở", "bún", "mì xào", "mì", "ramen", "noodles", "noodle", "국수", "라면", "쌀국수"]],
+  ["fried", ["gà rán", "khoai tây chiên", "đồ chiên", "fried chicken", "fried", "fries", "치킨", "감자튀김"]],
+  ["rice", ["cơm tấm", "bibimbap", "cơm", "rice", "비빔밥", "밥"]],
+];
 const MERCHANTS = [
   "The Coffee House", "Bách Hóa Xanh", "Highlands Coffee", "Phúc Long", "Trung Nguyên Legend",
   "Circle K", "WinMart", "King Coffee", "Gong Cha", "Katinat", "Starbucks", "FamilyMart",
@@ -37,6 +64,34 @@ const FLAVOR_PATTERNS = [
 ];
 const DRINK_PATTERN = /trà\s*sữa|trà|cà\s*phê|coffee|cafe|matcha|latte|nước\s*ép|nước\s*ngọt|sinh\s*tố|sữa|boba|americano|espresso|cacao|soda|bia|cocktail|đồ\s*uống|thức\s*uống/iu;
 const FOOD_PATTERN = /đồ\s*ăn|thức\s*ăn|bánh|cơm|phở|bún|mì|cháo|gà|thịt|cá|salad|burger|pizza|sandwich|chiên|rán|snack|xôi|súp|sushi|sashimi|sườn|lẩu|món\s*ăn/iu;
+
+function normalizeFoodText(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[đĐ]/gu, "d")
+    .normalize("NFC")
+    .toLocaleLowerCase("vi-VN")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/gu, " ");
+}
+
+function hasFoodKeyword(normalizedText, keyword) {
+  const normalizedKeyword = normalizeFoodText(keyword);
+  if (normalizedKeyword === "차") return normalizedText.split(" ").includes("차");
+  if (/[\p{Script=Hangul}\p{Script=Han}]/u.test(normalizedKeyword)) return normalizedText.includes(normalizedKeyword);
+  return ` ${normalizedText} `.includes(` ${normalizedKeyword} `);
+}
+
+export function resolveFoodIcon(itemName) {
+  const normalized = normalizeFoodText(itemName);
+  if (!normalized) return "other";
+  for (const [iconId, keywords] of FOOD_ICON_KEYWORDS) {
+    if (keywords.some(keyword => hasFoodKeyword(normalized, keyword))) return iconId;
+  }
+  return "other";
+}
 
 function localDateValue(date) {
   const year = date.getFullYear();
@@ -229,6 +284,11 @@ export function validateTransaction(input, { now = new Date(), makeId = createId
   const taste = typeof input.taste === "string" ? input.taste.trim() : "";
   const category = typeof input.category === "string" ? input.category.trim() : "";
   const notes = typeof input.notes === "string" ? input.notes.trim() : "";
+  const hasValidIcon = typeof input.iconId === "string" && Object.hasOwn(FOOD_ICONS, input.iconId);
+  const iconId = hasValidIcon ? input.iconId : resolveFoodIcon(itemName);
+  const iconManuallySet = hasValidIcon && (input.iconManuallySet === undefined
+    ? true
+    : input.iconManuallySet === true || input.iconManuallySet === "true");
   if (!merchant || merchant.length > 100) throw new Error("Tên quán / thương hiệu là bắt buộc (tối đa 100 ký tự).");
   if (!itemName || itemName.length > 120) throw new Error("Tên món / khoản chi là bắt buộc (tối đa 120 ký tự).");
   if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error("Số tiền phải là số nguyên VND lớn hơn 0.");
@@ -240,7 +300,7 @@ export function validateTransaction(input, { now = new Date(), makeId = createId
   if (!validTimestamp(createdAt) || !validTimestamp(updatedAt)) throw new Error("Thời gian tạo hoặc sửa không hợp lệ.");
   const id = typeof input.id === "string" && input.id.trim() ? input.id.trim() : makeId();
   if (id.length > 160) throw new Error("Mã giao dịch không hợp lệ.");
-  return { id, merchant, itemName, amount, date, taste, category, notes, createdAt, updatedAt };
+  return { id, merchant, itemName, amount, date, taste, category, notes, iconId, iconManuallySet, createdAt, updatedAt };
 }
 
 function createId() {
@@ -360,7 +420,7 @@ function csvEscape(value) {
 }
 
 export function serializeCsv(transactions) {
-  const fields = ["id", "merchant", "itemName", "amount", "date", "taste", "category", "notes", "createdAt", "updatedAt"];
+  const fields = ["id", "merchant", "itemName", "amount", "date", "taste", "category", "notes", "iconId", "iconManuallySet", "createdAt", "updatedAt"];
   return `\uFEFF${fields.join(",")}\r\n${transactions.map(transaction => fields.map(field => csvEscape(transaction[field])).join(",")).join("\r\n")}`;
 }
 
@@ -431,6 +491,36 @@ function makeSvgElement(tagName, attributes = {}) {
   const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
   for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
   return element;
+}
+
+function createFoodIcon(iconId, spriteUrl) {
+  const resolvedId = Object.hasOwn(FOOD_ICONS, iconId) ? iconId : "other";
+  const descriptor = FOOD_ICONS[resolvedId];
+  const tile = makeElement("span", "food-icon-tile");
+  tile.style.backgroundColor = descriptor.background;
+  tile.setAttribute("role", "img");
+  tile.setAttribute("aria-label", `Nhóm món: ${descriptor.label}`);
+  tile.title = descriptor.label;
+  const svg = makeSvgElement("svg", { viewBox: "0 0 64 64", class: "food-icon-svg", "aria-hidden": "true", focusable: "false" });
+  const use = makeSvgElement("use", { href: `${spriteUrl}#food-icon-${resolvedId}` });
+  svg.append(use);
+  tile.append(svg);
+  return tile;
+}
+
+function createFoodIconOption(iconId, descriptor, spriteUrl) {
+  const button = makeElement("button", "food-icon-option");
+  button.type = "button";
+  button.dataset.foodIcon = iconId;
+  button.setAttribute("aria-label", `Chọn icon ${descriptor.label}`);
+  button.setAttribute("aria-pressed", "false");
+  const tile = createFoodIcon(iconId, spriteUrl);
+  tile.setAttribute("aria-hidden", "true");
+  tile.removeAttribute("role");
+  tile.removeAttribute("aria-label");
+  tile.removeAttribute("title");
+  button.append(tile, makeElement("span", "food-icon-option__label", descriptor.label));
+  return button;
 }
 
 function monthLabel(month) {
@@ -691,7 +781,7 @@ function sortTransactions(transactions, sortMode) {
   });
 }
 
-function renderTransactions(transactions) {
+function renderTransactions(transactions, spriteUrl) {
   const container = document.querySelector("#transaction-list");
   const empty = document.querySelector("#transaction-empty");
   const search = document.querySelector("#transaction-search").value.trim().toLocaleLowerCase("vi-VN");
@@ -705,14 +795,23 @@ function renderTransactions(transactions) {
   container.replaceChildren();
   empty.hidden = Boolean(filtered.length);
   for (const record of filtered) {
-    const article = makeElement("article", "transaction-row");
-    article.dataset.id = record.id;
-    const main = makeElement("div", "transaction-main");
+    const row = makeElement("tr", "transaction-row");
+    row.dataset.id = record.id;
+    const iconCell = makeElement("td", "transaction-icon");
+    iconCell.append(createFoodIcon(record.iconId || resolveFoodIcon(record.itemName), spriteUrl));
+    const main = makeElement("th", "transaction-main");
+    main.scope = "row";
     main.append(makeElement("strong", "", record.itemName));
     main.append(makeElement("span", "", record.merchant));
-    const meta = makeElement("div", "transaction-meta", `${dateLabel(record.date)}${record.taste ? ` · ${record.taste}` : ""}${record.notes ? ` · ${record.notes}` : ""}`);
-    const amount = makeElement("strong", "transaction-amount", formatVnd(record.amount));
-    const categoryPill = makeElement("span", "transaction-category", record.category);
+    const details = [record.taste, record.notes].filter(Boolean).join(" · ");
+    if (details) main.append(makeElement("span", "transaction-details", details));
+    const date = makeElement("td", "transaction-date", dateLabel(record.date));
+    date.dataset.label = "Ngày";
+    const category = makeElement("td", "transaction-category", record.category);
+    category.dataset.label = "Danh mục";
+    const amount = makeElement("td", "transaction-amount", formatVnd(record.amount));
+    amount.dataset.label = "Số tiền";
+    const actionCell = makeElement("td", "transaction-action-cell");
     const actions = makeElement("div", "transaction-actions");
     const edit = makeElement("button", "edit-transaction", "Sửa");
     edit.type = "button";
@@ -721,8 +820,9 @@ function renderTransactions(transactions) {
     remove.type = "button";
     remove.setAttribute("aria-label", `Xóa ${record.itemName} tại ${record.merchant}`);
     actions.append(edit, remove);
-    article.append(main, meta, amount, categoryPill, actions);
-    container.append(article);
+    actionCell.append(actions);
+    row.append(iconCell, main, date, category, amount, actionCell);
+    container.append(row);
   }
   document.querySelector("#transaction-status").textContent = filtered.length === transactions.length
     ? `${formatNumber(filtered.length)} giao dịch`
@@ -758,7 +858,7 @@ function setFieldReview(review = {}) {
   }
 }
 
-function setFormValues(values) {
+function setFormValues(values, setFoodIconChoice) {
   document.querySelector("#expense-merchant").value = values.merchant || "";
   document.querySelector("#expense-item").value = values.itemName || "";
   document.querySelector("#expense-amount").value = values.amount || "";
@@ -766,6 +866,7 @@ function setFormValues(values) {
   document.querySelector("#expense-taste").value = values.taste || "";
   document.querySelector("#expense-category").value = values.category || "";
   document.querySelector("#expense-notes").value = values.notes || "";
+  setFoodIconChoice(values.iconId || resolveFoodIcon(values.itemName), Boolean(values.iconManuallySet));
   setFieldReview(values.review);
 }
 
@@ -793,6 +894,30 @@ async function startExpenseTracker() {
   const parseStatus = document.querySelector("#parse-status");
   const saveButton = document.querySelector("#save-expense");
   const cancelButton = document.querySelector("#cancel-edit");
+  const spriteUrl = app.dataset.iconSprite;
+  const iconOptions = document.querySelector("#food-icon-options");
+  const iconInput = document.querySelector("#expense-icon-id");
+  const iconManualInput = document.querySelector("#expense-icon-manual");
+  const iconStatus = document.querySelector("#expense-icon-status");
+  let currentIconManuallySet = false;
+  const setFoodIconChoice = (requestedId, manuallySet = false) => {
+    const iconId = Object.hasOwn(FOOD_ICONS, requestedId) ? requestedId : resolveFoodIcon(document.querySelector("#expense-item").value);
+    iconInput.value = iconId;
+    iconManualInput.value = String(Boolean(manuallySet));
+    currentIconManuallySet = Boolean(manuallySet);
+    for (const button of iconOptions.querySelectorAll("[data-food-icon]")) {
+      const selected = button.dataset.foodIcon === iconId;
+      button.setAttribute("aria-pressed", String(selected));
+    }
+    const descriptor = FOOD_ICONS[iconId];
+    iconStatus.textContent = `${currentIconManuallySet ? "Đã chọn thủ công" : "Tự nhận diện"}: ${descriptor.label}`;
+  };
+  for (const [iconId, descriptor] of Object.entries(FOOD_ICONS)) {
+    const button = createFoodIconOption(iconId, descriptor, spriteUrl);
+    button.addEventListener("click", () => setFoodIconChoice(iconId, true));
+    iconOptions.append(button);
+  }
+  setFoodIconChoice("other");
   const database = await openDatabase();
   let transactions = (await dbRequest(database, "readonly", store => store.getAll())).map(record => validateTransaction(record));
   let editingId = "";
@@ -800,13 +925,14 @@ async function startExpenseTracker() {
   const persistAndRender = async () => {
     transactions = (await dbRequest(database, "readonly", store => store.getAll())).map(record => validateTransaction(record));
     refreshMonthFilter(transactions);
-    renderTransactions(transactions);
+    renderTransactions(transactions, spriteUrl);
     renderDashboard(transactions);
   };
 
   const resetForm = () => {
     editingId = "";
     form.reset();
+    setFoodIconChoice(resolveFoodIcon(""));
     setFieldReview({});
     saveButton.textContent = "Lưu giao dịch";
     cancelButton.hidden = true;
@@ -816,7 +942,7 @@ async function startExpenseTracker() {
 
   document.querySelector("#analyze-expense").addEventListener("click", () => {
     const parsed = parseExpenseText(document.querySelector("#expense-natural-input").value);
-    setFormValues(parsed);
+    setFormValues(parsed, setFoodIconChoice);
     const reviewCount = Object.values(parsed.review).filter(Boolean).length;
     const extras = [parsed.dateNote, reviewCount ? `${reviewCount} trường cần bạn kiểm tra hoặc bổ sung.` : "Hãy kiểm tra các trường trước khi lưu."].filter(Boolean).join(" ");
     parseStatus.textContent = parsed.itemName || parsed.amount || parsed.date ? `Đã phân tích. ${extras} Chưa có dữ liệu nào được lưu.` : "Chưa nhận diện đủ thông tin. Bạn có thể tự điền các trường bên dưới; chưa có dữ liệu nào được lưu.";
@@ -828,6 +954,7 @@ async function startExpenseTracker() {
     if (!field) return;
     const indicator = document.querySelector(`[data-review="${field.name}"]`);
     if (indicator) indicator.hidden = true;
+    if (field.name === "itemName" && !currentIconManuallySet) setFoodIconChoice(resolveFoodIcon(field.value));
   });
 
   form.addEventListener("submit", async event => {
@@ -862,7 +989,7 @@ async function startExpenseTracker() {
     if (!record) return;
     if (event.target.closest(".edit-transaction")) {
       editingId = record.id;
-      setFormValues(record);
+      setFormValues(record, setFoodIconChoice);
       saveButton.textContent = "Cập nhật giao dịch";
       cancelButton.hidden = false;
       parseStatus.textContent = `Đang chỉnh sửa giao dịch ngày ${dateLabel(record.date)}. Thay đổi chỉ lưu khi bạn bấm cập nhật.`;
@@ -883,7 +1010,7 @@ async function startExpenseTracker() {
   });
 
   for (const selector of ["#transaction-search", "#transaction-month", "#transaction-category", "#transaction-sort"]) {
-    document.querySelector(selector).addEventListener(selector.includes("search") ? "input" : "change", () => renderTransactions(transactions));
+    document.querySelector(selector).addEventListener(selector.includes("search") ? "input" : "change", () => renderTransactions(transactions, spriteUrl));
   }
   document.querySelector("#dashboard-month").addEventListener("change", () => renderDashboard(transactions));
 
@@ -922,7 +1049,7 @@ async function startExpenseTracker() {
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   document.querySelector("#dashboard-month").value = currentMonth;
   refreshMonthFilter(transactions);
-  renderTransactions(transactions);
+  renderTransactions(transactions, spriteUrl);
   renderDashboard(transactions);
   app.dataset.state = "ready";
 }

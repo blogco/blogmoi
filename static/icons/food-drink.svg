@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <symbol id="food-icon-coffee" viewBox="0 0 64 64">
+    <g fill="none" stroke="#9A684C" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M18 27h28v13c0 7-5 12-12 12h-4c-7 0-12-5-12-12V27Z" fill="#F7E9DD"/>
+      <path d="M46 31h4a6 6 0 0 1 0 12h-5M13 56h40M24 20c-3-3 3-4 0-8M33 20c-3-3 3-4 0-8M42 20c-3-3 3-4 0-8"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-matcha" viewBox="0 0 64 64">
+    <g fill="none" stroke="#60936D" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="m11 37 4 10c2 5 8 8 17 8s15-3 17-8l4-10H11Z" fill="#E6F1E5"/>
+      <path d="M14 37c4-4 9-6 18-6s14 2 18 6M18 39c4 3 9 4 14 4s10-1 14-4" fill="#A8C99F"/>
+      <path d="m19 10 24 25M16 13l-3 5m7-8-3 6m8-3-4 5m9-2-4 5m9-2-4 5"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-milk-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="#BD8B58" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="m19 19 4 35h19l4-35H19Z" fill="#F9EBD9"/>
+      <path d="m37 8 8 13M24 29h18M26 35h14"/>
+      <circle cx="28" cy="47" r="2.5" fill="#BD8B58"/><circle cx="36" cy="48" r="2.5" fill="#BD8B58"/><circle cx="32" cy="42" r="2.5" fill="#BD8B58"/><circle cx="39" cy="42" r="2.5" fill="#BD8B58"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-tea" viewBox="0 0 64 64">
+    <g fill="none" stroke="#5A9A91" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M14 31h32v10c0 7-6 12-16 12s-16-5-16-12V31Z" fill="#E3F3EF"/>
+      <path d="M46 34h4a6 6 0 0 1 0 12h-5M11 56h39M23 24c-3-3 3-4 0-8M32 24c-3-3 3-4 0-8M41 24c-3-3 3-4 0-8"/>
+      <path d="M20 32c4 3 8 4 13 4" stroke="#FFFFFF"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-juice" viewBox="0 0 64 64">
+    <g fill="none" stroke="#E6A34E" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="m17 23 4 31h22l4-31H17Z" fill="#FFF0D7"/>
+      <path d="m37 8 8 17M20 32h24"/>
+      <circle cx="43" cy="19" r="9" fill="#FFF0D7"/><path d="M43 10v18m-9-9h18m-15-6 12 12m0-12L37 25"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-smoothie" viewBox="0 0 64 64">
+    <g fill="none" stroke="#B17B9D" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="m18 24 4 30h20l4-30H18Z" fill="#F6E6F0"/>
+      <path d="m38 8 7 18M16 24c1-7 5-10 10-8 3-6 10-5 12 0 5-2 9 2 9 8H16Z" fill="#F6E6F0"/>
+      <path d="M25 34h14m-13 6h12" stroke="#FFFFFF"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-cake" viewBox="0 0 64 64">
+    <g fill="none" stroke="#D78B9A" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M12 49 47 27l5 25H12Z" fill="#FBE8EC"/>
+      <path d="m15 43 34 2M17 39l25-16c2-2 5-1 6 2s-1 5-4 6L18 47" fill="#FFFFFF"/>
+      <path d="M34 22c-4-5 0-9 4-7 4-2 8 3 4 7l-4 4-4-4Z" fill="#D78B9A"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-bread" viewBox="0 0 64 64">
+    <g fill="none" stroke="#B98B55" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M12 39c0-9 8-17 20-17s20 8 20 17-8 15-20 15-20-6-20-15Z" fill="#F7EBD7" transform="rotate(-18 32 38)"/>
+      <path d="m23 30 4 8m4-12 4 9m4-8 4 8"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-noodles" viewBox="0 0 64 64">
+    <g fill="none" stroke="#CB8750" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M12 36h40l-4 11c-2 6-8 9-16 9s-14-3-16-9l-4-11Z" fill="#FFF0DF"/>
+      <path d="M16 36c3-7 8-11 16-11s13 4 16 11M21 34c-2-5 3-5 1-10m7 10c-2-5 3-5 1-10m7 10c-2-5 3-5 1-10M28 10l22 20m-15-20 19 17"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-rice" viewBox="0 0 64 64">
+    <g fill="none" stroke="#7D9D67" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M13 38h38l-4 11c-2 5-8 8-15 8s-13-3-15-8l-4-11Z" fill="#EDF2E3"/>
+      <path d="M18 38c1-10 7-17 14-17s13 7 14 17H18Z" fill="#FFFFFF"/>
+      <path d="M24 34c3 1 5 1 8 0m3-7 1 2m5 2 1 2"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-fried" viewBox="0 0 64 64">
+    <g fill="none" stroke="#CF9940" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="M20 51c-6-3-8-9-4-14l4-4c-2-6 2-11 8-11 4-6 11-6 14-1 7 0 10 7 7 12 5 5 2 13-5 15-5 5-17 6-24 3Z" fill="#FFF0D2"/>
+      <path d="m23 35 3 2m9-8 2 2m7 9 3-1m-19 8 2-2m11-13 2-2"/>
+    </g>
+  </symbol>
+  <symbol id="food-icon-other" viewBox="0 0 64 64">
+    <g fill="none" stroke="#7C8DA4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+      <path d="m12 24 20-12 20 12v26H12V24Z" fill="#EAF0F6"/>
+      <path d="m12 24 20 12 20-12M32 36v14"/>
+      <path d="M32 20v10m-5-5h10" stroke="#FFFFFF"/>
+    </g>
+  </symbol>
+</svg>

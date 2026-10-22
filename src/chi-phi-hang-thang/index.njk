@@ -14,7 +14,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
   </div>
 </section>
 
-<div class="expense-app" id="expense-app" data-state="loading">
+<div class="expense-app" id="expense-app" data-state="loading" data-icon-sprite="{{ '/icons/food-drink.svg' | url }}">
   <section class="expense-panel expense-entry" aria-labelledby="entry-title">
     <div class="expense-section-heading">
       <div>
@@ -63,6 +63,14 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
             <option value="Khác">Khác</option>
           </select>
         </div>
+        <fieldset class="expense-icon-picker expense-field--wide">
+          <legend class="expense-label">Icon món ăn / thức uống</legend>
+          <p class="expense-hint" id="expense-icon-hint">Icon được nhận diện từ tên món. Bạn có thể chọn lại trước khi lưu.</p>
+          <input id="expense-icon-id" name="iconId" type="hidden" value="other">
+          <input id="expense-icon-manual" name="iconManuallySet" type="hidden" value="false">
+          <div class="food-icon-options" id="food-icon-options" role="group" aria-describedby="expense-icon-hint"></div>
+          <p class="food-icon-status" id="expense-icon-status" role="status" aria-live="polite"></p>
+        </fieldset>
         <div class="expense-field expense-field--wide">
           <label class="expense-label" for="expense-notes">Ghi chú <span class="expense-optional">Không bắt buộc</span></label>
           <textarea id="expense-notes" name="notes" rows="2" maxlength="500" placeholder="Ghi chú thêm nếu cần"></textarea>
@@ -184,7 +192,22 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <div class="expense-field"><label class="expense-label" for="transaction-sort">Sắp xếp</label><select id="transaction-sort"><option value="date-desc">Ngày mới nhất</option><option value="date-asc">Ngày cũ nhất</option><option value="amount-desc">Số tiền cao nhất</option><option value="amount-asc">Số tiền thấp nhất</option></select></div>
       </div>
       <p class="transaction-status" id="transaction-status" role="status" aria-live="polite"></p>
-      <div class="transaction-list" id="transaction-list"></div>
+      <div class="table-scroll transaction-table-scroll">
+        <table class="transaction-table">
+          <caption class="sr-only">Danh sách giao dịch chi phí</caption>
+          <thead>
+            <tr>
+              <th scope="col">Icon</th>
+              <th scope="col">Tên món / quán</th>
+              <th scope="col">Ngày</th>
+              <th scope="col">Danh mục</th>
+              <th scope="col">Số tiền</th>
+              <th scope="col"><span class="sr-only">Thao tác</span></th>
+            </tr>
+          </thead>
+          <tbody id="transaction-list"></tbody>
+        </table>
+      </div>
       <p class="transaction-empty" id="transaction-empty" hidden>Chưa có giao dịch phù hợp. Hãy thêm khoản chi đầu tiên ở phía trên.</p>
       <p class="storage-error" id="storage-error" role="alert" hidden></p>
     </section>
