@@ -682,12 +682,12 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-22T17:46:01.045Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39825523472",
+    "recordedAt": "2026-10-22T18:12:32.677Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39829284815",
     "articlesDiscovered": 5,
-    "articlesProcessed": 1,
-    "articlesSkippedValidCache": 4,
-    "newlyExtracted": 12,
+    "articlesProcessed": 0,
+    "articlesSkippedValidCache": 5,
+    "newlyExtracted": 0,
     "translationsCompleted": 0,
     "translationsFailed": 0
   }
