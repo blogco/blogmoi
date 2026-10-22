@@ -462,8 +462,8 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-22T19:43:01.692Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39842484686",
+    "recordedAt": "2026-10-22T19:53:12.612Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39843961195",
     "articlesDiscovered": 5,
     "articlesProcessed": 0,
     "articlesSkippedValidCache": 5,
