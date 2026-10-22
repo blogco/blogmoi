@@ -15,6 +15,11 @@ test("report contains the icon playground, health insights, ranking, and PDF act
   assert.match(page, /id="health-insight-list"/u);
   assert.match(page, /data-icon-sprite=.*food-drink\.svg/u);
   assert.ok(page.indexOf("id=\"food-bubbles\"") < page.indexOf("id=\"health-insight-list\""));
+  assert.match(page, /data-dashboard-period="all"[^>]*aria-pressed="true">Toàn bộ thời gian/u);
+  assert.match(page, /data-dashboard-period="this-month"/u);
+  assert.match(page, /data-dashboard-period="last-month"/u);
+  assert.match(page, /data-dashboard-period="custom"/u);
+  assert.match(page, /Bộ lọc lịch sử giao dịch, độc lập với phạm vi báo cáo/u);
 });
 
 test("bubble layout caps each circle to its grid cell and respects reduced motion", () => {
@@ -30,7 +35,8 @@ test("print stylesheet scopes output to section 02 and keeps charts and report r
   assert.match(css, /\.expense-app tr\s*\{\s*break-inside:\s*avoid/su);
   assert.match(css, /@media print[\s\S]*?\.cloud-sync-panel,[\s\S]*?#storage-error\s*\{\s*display:\s*none !important/su);
   assert.match(script, /window\.print\(\)/u);
-  assert.match(script, /blogmoi-chi-phi-\$\{month\}/u);
+  assert.match(script, /document\.title = "blogmoi-chi-phi-" \+ filePeriod/u);
+  assert.match(script, /serializeCsv\(report\.transactions, report\)/u);
   assert.match(script, /applySyncedDocument[\s\S]*?await persistAndRender\(\)/u);
 });
 

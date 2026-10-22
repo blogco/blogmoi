@@ -13,7 +13,7 @@
     "test:cms": "node --test tests/cms-core.test.mjs tests/cms-proxy.test.mjs",
     "test:season": "node --test tests/season-resolver.test.mjs",
     "test:dictionary": "node --test tests/dictionary-pipeline.test.mjs",
-    "test:expenses": "node --test tests/expense-tracker.test.mjs tests/expense-report.test.mjs tests/expense-cloud-sync.test.mjs",
+    "test:expenses": "node --test tests/expense-tracker.test.mjs tests/expense-report.test.mjs tests/expense-cloud-sync.test.mjs tests/expense-period-regression.test.mjs",
     "dictionary:sync": "node scripts/extract-dictionary.mjs",
     "dictionary:import": "node scripts/import-dictionary-entries.mjs"
   },

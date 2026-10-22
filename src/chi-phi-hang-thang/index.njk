@@ -92,11 +92,17 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
       </div>
       <div class="dashboard-actions">
         <button class="button button--secondary print-report" id="print-report" type="button">In / Xuất PDF</button>
-        <div class="month-control">
-          <label class="expense-label" for="dashboard-month">Tháng báo cáo</label>
+        <div class="month-control" id="custom-month-control" hidden>
+          <label class="expense-label" for="dashboard-month">Chọn tháng báo cáo</label>
           <input id="dashboard-month" type="month" aria-label="Chọn tháng báo cáo">
         </div>
       </div>
+    </div>
+    <div class="dashboard-period-control" role="group" aria-label="Phạm vi báo cáo">
+      <button class="button button--secondary is-active" type="button" data-dashboard-period="all" aria-pressed="true">Toàn bộ thời gian</button>
+      <button class="button button--secondary" type="button" data-dashboard-period="this-month" aria-pressed="false">Tháng này</button>
+      <button class="button button--secondary" type="button" data-dashboard-period="last-month" aria-pressed="false">Tháng trước</button>
+      <button class="button button--secondary" type="button" data-dashboard-period="custom" aria-pressed="false">Chọn tháng</button>
     </div>
 
     <section class="cloud-sync-panel" aria-labelledby="cloud-sync-title">
@@ -166,7 +172,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
       <article class="kpi-card">
         <p class="kpi-label">Giao dịch</p>
         <p class="kpi-value" id="kpi-count">—</p>
-        <p class="kpi-caption">Trong tháng</p>
+        <p class="kpi-caption" id="kpi-count-caption">Trong toàn bộ thời gian</p>
       </article>
       <article class="kpi-card">
         <p class="kpi-label">Trung bình / ngày có chi</p>
@@ -183,7 +189,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
     <section class="chart-panel spending-panel" aria-labelledby="spending-title">
       <div class="chart-heading">
         <div>
-          <p class="chart-kicker">DIỄN BIẾN THEO NGÀY</p>
+          <p class="chart-kicker" id="spending-kicker">DIỄN BIẾN THEO THÁNG</p>
           <h3 id="spending-title">Chi tiêu trong tháng</h3>
         </div>
         <p class="chart-summary" id="spending-summary">Tổng theo ngày giao dịch</p>
@@ -197,8 +203,8 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <summary id="daily-chart-data">Xem bảng số liệu theo ngày</summary>
         <div class="table-scroll">
           <table>
-            <caption>Chi tiêu theo ngày trong tháng được chọn</caption>
-            <thead><tr><th scope="col">Ngày</th><th scope="col">Số giao dịch</th><th scope="col">Tổng chi tiêu</th></tr></thead>
+            <caption id="daily-chart-caption">Chi tiêu theo tháng trong toàn bộ thời gian</caption>
+            <thead><tr><th scope="col">Thời gian</th><th scope="col">Số giao dịch</th><th scope="col">Tổng chi tiêu</th></tr></thead>
             <tbody id="daily-data-table"></tbody>
           </table>
         </div>
@@ -231,7 +237,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <div>
           <p class="chart-kicker">SPENDING CHARACTERS</p>
           <h3 id="icon-playground-title">Những món đã góp mặt</h3>
-          <p class="icon-playground__intro" id="bubble-mode-caption">Tỷ trọng theo số lần mua trong tháng đang chọn.</p>
+          <p class="icon-playground__intro" id="bubble-mode-caption">Tỷ trọng theo số lần mua trong toàn bộ thời gian.</p>
         </div>
         <div class="bubble-mode" role="group" aria-label="Cách tính tỷ trọng icon">
           <button class="button button--secondary is-active" type="button" data-bubble-mode="count" aria-pressed="true">Theo số lần mua</button>
@@ -258,6 +264,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <div><p class="expense-index">GÓC NHÌN SỨC KHỎE · RULE-BASED OFFLINE</p><h3 id="health-insights-title">Góc nhìn sức khỏe</h3></div>
         <span class="insights-badge">Phân tích trên thiết bị</span>
       </div>
+      <p class="health-insight-period" id="health-insight-period">Phạm vi dữ liệu: Toàn bộ thời gian.</p>
       <div class="insight-list health-insight-list" id="health-insight-list" aria-live="polite"></div>
       <p class="health-note">Nhận xét chỉ dựa trên tên món, khẩu vị, danh mục và tần suất giao dịch đã ghi. Không suy đoán calories, lượng đường, caffeine hay chẩn đoán sức khỏe; chi tiêu không đại diện cho toàn bộ khẩu phần ăn.</p>
     </section>
@@ -277,12 +284,12 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <div class="backup-actions">
           <input id="backup-file" class="sr-only" type="file" accept=".json,.csv,application/json,text/csv">
           <label class="button button--secondary import-button" for="backup-file">Nhập bản sao lưu</label>
-          <button class="button button--secondary" id="export-json" type="button">Xuất JSON</button>
-          <button class="button button--secondary" id="export-csv" type="button">Xuất CSV</button>
+          <button class="button button--secondary" id="export-json" type="button">Xuất JSON theo kỳ</button>
+          <button class="button button--secondary" id="export-csv" type="button">Xuất CSV theo kỳ</button>
         </div>
       </div>
-      <div class="privacy-note" role="note"><strong>Quyền riêng tư:</strong> giao dịch nằm trong IndexedDB của trình duyệt. Khi kết nối GitHub, bản sao tại <code>blogco/blogmoi/data/expenses/transactions.json</code> là dữ liệu công khai. Dữ liệu cục bộ vẫn được giữ khi token lỗi hoặc mất mạng; hãy xuất bản sao lưu định kỳ.</div>
-      <div class="transaction-filters" aria-label="Tìm kiếm và lọc giao dịch">
+      <div class="privacy-note" role="note"><strong>Dữ liệu riêng tư:</strong> giao dịch luôn có bản cache trong IndexedDB và có thể đồng bộ lên repository GitHub private mà bạn chọn. Nếu không kết nối, dữ liệu chờ đồng bộ trên thiết bị này. Hãy xuất bản sao lưu định kỳ; dữ liệu cục bộ có thể mất nếu xóa dữ liệu trình duyệt.</div>
+      <div class="transaction-filters" aria-label="Bộ lọc lịch sử giao dịch, độc lập với phạm vi báo cáo">
         <div class="expense-field filter-search"><label class="expense-label" for="transaction-search">Tìm giao dịch</label><input id="transaction-search" type="search" placeholder="Tìm quán, món, ghi chú…"></div>
         <div class="expense-field"><label class="expense-label" for="transaction-month">Tháng</label><select id="transaction-month"><option value="all">Tất cả tháng</option></select></div>
         <div class="expense-field"><label class="expense-label" for="transaction-category">Danh mục</label><select id="transaction-category"><option value="all">Tất cả danh mục</option><option value="Đồ uống">Đồ uống</option><option value="Đồ ăn">Đồ ăn</option><option value="Khác">Khác</option></select></div>

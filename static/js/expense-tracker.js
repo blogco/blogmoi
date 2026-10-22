@@ -286,11 +286,21 @@ function validTimestamp(value) {
   return typeof value === "string" && Number.isFinite(Date.parse(value));
 }
 
+function normalizeVndAmount(value) {
+  if (typeof value === "number") return value;
+  if (typeof value !== "string") return Number.NaN;
+  const normalized = value.trim().replace(/\s+/gu, "");
+  if (/^\d+$/u.test(normalized)) return Number(normalized);
+  if (/^\d{1,3}(?:[.,]\d{3})+$/u.test(normalized)) return Number(normalized.replace(/[.,]/gu, ""));
+  if (/^\d+[.,]\d{1,2}$/u.test(normalized)) return Number(normalized.replace(",", "."));
+  return Number.NaN;
+}
+
 export function validateTransaction(input, { now = new Date(), makeId = createId } = {}) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Dữ liệu giao dịch không hợp lệ.");
   const merchant = typeof input.merchant === "string" ? input.merchant.trim() : "";
   const itemName = typeof input.itemName === "string" ? input.itemName.trim() : "";
-  const amount = Number(input.amount);
+  const amount = normalizeVndAmount(input.amount);
   const date = typeof input.date === "string" ? input.date.trim() : "";
   const taste = typeof input.taste === "string" ? input.taste.trim() : "";
   const category = typeof input.category === "string" ? input.category.trim() : "";
@@ -327,19 +337,47 @@ export function getDaysInMonth(month) {
   return new Date(year, monthNumber, 0).getDate();
 }
 
-export function aggregateMonth(transactions, month) {
-  const selected = transactions.filter(transaction => monthKey(transaction.date) === month);
+export function normalizeTransactions(records) {
+  if (!Array.isArray(records)) throw new Error("Danh sách giao dịch không hợp lệ.");
+  const unique = new Map();
+  for (const input of records) {
+    if (!input || typeof input.id !== "string" || !input.id.trim()) throw new Error("Giao dịch thiếu mã định danh.");
+    const record = validateTransaction(input);
+    const previous = unique.get(record.id);
+    if (previous && JSON.stringify(previous) !== JSON.stringify(record)) {
+      throw new Error("Có nhiều phiên bản khác nhau của cùng một giao dịch.");
+    }
+    unique.set(record.id, record);
+  }
+  return [...unique.values()];
+}
+
+export function selectPeriodTransactions(transactions, period = "all") {
+  return period === "all"
+    ? [...transactions]
+    : transactions.filter(transaction => monthKey(transaction.date) === period);
+}
+
+export function aggregatePeriod(transactions, period = "all") {
+  const selected = selectPeriodTransactions(transactions, period);
   const total = selected.reduce((sum, transaction) => sum + transaction.amount, 0);
   const activeDays = new Set(selected.map(transaction => transaction.date)).size;
   const daily = new Map();
+  const monthly = new Map();
   const categories = new Map(CATEGORIES.map(category => [category, 0]));
   const merchants = new Map();
   for (const transaction of selected) {
-    const day = Number(transaction.date.slice(8, 10));
-    const currentDay = daily.get(day) || { total: 0, count: 0 };
+    const date = transaction.date;
+    const month = monthKey(date);
+    const dailyKey = period === "all" ? date : Number(date.slice(8, 10));
+    const currentDay = daily.get(dailyKey) || { total: 0, count: 0 };
     currentDay.total += transaction.amount;
     currentDay.count += 1;
-    daily.set(day, currentDay);
+    daily.set(dailyKey, currentDay);
+    const currentMonth = monthly.get(month) || { total: 0, count: 0 };
+    currentMonth.total += transaction.amount;
+    currentMonth.count += 1;
+    monthly.set(month, currentMonth);
     categories.set(transaction.category, (categories.get(transaction.category) || 0) + transaction.amount);
     const merchantKey = transaction.merchant.trim().toLocaleLowerCase("vi-VN");
     const currentMerchant = merchants.get(merchantKey) || { merchant: transaction.merchant, total: 0, count: 0 };
@@ -348,23 +386,28 @@ export function aggregateMonth(transactions, month) {
     merchants.set(merchantKey, currentMerchant);
   }
   return {
-    month,
+    period,
+    month: period === "all" ? null : period,
     transactions: selected,
     total,
     count: selected.length,
     activeDays,
     averagePerActiveDay: activeDays ? Math.round(total / activeDays) : 0,
     daily,
+    monthly,
     categories,
     merchants: [...merchants.values()].sort((a, b) => b.total - a.total || a.merchant.localeCompare(b.merchant, "vi")),
   };
 }
 
-export function aggregateFoodGroups(transactions, month, mode = "count") {
+export function aggregateMonth(transactions, month) {
+  return aggregatePeriod(transactions, month);
+}
+
+export function aggregateFoodGroups(transactions, period, mode = "count") {
   const metric = mode === "amount" ? "amount" : "count";
   const groups = new Map();
-  for (const transaction of transactions) {
-    if (monthKey(transaction.date) !== month) continue;
+  for (const transaction of selectPeriodTransactions(transactions, period)) {
     const iconId = Object.hasOwn(FOOD_ICONS, transaction.iconId) ? transaction.iconId : "other";
     const group = groups.get(iconId) || { iconId, label: FOOD_ICONS[iconId].label, count: 0, amount: 0 };
     group.count += 1;
@@ -377,7 +420,7 @@ export function aggregateFoodGroups(transactions, month, mode = "count") {
     value: group[metric],
     share: total > 0 ? group[metric] / total : 0,
   })).sort((a, b) => b.value - a.value || b.count - a.count || a.label.localeCompare(b.label, "vi"));
-  return { month, mode: metric, total, items };
+  return { period, mode: metric, total, items };
 }
 
 export function getBubbleSize(share, min = 112, max = 204) {
@@ -385,10 +428,11 @@ export function getBubbleSize(share, min = 112, max = 204) {
   return Math.round(min + Math.sqrt(boundedShare) * (max - min));
 }
 
-export function buildHealthInsights(transactions, month) {
-  const records = transactions.filter(transaction => monthKey(transaction.date) === month);
+export function buildHealthInsights(transactions, period) {
+  const records = selectPeriodTransactions(transactions, period);
+  const scopeLabel = period === "all" ? "toàn bộ thời gian" : monthLabel(period);
   if (!records.length) {
-    return [{ type: "unknown", title: "Chưa có dữ liệu", text: "Chưa có giao dịch trong tháng này để nhận xét về tên món, khẩu vị hoặc tần suất." }];
+    return [{ type: "unknown", title: "Chưa có dữ liệu", text: "Chưa có giao dịch trong " + scopeLabel + " để nhận xét về tên món, khẩu vị hoặc tần suất." }];
   }
 
   const insights = [];
@@ -399,7 +443,7 @@ export function buildHealthInsights(transactions, month) {
   }));
   const drinksWithoutSugarDetails = notes.filter(({ transaction, text }) => transaction.category === "Đồ uống"
     && !/không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt|nhiều\s+đường|thêm\s+đường/iu.test(text)).length;
-  const unknownInsight = { type: "unknown", title: "Chưa thể đánh giá toàn bộ khẩu phần", text: `Có ${records.length} giao dịch trong tháng; ${drinksWithoutSugarDetails} giao dịch thuộc danh mục đồ uống chưa ghi mức đường. Sổ chi tiêu không phản ánh mọi món đã ăn và không cho biết công thức hoặc khẩu phần, nên chưa thể đánh giá tổng lượng đường, dầu mỡ hay caffeine.` };
+  const unknownInsight = { type: "unknown", title: "Chưa thể đánh giá toàn bộ khẩu phần", text: `Có ${records.length} giao dịch trong ${scopeLabel}; ${drinksWithoutSugarDetails} giao dịch thuộc danh mục đồ uống chưa ghi mức đường. Sổ chi tiêu không phản ánh mọi món đã ăn và không cho biết công thức hoặc khẩu phần, nên chưa thể đánh giá tổng lượng đường, dầu mỡ hay caffeine.` };
   const lowerSugar = notes.filter(({ text }) => /không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt/iu.test(text));
   if (lowerSugar.length) {
     insights.push({ type: "positive", title: "Đã ghi nhận lựa chọn ít / không đường", text: `${lowerSugar.length} giao dịch có ghi khẩu vị không đường, ít đường hoặc ít ngọt. Đây là thông tin theo ghi chép của bạn; công thức thực tế có thể khác.` });
@@ -427,7 +471,7 @@ export function buildHealthInsights(transactions, month) {
   const countsByIcon = new Map();
   for (const { iconId } of notes) countsByIcon.set(iconId, (countsByIcon.get(iconId) || 0) + 1);
   for (const [iconId, count] of [...countsByIcon].filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3)) {
-    insights.push({ type: "consider", title: `Lặp lại: ${FOOD_ICONS[iconId].label}`, text: `Nhóm ${FOOD_ICONS[iconId].label.toLocaleLowerCase("vi-VN")} xuất hiện ${count} lần trong tháng. Bạn có thể dùng tần suất này để cân nhắc sự đa dạng món; số giao dịch không thể hiện toàn bộ khẩu phần.` });
+    insights.push({ type: "consider", title: `Lặp lại: ${FOOD_ICONS[iconId].label}`, text: `Nhóm ${FOOD_ICONS[iconId].label.toLocaleLowerCase("vi-VN")} xuất hiện ${count} lần trong ${scopeLabel}. Bạn có thể dùng tần suất này để cân nhắc sự đa dạng món; số giao dịch không thể hiện toàn bộ khẩu phần.` });
   }
 
   if (!insights.some(item => item.type === "positive" || item.type === "consider")) {
@@ -446,26 +490,49 @@ function shiftMonth(month, amount) {
   return `${shifted.getFullYear()}-${String(shifted.getMonth() + 1).padStart(2, "0")}`;
 }
 
-export function getMonthlyComparison(transactions, selectedMonth, now = new Date()) {
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  if (selectedMonth > currentMonth) return null;
+export function resolveDashboardSelection(mode, customMonth, now = new Date()) {
+  const currentMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+  if (mode === "all") return { mode, period: "all", label: "Toàn bộ thời gian" };
+  if (mode === "this-month") {
+    return { mode, period: currentMonth, label: "Tháng này · " + monthLabel(currentMonth) };
+  }
+  if (mode === "last-month") {
+    const previousMonth = shiftMonth(currentMonth, -1);
+    return { mode, period: previousMonth, label: "Tháng trước · " + monthLabel(previousMonth) };
+  }
+  const selectedMonth = /^\d{4}-(?:0[1-9]|1[0-2])$/u.test(customMonth) ? customMonth : currentMonth;
+  return { mode: "custom", period: selectedMonth, label: monthLabel(selectedMonth) };
+}
+
+export function buildPeriodExport(transactions, selection) {
+  const selected = selectPeriodTransactions(transactions, selection.period);
+  const summary = aggregatePeriod(selected, "all");
+  return {
+    period: selection.period,
+    label: selection.label,
+    total: summary.total,
+    count: summary.count,
+    activeDays: summary.activeDays,
+    transactions: selected,
+  };
+}
+
+export function getMonthlyComparison(transactions, selectedMonth) {
   const previousMonth = shiftMonth(selectedMonth, -1);
-  const isCurrentMonth = selectedMonth === currentMonth;
-  const throughDay = isCurrentMonth ? now.getDate() : getDaysInMonth(selectedMonth);
-  const currentPeriod = transactions.filter(transaction => monthKey(transaction.date) === selectedMonth && Number(transaction.date.slice(8, 10)) <= throughDay);
-  const previousPeriod = transactions.filter(transaction => monthKey(transaction.date) === previousMonth && Number(transaction.date.slice(8, 10)) <= throughDay);
+  const currentPeriod = selectPeriodTransactions(transactions, selectedMonth);
+  const previousPeriod = selectPeriodTransactions(transactions, previousMonth);
   const previousTotal = previousPeriod.reduce((total, transaction) => total + transaction.amount, 0);
-  if (!previousPeriod.length || previousTotal <= 0) return null;
   const currentTotal = currentPeriod.reduce((total, transaction) => total + transaction.amount, 0);
   const difference = currentTotal - previousTotal;
   return {
+    status: !previousPeriod.length ? "missing" : previousTotal === 0 ? "zero" : "compared",
     previousMonth,
+    currentCount: currentPeriod.length,
+    previousCount: previousPeriod.length,
     currentTotal,
     previousTotal,
     difference,
-    percentage: (difference / previousTotal) * 100,
-    throughDay,
-    comparableDays: isCurrentMonth ? throughDay : getDaysInMonth(selectedMonth),
+    percentage: previousTotal > 0 ? (difference / previousTotal) * 100 : null,
   };
 }
 
@@ -510,38 +577,52 @@ function csvEscape(value) {
   return /[",\r\n]/u.test(text) ? `"${text.replace(/"/gu, '""')}"` : text;
 }
 
-export function serializeCsv(transactions) {
-  const fields = ["id", "merchant", "itemName", "amount", "date", "taste", "category", "notes", "iconId", "iconManuallySet", "createdAt", "updatedAt"];
-  return `\uFEFF${fields.join(",")}\r\n${transactions.map(transaction => fields.map(field => csvEscape(transaction[field])).join(",")).join("\r\n")}`;
-}
-
-function transactionFingerprint(transaction) {
-  return [transaction.merchant, transaction.itemName, transaction.amount, transaction.date, transaction.taste, transaction.category]
-    .map(value => String(value).trim().toLocaleLowerCase("vi-VN")).join("\u001f");
+export function serializeCsv(transactions, report = null) {
+  const transactionFields = ["id", "merchant", "itemName", "amount", "date", "taste", "category", "notes", "iconId", "iconManuallySet", "createdAt", "updatedAt"];
+  if (!report) {
+    return `\uFEFF${transactionFields.join(",")}\r\n${transactions.map(transaction => transactionFields.map(field => csvEscape(transaction[field])).join(",")).join("\r\n")}`;
+  }
+  const fields = ["recordType", "period", "label", "total", "count", "activeDays", ...transactionFields];
+  const rows = transactions.map(transaction => fields.map(field => csvEscape({
+    recordType: "transaction",
+    period: report.period,
+    label: report.label,
+    total: report.total,
+    count: report.count,
+    activeDays: report.activeDays,
+    ...transaction,
+  }[field])).join(","));
+  rows.push(fields.map(field => csvEscape({
+    recordType: "summary",
+    period: report.period,
+    label: report.label,
+    total: report.total,
+    count: report.count,
+    activeDays: report.activeDays,
+  }[field])).join(","));
+  return `\uFEFF${fields.join(",")}\r\n${rows.join("\r\n")}`;
 }
 
 export function prepareImportRows(data, existing, options = {}) {
   const rows = Array.isArray(data) ? data : Array.isArray(data?.transactions) ? data.transactions : [];
+  const transactions = rows.filter(item => item?.recordType !== "summary");
   const imported = [];
   const skipped = { duplicate: 0, invalid: 0 };
   const ids = new Set(existing.map(item => item.id));
-  const fingerprints = new Set(existing.map(transactionFingerprint));
-  for (const row of rows) {
+  for (const row of transactions) {
     try {
       const valid = validateTransaction(row, options);
-      const fingerprint = transactionFingerprint(valid);
-      if (ids.has(valid.id) || fingerprints.has(fingerprint)) {
+      if (ids.has(valid.id)) {
         skipped.duplicate += 1;
         continue;
       }
       ids.add(valid.id);
-      fingerprints.add(fingerprint);
       imported.push(valid);
     } catch {
       skipped.invalid += 1;
     }
   }
-  return { imported, skipped, total: rows.length };
+  return { imported, skipped, total: transactions.length };
 }
 
 function openDatabase() {
@@ -581,10 +662,11 @@ async function readSyncMeta(database) {
 }
 
 function localExpenseDocument(records, tombstones = []) {
-  const activeIds = new Set(records.map(record => record.id));
+  const transactions = normalizeTransactions(records);
+  const activeIds = new Set(transactions.map(record => record.id));
   return {
     schemaVersion: CLOUD_SCHEMA_VERSION,
-    transactions: records.map(record => validateTransaction(record)),
+    transactions,
     tombstones: tombstones.filter(item => item && !activeIds.has(item.id)),
   };
 }
@@ -822,6 +904,83 @@ function drawDailyChart(summary, month) {
   }
 }
 
+function drawMonthlyChart(summary) {
+  const svg = document.querySelector("#daily-chart");
+  const empty = document.querySelector("#daily-empty");
+  const tooltip = document.querySelector("#daily-tooltip");
+  const table = document.querySelector("#daily-data-table");
+  svg.replaceChildren();
+  table.replaceChildren();
+  tooltip.hidden = true;
+  const entries = [...summary.monthly.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const hasData = entries.length > 0;
+  empty.hidden = hasData;
+  svg.hidden = !hasData;
+  if (!hasData) return;
+
+  const plot = { left: 62, right: 786, top: 18, bottom: 226 };
+  const maximum = Math.max(...entries.map(([, entry]) => entry.total));
+  const yTopMax = Math.ceil(maximum / 4) * 4 || maximum;
+  const xFor = index => plot.left + (entries.length === 1 ? 0 : index * (plot.right - plot.left) / (entries.length - 1));
+  const yFor = value => plot.bottom - value / (yTopMax || 1) * (plot.bottom - plot.top);
+  for (let step = 0; step <= 4; step += 1) {
+    const y = plot.bottom - step * (plot.bottom - plot.top) / 4;
+    svg.append(makeSvgElement("line", { x1: plot.left, x2: plot.right, y1: y, y2: y, class: "chart-grid-line" }));
+    const label = makeSvgElement("text", { x: plot.left - 9, y: y + 4, "text-anchor": "end", class: "chart-axis-label" });
+    label.textContent = step === 0 ? "0" : formatNumber(Math.round(yTopMax * step / 4));
+    svg.append(label);
+  }
+  const labelStep = Math.max(1, Math.ceil(entries.length / 8));
+  entries.forEach(([month], index) => {
+    if (index % labelStep !== 0 && index !== entries.length - 1) return;
+    const label = makeSvgElement("text", {
+      x: xFor(index),
+      y: 252,
+      "text-anchor": index === 0 ? "start" : index === entries.length - 1 ? "end" : "middle",
+      class: "chart-axis-label",
+    });
+    label.textContent = month.slice(5) + "/" + month.slice(0, 4);
+    svg.append(label);
+  });
+  const points = entries.map(([, entry], index) => [xFor(index), yFor(entry.total)]);
+  const linePath = points.map(([x, y], index) => (index ? "L" : "M") + x.toFixed(2) + " " + y.toFixed(2)).join(" ");
+  const areaPath = linePath + " L " + plot.right + " " + plot.bottom + " L " + plot.left + " " + plot.bottom + " Z";
+  svg.append(makeSvgElement("path", { d: areaPath, class: "chart-area" }));
+  svg.append(makeSvgElement("path", { d: linePath, class: "chart-line" }));
+  entries.forEach(([month, entry], index) => {
+    const label = monthLabel(month) + ": " + formatVnd(entry.total);
+    const point = makeSvgElement("circle", {
+      cx: xFor(index),
+      cy: yFor(entry.total),
+      r: 4.3,
+      class: "chart-point",
+      tabindex: "0",
+      "aria-label": label,
+    });
+    const title = makeSvgElement("title");
+    title.textContent = label;
+    point.append(title);
+    const showTooltip = () => {
+      tooltip.textContent = label + " · " + formatNumber(entry.count) + " giao dịch";
+      tooltip.hidden = false;
+      tooltip.style.left = Math.max(0, Math.min(78, xFor(index) / 8 - 4)) + "%";
+      tooltip.style.top = Math.max(0, yFor(entry.total) / 2.8 - 14) + "px";
+    };
+    point.addEventListener("pointerenter", showTooltip);
+    point.addEventListener("focus", showTooltip);
+    point.addEventListener("pointerleave", () => { tooltip.hidden = true; });
+    point.addEventListener("blur", () => { tooltip.hidden = true; });
+    svg.append(point);
+  });
+  for (const [month, entry] of entries) {
+    const row = document.createElement("tr");
+    for (const value of [monthLabel(month), String(entry.count), formatVnd(entry.total)]) {
+      row.append(makeElement("td", "", value));
+    }
+    table.append(row);
+  }
+}
+
 function drawCategoryChart(summary) {
   const svg = document.querySelector("#category-chart");
   const legend = document.querySelector("#category-legend");
@@ -889,21 +1048,20 @@ function drawMerchantBars(summary) {
   }
 }
 
-function getInsightRecords(transactions, summary, comparison) {
+function getInsightRecords(transactions, summary, comparison, selection) {
   if (!summary.count) return [];
   const insights = [];
-  if (comparison) {
-    const direction = comparison.difference > 0 ? "tăng" : comparison.difference < 0 ? "giảm" : "không đổi";
-    const percentage = Math.abs(comparison.percentage).toFixed(1).replace(".", ",");
-    const changeAmount = formatVnd(Math.abs(comparison.difference));
-    const period = summary.month === `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`
-      ? `qua ${comparison.throughDay} ngày đầu kỳ`
-      : "so với trọn tháng trước";
-    insights.push({ type: "Xu hướng chi tiêu", text: comparison.difference === 0
-      ? `Tổng chi tiêu ${period} giữ nguyên ở ${formatVnd(comparison.currentTotal)}.`
-      : `Chi tiêu ${period} ${direction} ${changeAmount} (${percentage}%), từ ${formatVnd(comparison.previousTotal)} lên ${formatVnd(comparison.currentTotal)}.` });
+  const scopeLabel = selection.period === "all" ? "toàn bộ thời gian" : monthLabel(selection.period);
+  if (selection.period === "all") {
+    insights.push({ type: "Xu hướng chi tiêu", text: "Bạn đã ghi nhận " + formatVnd(summary.total) + " qua " + summary.count + " giao dịch trong toàn bộ thời gian. So sánh tháng trước không áp dụng cho phạm vi này." });
+  } else if (!comparison || comparison.status === "missing") {
+    insights.push({ type: "Xu hướng chi tiêu", text: "Bạn đã ghi nhận " + formatVnd(summary.total) + " qua " + summary.count + " giao dịch trong " + scopeLabel + ". Không có dữ liệu tháng trước để so sánh." });
+  } else if (comparison.status === "zero") {
+    insights.push({ type: "Xu hướng chi tiêu", text: "Không thể tính phần trăm thay đổi vì tổng tháng trước bằng 0 ₫." });
   } else {
-    insights.push({ type: "Xu hướng chi tiêu", text: `Bạn đã ghi nhận ${formatVnd(summary.total)} qua ${summary.count} giao dịch trong tháng này. Chưa có dữ liệu tháng trước phù hợp để so sánh.` });
+    const direction = comparison.difference > 0 ? "tăng" : comparison.difference < 0 ? "giảm" : "không đổi";
+    const percent = formatComparisonPercent(Math.abs(comparison.percentage)) + "%";
+    insights.push({ type: "Xu hướng chi tiêu", text: "Chi tiêu " + scopeLabel + " " + direction + " " + formatVnd(Math.abs(comparison.difference)) + " (" + percent + ") so với " + monthLabel(comparison.previousMonth) + "." });
   }
 
   const groupedItems = new Map();
@@ -931,7 +1089,7 @@ function getInsightRecords(transactions, summary, comparison) {
     insights.push({ type: "Thói quen đồ uống", text: `Bạn ghi nhận ${sweetCount} giao dịch có tên như trà sữa / nước ngọt hoặc có ghi vị ngọt, đường. Có thể cân nhắc giảm tần suất hoặc chọn ít đường; tên món không cho biết lượng đường thực tế.` });
   }
   const coffeeCount = summary.transactions.filter(transaction => /cà\s*phê|coffee|cafe|espresso|americano/iu.test(transaction.itemName)).length;
-  if (coffeeCount) insights.push({ type: "Tần suất cà phê", text: `Bạn ghi nhận ${coffeeCount} giao dịch có tên món cà phê trong tháng. Nếu đây là nhóm chi thường xuyên, hãy cân nhắc đặt ngân sách riêng cho nhóm này.` });
+  if (coffeeCount) insights.push({ type: "Tần suất cà phê", text: "Bạn ghi nhận " + coffeeCount + " giao dịch có tên món cà phê trong " + scopeLabel + ". Nếu đây là nhóm chi thường xuyên, hãy cân nhắc đặt ngân sách riêng cho nhóm này." });
 
   const fried = summary.transactions.filter(transaction => /chiên|rán|fried/iu.test(`${transaction.itemName} ${transaction.notes}`));
   if (fried.length) {
@@ -940,20 +1098,20 @@ function getInsightRecords(transactions, summary, comparison) {
   const dominantCategory = CATEGORIES.map(category => ({ category, total: summary.categories.get(category) || 0 })).sort((a, b) => b.total - a.total)[0];
   if (dominantCategory?.total) {
     const share = (dominantCategory.total / summary.total * 100).toFixed(1).replace(".", ",");
-    insights.push({ type: "Cơ cấu tháng", text: `${dominantCategory.category} là nhóm chi lớn nhất với ${formatVnd(dominantCategory.total)}, tương đương ${share}% tổng chi tiêu.` });
+    insights.push({ type: "Cơ cấu " + scopeLabel, text: dominantCategory.category + " là nhóm chi lớn nhất với " + formatVnd(dominantCategory.total) + ", tương đương " + share + "% tổng chi tiêu." });
   }
   if (insights.length < 3) {
-    insights.push({ type: "Theo dõi ngân sách", text: `Mức chi trung bình của bạn là ${formatVnd(summary.averagePerActiveDay)} mỗi ngày có giao dịch. Bạn có thể dùng mức này làm mốc tham khảo cho tháng sau.` });
+    insights.push({ type: "Theo dõi ngân sách", text: "Mức chi trung bình trong " + scopeLabel + " là " + formatVnd(summary.averagePerActiveDay) + " mỗi ngày có giao dịch. Bạn có thể dùng mức này làm mốc tham khảo." });
   }
   return insights.slice(0, 6);
 }
 
-function renderInsights(transactions, summary, comparison) {
+function renderInsights(transactions, summary, comparison, selection) {
   const container = document.querySelector("#insight-list");
   container.replaceChildren();
-  const records = getInsightRecords(transactions, summary, comparison);
+  const records = getInsightRecords(transactions, summary, comparison, selection);
   if (!records.length) {
-    container.append(makeElement("p", "insight-empty", "Chưa có giao dịch thực tế trong tháng này. Các nhận xét sẽ xuất hiện sau khi bạn lưu dữ liệu."));
+    container.append(makeElement("p", "insight-empty", "Chưa có giao dịch thực tế trong phạm vi đang chọn."));
     return;
   }
   for (const record of records) {
@@ -964,10 +1122,10 @@ function renderInsights(transactions, summary, comparison) {
   }
 }
 
-function renderHealthInsights(transactions, month) {
+function renderHealthInsights(transactions, period) {
   const container = document.querySelector("#health-insight-list");
   container.replaceChildren();
-  for (const record of buildHealthInsights(transactions, month)) {
+  for (const record of buildHealthInsights(transactions, period)) {
     const card = makeElement("article", `insight-card health-insight-card health-insight-card--${record.type}`);
     card.append(makeElement("p", "insight-card__type", record.type === "positive" ? "Positive · Có thể có lợi" : record.type === "consider" ? "Consider · Đáng cân nhắc" : "Unknown · Chưa đủ dữ liệu"));
     card.append(makeElement("h4", "health-insight-card__title", record.title));
@@ -976,23 +1134,25 @@ function renderHealthInsights(transactions, month) {
   }
 }
 
-function renderFoodPlayground(transactions, month) {
+function renderFoodPlayground(transactions, period) {
   const bubbleList = document.querySelector("#food-bubbles");
   const empty = document.querySelector("#bubble-empty");
   const tooltip = document.querySelector("#bubble-tooltip");
   const rankingRows = document.querySelector("#bubble-ranking-rows");
   const selectedMode = document.querySelector('[data-bubble-mode][aria-pressed="true"]')?.dataset.bubbleMode || "count";
-  const groups = aggregateFoodGroups(transactions, month, selectedMode);
+  const groups = aggregateFoodGroups(transactions, period, selectedMode);
   const metricName = selectedMode === "amount" ? "tổng số tiền" : "số lần mua";
-  document.querySelector("#bubble-mode-caption").textContent = `Tỷ trọng theo ${metricName} trong ${monthLabel(month).toLocaleLowerCase("vi-VN")}.`;
-  document.querySelector("#bubble-ranking-caption").textContent = `Xếp hạng theo ${metricName} trong tháng đang chọn`;
+  const scopeLabel = period === "all" ? "toàn bộ thời gian" : monthLabel(period).toLocaleLowerCase("vi-VN");
+  document.querySelector("#bubble-mode-caption").textContent = "Tỷ trọng theo " + metricName + " trong " + scopeLabel + ".";
+  document.querySelector("#bubble-ranking-caption").textContent = "Xếp hạng theo " + metricName + " trong " + scopeLabel;
+  empty.textContent = "Chưa có giao dịch trong " + scopeLabel + ". Các nhóm món sẽ xuất hiện khi có dữ liệu.";
   bubbleList.replaceChildren();
   rankingRows.replaceChildren();
   tooltip.hidden = true;
   empty.hidden = Boolean(groups.items.length);
   if (!groups.items.length) {
     const row = makeElement("tr");
-    const cell = makeElement("td", "bubble-ranking-empty", "Chưa có dữ liệu cho tháng này.");
+    const cell = makeElement("td", "bubble-ranking-empty", "Chưa có dữ liệu trong " + scopeLabel + ".");
     cell.colSpan = 5;
     row.append(cell);
     rankingRows.append(row);
@@ -1038,27 +1198,42 @@ function renderFoodPlayground(transactions, month) {
   }
 }
 
-function renderKpis(summary, comparison, selectedMonth, now) {
+function formatComparisonPercent(value) {
+  return new Intl.NumberFormat("vi-VN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+}
+
+function renderKpis(summary, comparison, selection) {
+  const scopeLabel = selection.period === "all" ? "toàn bộ thời gian" : monthLabel(selection.period);
   document.querySelector("#kpi-total").textContent = formatVnd(summary.total);
   document.querySelector("#kpi-count").textContent = formatNumber(summary.count);
   document.querySelector("#kpi-average").textContent = formatVnd(summary.averagePerActiveDay);
-  document.querySelector("#kpi-period").textContent = monthLabel(selectedMonth);
-  document.querySelector("#kpi-active-days").textContent = `${summary.activeDays} ngày có giao dịch`;
+  document.querySelector("#kpi-period").textContent = selection.label;
+  document.querySelector("#kpi-count-caption").textContent = "Trong " + scopeLabel;
+  document.querySelector("#kpi-active-days").textContent = summary.activeDays + " ngày có chi trong " + scopeLabel;
   const comparisonValue = document.querySelector("#kpi-comparison");
   const caption = document.querySelector("#kpi-comparison-caption");
   comparisonValue.removeAttribute("data-trend");
-  if (!comparison) {
-    comparisonValue.textContent = "—";
-    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    caption.textContent = selectedMonth > currentMonth ? "Tháng tương lai chưa có dữ liệu" : "Chưa có dữ liệu tháng trước hợp lệ";
+  if (selection.period === "all") {
+    comparisonValue.textContent = "Không áp dụng";
+    caption.textContent = "Chọn một tháng để so với tháng liền trước.";
     return;
   }
-  const sign = comparison.difference > 0 ? "+" : comparison.difference < 0 ? "−" : "";
+  if (!comparison || comparison.status === "missing") {
+    comparisonValue.textContent = "—";
+    caption.textContent = "Không có dữ liệu tháng trước (" + monthLabel(shiftMonth(selection.period, -1)) + ").";
+    return;
+  }
+  if (comparison.status === "zero") {
+    comparisonValue.textContent = "Không xác định";
+    caption.textContent = "Tháng trước có giao dịch nhưng tổng bằng 0 ₫; không thể chia cho 0.";
+    return;
+  }
   const trend = comparison.difference > 0 ? "up" : comparison.difference < 0 ? "down" : "flat";
-  comparisonValue.textContent = `${sign}${formatVnd(Math.abs(comparison.difference))}`;
-  comparisonValue.dataset.trend = trend;
   const percentageSign = comparison.percentage > 0 ? "+" : comparison.percentage < 0 ? "−" : "";
-  caption.textContent = `${percentageSign}${Math.abs(comparison.percentage).toFixed(1).replace(".", ",")}% · ${selectedMonth === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}` ? `cùng ${comparison.throughDay} ngày đầu kỳ` : "trọn tháng"}`;
+  comparisonValue.textContent = percentageSign + formatComparisonPercent(Math.abs(comparison.percentage)) + "%";
+  comparisonValue.dataset.trend = trend;
+  const direction = comparison.difference > 0 ? "Tăng" : comparison.difference < 0 ? "Giảm" : "Không đổi";
+  caption.textContent = direction + " " + formatVnd(Math.abs(comparison.difference)) + " · so với " + monthLabel(comparison.previousMonth);
 }
 
 function sortTransactions(transactions, sortMode) {
@@ -1113,9 +1288,15 @@ function renderTransactions(transactions, spriteUrl) {
     row.append(iconCell, main, date, category, amount, actionCell);
     container.append(row);
   }
-  document.querySelector("#transaction-status").textContent = filtered.length === transactions.length
-    ? `${formatNumber(filtered.length)} giao dịch`
-    : `Hiển thị ${formatNumber(filtered.length)} trong ${formatNumber(transactions.length)} giao dịch`;
+  const filteredTotal = filtered.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const historyScope = [
+    month === "all" ? "tất cả tháng" : monthLabel(month),
+    category === "all" ? "tất cả danh mục" : category,
+    search ? "tìm: " + document.querySelector("#transaction-search").value.trim() : "",
+  ].filter(Boolean).join(" · ");
+  document.querySelector("#transaction-status").textContent =
+    "Lịch sử độc lập với báo cáo · " + historyScope + " · " + formatVnd(filteredTotal) + " · " +
+    formatNumber(filtered.length) + " giao dịch (trong " + formatNumber(transactions.length) + ")";
 }
 
 function refreshMonthFilter(transactions) {
@@ -1127,20 +1308,26 @@ function refreshMonthFilter(transactions) {
   select.value = months.includes(previous) ? previous : "all";
 }
 
-function renderDashboard(transactions) {
-  const month = document.querySelector("#dashboard-month").value;
-  if (!month) return;
-  const now = new Date();
-  const summary = aggregateMonth(transactions, month);
-  const comparison = getMonthlyComparison(transactions, month, now);
-  renderKpis(summary, comparison, month, now);
-  document.querySelector("#spending-summary").textContent = `${monthLabel(month)} · ${formatNumber(summary.count)} giao dịch`;
-  drawDailyChart(summary, month);
+function renderDashboard(transactions, mode = "all", customMonth = "") {
+  const selection = resolveDashboardSelection(mode, customMonth);
+  const summary = aggregatePeriod(transactions, selection.period);
+  const comparison = selection.period === "all" ? null : getMonthlyComparison(transactions, selection.period);
+  renderKpis(summary, comparison, selection);
+  document.querySelector("#spending-summary").textContent = selection.label + " · " + formatNumber(summary.count) + " giao dịch · " + formatVnd(summary.total);
+  document.querySelector("#spending-kicker").textContent = selection.period === "all" ? "DIỄN BIẾN THEO THÁNG" : "DIỄN BIẾN THEO NGÀY";
+  document.querySelector("#spending-title").textContent = selection.period === "all" ? "Chi tiêu theo tháng" : "Chi tiêu trong tháng";
+  document.querySelector("#daily-chart").setAttribute("aria-label", selection.period === "all" ? "Biểu đồ chi tiêu theo tháng" : "Biểu đồ chi tiêu theo ngày");
+  document.querySelector("#daily-chart-data").textContent = selection.period === "all" ? "Xem bảng số liệu theo tháng" : "Xem bảng số liệu theo ngày";
+  document.querySelector("#daily-chart-caption").textContent = selection.period === "all" ? "Chi tiêu theo tháng trong toàn bộ thời gian" : "Chi tiêu theo ngày trong " + monthLabel(selection.period);
+  document.querySelector("#daily-empty").textContent = "Chưa có giao dịch trong " + (selection.period === "all" ? "toàn bộ thời gian" : monthLabel(selection.period)) + ".";
+  if (selection.period === "all") drawMonthlyChart(summary);
+  else drawDailyChart(summary, selection.period);
   drawCategoryChart(summary);
   drawMerchantBars(summary);
-  renderInsights(transactions, summary, comparison);
-  renderFoodPlayground(transactions, month);
-  renderHealthInsights(transactions, month);
+  renderInsights(transactions, summary, comparison, selection);
+  renderFoodPlayground(transactions, selection.period);
+  renderHealthInsights(transactions, selection.period);
+  document.querySelector("#health-insight-period").textContent = "Phạm vi dữ liệu: " + selection.label + ".";
 }
 
 function setFieldReview(review = {}) {
@@ -1181,6 +1368,16 @@ function showStorageError(message) {
 async function startExpenseTracker() {
   const app = document.querySelector("#expense-app");
   if (!app) return;
+  let dashboardMode = "all";
+  const setDashboardMode = mode => {
+    dashboardMode = mode;
+    for (const button of document.querySelectorAll("[data-dashboard-period]")) {
+      const active = button.dataset.dashboardPeriod === mode;
+      button.setAttribute("aria-pressed", String(active));
+      button.classList.toggle("is-active", active);
+    }
+    document.querySelector("#custom-month-control").hidden = mode !== "custom";
+  };
   const form = document.querySelector("#expense-form");
   const parseStatus = document.querySelector("#parse-status");
   const saveButton = document.querySelector("#save-expense");
@@ -1210,7 +1407,7 @@ async function startExpenseTracker() {
   }
   setFoodIconChoice("other");
   const database = await openDatabase();
-  let transactions = (await dbRequest(database, "readonly", store => store.getAll())).map(record => validateTransaction(record));
+  let transactions = normalizeTransactions(await dbRequest(database, "readonly", store => store.getAll()));
   let editingId = "";
   const githubSync = new GitHubExpenseSync({ validateTransaction });
   const cloudStatus = document.querySelector("#cloud-sync-status");
@@ -1377,10 +1574,10 @@ async function startExpenseTracker() {
   }
 
   const persistAndRender = async () => {
-    transactions = (await dbRequest(database, "readonly", store => store.getAll())).map(record => validateTransaction(record));
+    transactions = normalizeTransactions(await dbRequest(database, "readonly", store => store.getAll()));
     refreshMonthFilter(transactions);
     renderTransactions(transactions, spriteUrl);
-    renderDashboard(transactions);
+    renderDashboard(transactions, dashboardMode, document.querySelector("#dashboard-month").value);
   };
 
   const resetForm = () => {
@@ -1566,7 +1763,20 @@ async function startExpenseTracker() {
   for (const selector of ["#transaction-search", "#transaction-month", "#transaction-category", "#transaction-sort"]) {
     document.querySelector(selector).addEventListener(selector.includes("search") ? "input" : "change", () => renderTransactions(transactions, spriteUrl));
   }
-  document.querySelector("#dashboard-month").addEventListener("change", () => renderDashboard(transactions));
+  for (const button of document.querySelectorAll("[data-dashboard-period]")) {
+    button.addEventListener("click", () => {
+      const mode = button.dataset.dashboardPeriod;
+      const monthInput = document.querySelector("#dashboard-month");
+      const selection = resolveDashboardSelection(mode, monthInput.value);
+      if (selection.period !== "all") monthInput.value = selection.period;
+      setDashboardMode(mode);
+      renderDashboard(transactions, dashboardMode, document.querySelector("#dashboard-month").value);
+    });
+  }
+  document.querySelector("#dashboard-month").addEventListener("change", () => {
+    setDashboardMode("custom");
+    renderDashboard(transactions, dashboardMode, document.querySelector("#dashboard-month").value);
+  });
   for (const button of document.querySelectorAll("[data-bubble-mode]")) {
     button.addEventListener("click", () => {
       for (const option of document.querySelectorAll("[data-bubble-mode]")) {
@@ -1574,23 +1784,31 @@ async function startExpenseTracker() {
         option.setAttribute("aria-pressed", String(active));
         option.classList.toggle("is-active", active);
       }
-      renderFoodPlayground(transactions, document.querySelector("#dashboard-month").value);
+      const selection = resolveDashboardSelection(dashboardMode, document.querySelector("#dashboard-month").value);
+      renderFoodPlayground(transactions, selection.period);
     });
   }
   document.querySelector("#print-report").addEventListener("click", () => {
     const previousTitle = document.title;
-    const month = document.querySelector("#dashboard-month").value || localDateValue(new Date()).slice(0, 7);
-    document.title = `blogmoi-chi-phi-${month}`;
+    const selection = resolveDashboardSelection(dashboardMode, document.querySelector("#dashboard-month").value);
+    const filePeriod = selection.period === "all" ? "all-time" : selection.period;
+    document.title = "blogmoi-chi-phi-" + filePeriod;
     window.addEventListener("afterprint", () => { document.title = previousTitle; }, { once: true });
     window.print();
   });
 
   document.querySelector("#export-json").addEventListener("click", () => {
-    const payload = { version: 1, exportedAt: new Date().toISOString(), transactions };
-    downloadFile(`blogmoi-expenses-${localDateValue(new Date())}.json`, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+    const selection = resolveDashboardSelection(dashboardMode, document.querySelector("#dashboard-month").value);
+    const report = buildPeriodExport(transactions, selection);
+    const payload = { version: 1, exportedAt: new Date().toISOString(), ...report };
+    const filePeriod = selection.period === "all" ? "all-time" : selection.period;
+    downloadFile("blogmoi-expenses-" + filePeriod + ".json", JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
   });
   document.querySelector("#export-csv").addEventListener("click", () => {
-    downloadFile(`blogmoi-expenses-${localDateValue(new Date())}.csv`, serializeCsv(transactions), "text/csv;charset=utf-8");
+    const selection = resolveDashboardSelection(dashboardMode, document.querySelector("#dashboard-month").value);
+    const report = buildPeriodExport(transactions, selection);
+    const filePeriod = selection.period === "all" ? "all-time" : selection.period;
+    downloadFile("blogmoi-expenses-" + filePeriod + ".csv", serializeCsv(report.transactions, report), "text/csv;charset=utf-8");
   });
   document.querySelector("#backup-file").addEventListener("change", async event => {
     const [file] = event.target.files || [];
@@ -1618,11 +1836,12 @@ async function startExpenseTracker() {
   });
 
   const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
   document.querySelector("#dashboard-month").value = currentMonth;
+  setDashboardMode("all");
   refreshMonthFilter(transactions);
   renderTransactions(transactions, spriteUrl);
-  renderDashboard(transactions);
+  renderDashboard(transactions, dashboardMode, currentMonth);
   app.dataset.state = "ready";
 }
 

@@ -6,7 +6,7 @@ import {
   countUnsyncedExpenseChanges,
   getExpenseMigrationPreview,
 } from "../static/js/expense-cloud-sync.js";
-import { validateTransaction } from "../static/js/expense-tracker.js";
+import { aggregatePeriod, normalizeTransactions, validateTransaction } from "../static/js/expense-tracker.js";
 
 const record = (id, overrides = {}) => validateTransaction({
   id,
@@ -179,6 +179,34 @@ test("does not create a commit for an empty initial sync", async () => {
   assert.equal(result.wrote, false);
   assert.equal(api.state.file, null);
   assert.equal(api.state.commits.length, 0);
+});
+
+test("GitHub sync and repeated reload keep the three-transaction report at one count per ID", async () => {
+  const transactions = [
+    record("oct-1", { amount: 50_000, date: "2026-10-23", createdAt: "2026-10-22T17:00:00.000Z", updatedAt: "2026-10-22T17:00:00.000Z" }),
+    record("oct-2", { amount: 50_000, date: "2026-10-23", createdAt: "2026-10-23T03:00:00.000Z", updatedAt: "2026-10-23T03:00:00.000Z" }),
+    record("sep-1", { amount: 225_000, date: "2026-09-25", createdAt: "2026-09-24T17:00:00.000Z", updatedAt: "2026-09-24T17:00:00.000Z" }),
+  ];
+  const original = doc(transactions);
+  const api = makeGitHub();
+  const mac = client(api.fetchImpl);
+  await connect(mac);
+  await mac.sync({ local: original, base: doc() });
+
+  const phone = client(api.fetchImpl);
+  await connect(phone);
+  const downloaded = await phone.readDocument();
+  const afterFirstLoad = normalizeTransactions(downloaded.document.transactions);
+  assert.equal(aggregatePeriod(afterFirstLoad).total, 325_000);
+  assert.equal(aggregatePeriod(afterFirstLoad).count, 3);
+
+  const noOp = await mac.sync({ local: original, base: original });
+  assert.equal(noOp.wrote, false);
+  const reloaded = await phone.readDocument();
+  const afterReload = normalizeTransactions(reloaded.document.transactions);
+  assert.equal(aggregatePeriod(afterReload).total, 325_000);
+  assert.equal(aggregatePeriod(afterReload).count, 3);
+  assert.equal(api.state.commits.length, 1);
 });
 
 test("merges an independent concurrent update after an SHA conflict", async () => {

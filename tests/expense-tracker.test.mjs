@@ -5,6 +5,8 @@ import {
   FOOD_ICONS,
   aggregateFoodGroups,
   aggregateMonth,
+  aggregatePeriod,
+  buildPeriodExport,
   buildHealthInsights,
   formatVnd,
   getBubbleSize,
@@ -13,6 +15,8 @@ import {
   parseExpenseText,
   prepareImportRows,
   resolveFoodIcon,
+  normalizeTransactions,
+  resolveDashboardSelection,
   serializeCsv,
   validateTransaction,
 } from "../static/js/expense-tracker.js";
@@ -92,7 +96,7 @@ test("aggregates totals, transaction counts, active-day averages and merchant to
   assert.equal(formatVnd(summary.total), "100.000 ₫");
 });
 
-test("compares the same elapsed days and handles a missing or zero previous month", () => {
+test("compares full calendar months and reports missing or zero previous month", () => {
   const rows = [
     transaction({ id: "oct-1", amount: 60_000, date: "2026-10-10" }),
     transaction({ id: "oct-2", amount: 10_000, date: "2026-10-25" }),
@@ -100,13 +104,12 @@ test("compares the same elapsed days and handles a missing or zero previous mont
     transaction({ id: "sep-2", amount: 90_000, date: "2026-09-25" }),
   ];
   const comparison = getMonthlyComparison(rows, "2026-10", fixedNow);
-  assert.equal(comparison.currentTotal, 60_000);
-  assert.equal(comparison.previousTotal, 50_000);
-  assert.equal(comparison.difference, 10_000);
-  assert.equal(comparison.percentage, 20);
-  assert.equal(comparison.throughDay, 23);
-  assert.equal(getMonthlyComparison([transaction()], "2026-10", fixedNow), null);
-  assert.equal(getMonthlyComparison([transaction({ date: "2026-10-10" }), transaction({ id: "prev-zero", date: "2026-09-10", amount: 0 })], "2026-10", fixedNow), null);
+  assert.equal(comparison.currentTotal, 70_000);
+  assert.equal(comparison.previousTotal, 140_000);
+  assert.equal(comparison.difference, -70_000);
+  assert.equal(comparison.percentage, -50);
+  assert.equal(getMonthlyComparison([transaction()], "2026-10").status, "missing");
+  assert.equal(getMonthlyComparison([transaction({ date: "2026-10-10" }), transaction({ id: "prev-zero", date: "2026-09-10", amount: 0 })], "2026-10").status, "zero");
 });
 
 test("exports and restores CSV with commas, quotes, and line breaks", () => {
@@ -120,16 +123,17 @@ test("exports and restores CSV with commas, quotes, and line breaks", () => {
   assert.equal(restored[0].iconManuallySet, "true");
 });
 
-test("validates imported rows and skips duplicates by ID or transaction details", () => {
+test("validates imported rows and skips only duplicate transaction IDs", () => {
   const base = transaction();
   const result = prepareImportRows([
     base,
+    { ...base },
     { ...base, id: "different-id" },
     { ...base, id: "new-id", itemName: "Bánh mì", category: "Đồ ăn" },
     { ...base, id: "invalid", amount: -1 },
   ], [base], { now: fixedNow, makeId: () => "generated" });
-  assert.equal(result.imported.length, 1);
-  assert.equal(result.imported[0].itemName, "Bánh mì");
+  assert.equal(result.imported.length, 2);
+  assert.deepEqual(result.imported.map(row => row.id), ["different-id", "new-id"]);
   assert.deepEqual(result.skipped, { duplicate: 2, invalid: 1 });
 });
 
