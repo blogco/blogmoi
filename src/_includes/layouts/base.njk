@@ -25,7 +25,7 @@
   <script src="{{ '/js/site.js' | url }}" defer></script>
   <script src="{{ '/js/reading-navigation.js' | url }}" defer></script>
   <script src="{{ '/js/deploy-status.js' | url }}" defer></script>
-  {% if page.url == '/tu-dien-vi-kr/' %}<script src="{{ '/js/dictionary.js' | url }}" defer></script>{% endif %}
+  {% if page.url == '/tu-dien-vi-kr/' %}<script src="{{ '/js/dictionary.js' | url }}" type="module"></script>{% endif %}
   {% if page.url == '/search/' %}<script src="{{ '/js/search.js' | url }}" defer></script>{% endif %}
   {% if page.url == '/chi-phi-hang-thang/' %}<script type="module" src="{{ '/js/expense-tracker.js' | url }}"></script>{% endif %}
 </body>

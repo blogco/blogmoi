@@ -44,15 +44,29 @@ type: page
 
       <section class="dictionary-workbench__panel" aria-labelledby="dictionary-translation-title">
         <p class="dictionary-step">02 · Bản dịch do bạn nhập</p>
-        <h3 id="dictionary-translation-title">Kiểm tra rồi lưu</h3>
+        <h3 id="dictionary-translation-title">Đã kiểm — quản lý từ vựng</h3>
         <div class="dictionary-import-meta" data-import-meta>Chọn từ ở bước 01 để bắt đầu.</div>
         <div class="dictionary-bulk-paste" data-bulk-fields></div>
         <button class="dictionary-action dictionary-action--primary" type="button" data-apply-bulk disabled>Áp dụng bản dịch đã dán</button>
         <p class="dictionary-live" data-bulk-status role="status" aria-live="polite"></p>
+        <section class="dictionary-review-bulk" data-review-bulk aria-label="Thao tác hàng loạt cho danh sách bản dịch">
+          <div class="dictionary-review-bulk__summary">
+            <strong>Đã chọn: <span data-review-selected-count aria-live="polite">0 từ</span></strong>
+            <span data-review-scope>Danh sách bản dịch hiện tại · 0 từ</span>
+          </div>
+          <div class="dictionary-review-bulk__actions">
+            <button class="dictionary-action" type="button" data-review-select-visible>Chọn tất cả</button>
+            <button class="dictionary-action" type="button" data-review-clear-selection>Bỏ chọn</button>
+            <button class="dictionary-action dictionary-action--primary" type="button" data-review-mark-selected disabled>Đánh dấu đã kiểm (0)</button>
+            <button class="dictionary-action" type="button" data-review-unmark-selected disabled>Bỏ dấu đã kiểm</button>
+          </div>
+          <p class="dictionary-review-bulk__note">Checkbox chỉ chọn phạm vi thao tác; chỉ nút xác nhận mới ghi nhận bạn đã kiểm tra bản dịch. Chọn áp dụng cho các dòng đang hiển thị trong bảng hiện tại. Dùng Ctrl/⌘ + A để chọn tất cả, Escape để bỏ chọn.</p>
+          <p class="dictionary-live dictionary-review-bulk__status" data-review-bulk-status role="status" aria-live="polite"></p>
+        </section>
         <div class="dictionary-translation-table-wrap">
           <table class="dictionary-translation-table">
             <caption class="visually-hidden">Bản dịch Việt, Hàn, Anh cho các từ đã chọn</caption>
-            <thead><tr><th scope="col">Từ gốc</th><th scope="col">VI</th><th scope="col">KR</th><th scope="col">EN</th><th scope="col">Đã kiểm</th></tr></thead>
+            <thead><tr><th scope="col" class="dictionary-review-select-column"><label><input type="checkbox" data-review-select-all aria-label="Chọn tất cả từ trong danh sách bản dịch hiện tại"><span>Chọn</span></label></th><th scope="col">Từ gốc</th><th scope="col">VI</th><th scope="col">KR</th><th scope="col">EN</th><th scope="col">Đã kiểm</th></tr></thead>
             <tbody data-translation-rows></tbody>
           </table>
         </div>

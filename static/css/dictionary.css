@@ -52,6 +52,22 @@
 .dictionary-translation-table { width: 100%; min-width: 670px; border-collapse: collapse; font-size: .68rem; }
 .dictionary-translation-table th, .dictionary-translation-table td { padding: 8px; border-bottom: 1px solid var(--dict-line); text-align: left; vertical-align: top; }
 .dictionary-translation-table thead { position: sticky; z-index: 1; top: 0; background: #102b43; color: #b9d0dc; }
+.dictionary-review-bulk { display: grid; gap: 9px; margin-top: 15px; padding: 12px; border: 1px solid rgb(0 212 232 / 22%); border-radius: 11px; background: rgb(0 212 232 / 5%); }
+.dictionary-review-bulk__summary { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 5px 12px; color: var(--dict-ink); font-size: .74rem; }
+.dictionary-review-bulk__summary strong span { color: var(--dict-cyan); font-variant-numeric: tabular-nums; }
+.dictionary-review-bulk__summary > span { color: var(--dict-muted); font-size: .67rem; }
+.dictionary-review-bulk__actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.dictionary-review-bulk__actions .dictionary-action { flex: 1 1 auto; min-height: 40px; }
+.dictionary-review-bulk__note { margin: 0; color: #a9c0cf; font-size: .67rem; line-height: 1.5; }
+.dictionary-review-bulk__status { min-height: 0; margin: 0; }
+.dictionary-review-select-column { width: 68px; }
+.dictionary-review-select-column label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.dictionary-review-select-column input { width: 18px; height: 18px; accent-color: var(--dict-cyan); cursor: pointer; }
+.dictionary-review-row-select { width: 18px; height: 18px; accent-color: var(--dict-cyan); cursor: pointer; }
+.dictionary-review-bulk button:focus-visible,
+.dictionary-review-select-column input:focus-visible,
+.dictionary-review-row-select:focus-visible { outline: 3px solid var(--dict-cyan); outline-offset: 3px; }
+.dictionary-translation-table tbody td:first-child { vertical-align: middle; }
 .dictionary-translation-table tbody th { width: 180px; color: var(--dict-ink); font-weight: 700; }
 .dictionary-translation-table tbody th small { display: block; max-width: 230px; margin-top: 4px; color: #91aabb; font-size: .62rem; font-weight: 400; line-height: 1.4; }
 .dictionary-translation-table input[type="text"] { min-width: 130px; min-height: 37px; padding: 7px; font-size: .7rem; }
@@ -172,6 +188,11 @@
   .dictionary-candidate-actions .dictionary-action { flex: 1 1 auto; }
   .dictionary-candidate-list { max-height: 45vh; }
   .dictionary-bulk-paste { grid-template-columns: minmax(0, 1fr); }
+  .dictionary-review-bulk { padding: 10px; }
+  .dictionary-review-bulk__summary { align-items: flex-start; flex-direction: column; }
+  .dictionary-review-bulk__actions .dictionary-action { flex: 1 1 calc(50% - 7px); min-height: 43px; }
+  .dictionary-review-bulk__actions [data-review-mark-selected] { flex-basis: 100%; }
+  .dictionary-review-select-column { width: 58px; }
   .dictionary-intro { grid-template-columns: minmax(0, 1fr); }
   .dictionary-intro .dictionary-eyebrow, .dictionary-intro h1, .dictionary-intro__copy, .dictionary-note, .dictionary-intro .dictionary-illustration { grid-column: 1; grid-row: auto; }
   .dictionary-intro { text-align: center; }

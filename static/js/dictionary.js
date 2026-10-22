@@ -1,3 +1,5 @@
+import { makeDictionaryDispatchChunks, setVisibleReviewSelection, summarizeReviewSelection } from "./dictionary-review.mjs";
+
 (() => {
   "use strict";
 
@@ -27,6 +29,15 @@
   const bulkFields = root.querySelector("[data-bulk-fields]");
   const bulkStatus = root.querySelector("[data-bulk-status]");
   const applyBulk = root.querySelector("[data-apply-bulk]");
+  const reviewBulk = root.querySelector("[data-review-bulk]");
+  const reviewSelectAll = root.querySelector("[data-review-select-all]");
+  const reviewSelectedCount = root.querySelector("[data-review-selected-count]");
+  const reviewScope = root.querySelector("[data-review-scope]");
+  const reviewSelectVisible = root.querySelector("[data-review-select-visible]");
+  const reviewClearSelection = root.querySelector("[data-review-clear-selection]");
+  const reviewMarkSelected = root.querySelector("[data-review-mark-selected]");
+  const reviewUnmarkSelected = root.querySelector("[data-review-unmark-selected]");
+  const reviewBulkStatus = root.querySelector("[data-review-bulk-status]");
   const githubToken = root.querySelector("[data-github-token]");
   const submitTranslations = root.querySelector("[data-submit-translations]");
   const importStatus = root.querySelector("[data-import-status]");
@@ -42,7 +53,10 @@
   let articleGroups = new Map();
   let selectedArticleId = "";
   const selectedCandidateIds = new Set();
+  const selectedReviewIds = new Set();
   const translationDrafts = new Map();
+  const acceptedDispatchIds = new Set();
+  const uncertainDispatchIds = new Set();
   const languageLabels = { vi: "Tiếng Việt", ko: "Tiếng Hàn", en: "Tiếng Anh" };
 
   const normalize = (value) => String(value || "")
@@ -209,6 +223,43 @@
     return (articleGroups.get(selectedArticleId) || []).filter((candidate) => selectedCandidateIds.has(candidate.id));
   }
 
+  function currentReviewCandidates() {
+    const visibleIds = new Set([...translationRows.querySelectorAll("[data-review-id]")].map((checkbox) => checkbox.dataset.reviewId));
+    return selectedCandidates().filter((candidate) => visibleIds.has(candidate.id));
+  }
+
+  function updateReviewSelection() {
+    const visible = currentReviewCandidates();
+    const selection = summarizeReviewSelection(visible.map(({ id }) => id), selectedReviewIds);
+    const selected = visible.filter((candidate) => selectedReviewIds.has(candidate.id));
+    const { selectedCount, allSelected, someSelected } = selection;
+    reviewSelectedCount.textContent = `${selectedCount} từ`;
+    reviewScope.textContent = `Danh sách bản dịch hiện tại · ${visible.length} từ`;
+    reviewSelectAll.checked = allSelected;
+    reviewSelectAll.indeterminate = someSelected;
+    reviewSelectAll.setAttribute("aria-checked", someSelected ? "mixed" : String(allSelected));
+    reviewSelectVisible.disabled = visible.length === 0 || allSelected;
+    reviewClearSelection.disabled = selectedCount === 0;
+    reviewMarkSelected.textContent = `Đánh dấu đã kiểm (${selectedCount})`;
+    reviewMarkSelected.disabled = selectedCount === 0 || selected.every((candidate) => ensureDraft(candidate).verified);
+    reviewUnmarkSelected.disabled = !selected.some((candidate) => ensureDraft(candidate).verified);
+    for (const checkbox of translationRows.querySelectorAll("[data-review-id]")) {
+      checkbox.checked = selectedReviewIds.has(checkbox.dataset.reviewId);
+    }
+  }
+
+  function setReviewSelection(selected) {
+    setVisibleReviewSelection(currentReviewCandidates().map(({ id }) => id), selectedReviewIds, selected);
+    updateReviewSelection();
+  }
+
+  function pruneReviewSelection() {
+    const visibleIds = new Set(selectedCandidates().map((candidate) => candidate.id));
+    for (const id of selectedReviewIds) {
+      if (!visibleIds.has(id)) selectedReviewIds.delete(id);
+    }
+  }
+
   function candidateUrl(candidate) {
     return safeArticleUrl(`/blogmoi${candidate.contentId}`);
   }
@@ -320,9 +371,11 @@
 
   function renderTranslationRows() {
     const selected = selectedCandidates();
+    pruneReviewSelection();
     translationRows.replaceChildren();
     if (!selected.length) {
       importMeta.textContent = "Chọn từ ở bước 01 để bắt đầu.";
+      updateReviewSelection();
       return;
     }
     const first = selected[0];
@@ -330,11 +383,24 @@
     for (const candidate of selected) {
       const draft = ensureDraft(candidate);
       const row = document.createElement("tr");
+      const selectCell = document.createElement("td");
+      const selectReview = document.createElement("input");
+      selectReview.type = "checkbox";
+      selectReview.className = "dictionary-review-row-select";
+      selectReview.dataset.reviewId = candidate.id;
+      selectReview.checked = selectedReviewIds.has(candidate.id);
+      selectReview.setAttribute("aria-label", `Chọn ${candidate.term} cho thao tác hàng loạt`);
+      selectReview.addEventListener("change", () => {
+        if (selectReview.checked) selectedReviewIds.add(candidate.id);
+        else selectedReviewIds.delete(candidate.id);
+        updateReviewSelection();
+      });
+      selectCell.append(selectReview);
       const termCell = document.createElement("th");
       termCell.scope = "row";
       termCell.append(make("strong", "", candidate.term));
       if (candidate.sourceContext) termCell.append(make("small", "", candidate.sourceContext));
-      row.append(termCell);
+      row.append(selectCell, termCell);
       for (const language of ["vi", "ko", "en"]) {
         const cell = document.createElement("td");
         const field = document.createElement("input");
@@ -345,7 +411,14 @@
         field.readOnly = language === candidate.sourceLanguage;
         field.setAttribute("aria-label", `${languageLabels[language]} cho ${candidate.term}`);
         field.addEventListener("input", () => {
-          draft.translations[language] = field.value.trim();
+          const nextValue = field.value.trim();
+          if (draft.translations[language] !== nextValue) {
+            draft.translations[language] = nextValue;
+            draft.verified = false;
+            acceptedDispatchIds.delete(candidate.id);
+            verified.checked = false;
+            updateReviewSelection();
+          }
           updateImportButton();
         });
         cell.append(field);
@@ -355,15 +428,18 @@
       const verified = document.createElement("input");
       verified.type = "checkbox";
       verified.checked = draft.verified;
+      verified.dataset.translationVerified = candidate.id;
       verified.setAttribute("aria-label", `Xác nhận bản dịch cho ${candidate.term}`);
       verified.addEventListener("change", () => {
         draft.verified = verified.checked;
         updateImportButton();
+        updateReviewSelection();
       });
       verifiedCell.append(verified);
       row.append(verifiedCell);
       translationRows.append(row);
     }
+    updateReviewSelection();
   }
 
   function updateImportButton() {
@@ -372,7 +448,40 @@
       const draft = ensureDraft(candidate);
       return draft.verified && ["vi", "ko", "en"].every((language) => draft.translations[language].trim());
     });
-    submitTranslations.disabled = !translationsReady || !githubToken.value.trim();
+    const pending = selected.filter((candidate) => !acceptedDispatchIds.has(candidate.id));
+    const blockedByUncertainDispatch = selected.some((candidate) => uncertainDispatchIds.has(candidate.id));
+    submitTranslations.disabled = !translationsReady || !pending.length || blockedByUncertainDispatch || !githubToken.value.trim();
+  }
+
+  function setBulkReviewStatus(message) {
+    reviewBulkStatus.textContent = message;
+  }
+
+  function markSelectedReviewed() {
+    const selected = currentReviewCandidates().filter((candidate) => selectedReviewIds.has(candidate.id));
+    const targets = selected.filter((candidate) => !ensureDraft(candidate).verified);
+    if (!targets.length) return;
+    const incomplete = targets.filter((candidate) => ["vi", "ko", "en"].some((language) => !ensureDraft(candidate).translations[language].trim()));
+    if (incomplete.length) {
+      setBulkReviewStatus(`${incomplete.length}/${targets.length} mục chưa có đủ VI, KR và EN. Hoàn tất bản dịch trước khi đánh dấu đã kiểm.`);
+      return;
+    }
+    const confirmed = window.confirm(`Bạn xác nhận đã kiểm tra chất lượng bản dịch cho ${targets.length} từ được chọn?`);
+    if (!confirmed) return;
+    for (const candidate of targets) ensureDraft(candidate).verified = true;
+    renderTranslationRows();
+    updateImportButton();
+    setBulkReviewStatus(`Đã đánh dấu ${targets.length} từ trong bản nháp hiện tại. Hãy lưu qua nút “Lưu và đồng bộ lên GitHub” để gửi vào workflow.`);
+  }
+
+  function unmarkSelectedReviewed() {
+    const selected = currentReviewCandidates().filter((candidate) => selectedReviewIds.has(candidate.id));
+    const targets = selected.filter((candidate) => ensureDraft(candidate).verified);
+    if (!targets.length) return;
+    for (const candidate of targets) ensureDraft(candidate).verified = false;
+    renderTranslationRows();
+    updateImportButton();
+    setBulkReviewStatus(`Đã bỏ dấu đã kiểm cho ${targets.length} từ trong bản nháp hiện tại.`);
   }
 
   function applyBulkTranslations() {
@@ -392,7 +501,16 @@
     }
     for (let index = 0; index < selected.length; index += 1) {
       const draft = ensureDraft(selected[index]);
-      for (const { language, lines } of parsed) draft.translations[language] = lines[index].trim();
+      let changed = false;
+      for (const { language, lines } of parsed) {
+        const nextValue = lines[index].trim();
+        if (draft.translations[language] !== nextValue) changed = true;
+        draft.translations[language] = nextValue;
+      }
+      if (changed) {
+        draft.verified = false;
+        acceptedDispatchIds.delete(selected[index].id);
+      }
     }
     renderTranslationRows();
     updateImportButton();
@@ -402,7 +520,7 @@
   async function submitManualTranslations() {
     const selected = selectedCandidates();
     if (!selected.length) return;
-    const items = selected.map((candidate) => {
+    const allItems = selected.map((candidate) => {
       const draft = ensureDraft(candidate);
       return {
         id: candidate.id,
@@ -412,21 +530,25 @@
         definition: ""
       };
     });
-    if (items.some((item) => !item.verified || ["vi", "ko", "en"].some((language) => !item.translations[language].trim()))) {
+    if (allItems.some((item) => !item.verified || ["vi", "ko", "en"].some((language) => !item.translations[language].trim()))) {
       importStatus.textContent = "Hoàn tất đủ ba ngôn ngữ và xác nhận từng mục trước khi lưu.";
       return;
     }
-    const first = selected[0];
-    const payload = {
-      contentId: first.contentId,
-      articleId: first.articleId,
-      sourceLanguage: first.sourceLanguage,
-      articleHash: first.articleHash,
-      items
-    };
-    const serialized = JSON.stringify(payload);
-    if (new TextEncoder().encode(serialized).length > 60_000) {
-      importStatus.textContent = "Nhóm này quá lớn cho một lần gửi. Hãy chọn ít mục hơn rồi thử lại.";
+    const items = allItems.filter((item) => !acceptedDispatchIds.has(item.id));
+    if (!items.length) {
+      importStatus.textContent = "GitHub đã nhận các mục đã chọn trong phiên này. Kiểm tra workflow để xác nhận quá trình lưu.";
+      return;
+    }
+    let chunks;
+    try {
+      chunks = makeDictionaryDispatchChunks({
+        contentId: selected[0].contentId,
+        articleId: selected[0].articleId,
+        sourceLanguage: selected[0].sourceLanguage,
+        articleHash: selected[0].articleHash
+      }, items);
+    } catch {
+      importStatus.textContent = "Một mục từ vượt giới hạn dung lượng gửi. Hãy rút gọn nội dung rồi thử lại.";
       return;
     }
     const token = githubToken.value.trim();
@@ -435,36 +557,58 @@
       return;
     }
     submitTranslations.disabled = true;
-    importStatus.textContent = "Đang gửi bản dịch tới GitHub Actions…";
-    workflowLink.hidden = true;
+    importStatus.textContent = `Đang gửi ${items.length} mục trong ${chunks.length} nhóm tới GitHub Actions…`;
+    workflowLink.hidden = acceptedDispatchIds.size === 0;
     githubToken.value = "";
-    try {
-      const response = await fetch(root.dataset.dispatchUrl, {
-        method: "POST",
-        headers: {
-          accept: "application/vnd.github+json",
-          authorization: `Bearer ${token}`,
-          "content-type": "application/json",
-          "x-github-api-version": "2022-11-28"
-        },
-        body: JSON.stringify({ ref: "main", inputs: { dictionary_payload: serialized } }),
-        credentials: "omit"
-      });
-      if (!response.ok) {
-        importStatus.textContent = response.status === 401
-          ? "GitHub từ chối token. Kiểm tra token còn hạn và được chọn đúng repository."
-          : response.status === 403
-            ? "Token cần quyền Actions: Read and write; tổ chức có thể yêu cầu duyệt token."
-            : "GitHub chưa nhận được yêu cầu. Kiểm tra quyền token hoặc thử lại sau.";
+    let acceptedThisAttempt = 0;
+    for (let index = 0; index < chunks.length; index += 1) {
+      const chunk = chunks[index];
+      try {
+        const response = await fetch(root.dataset.dispatchUrl, {
+          method: "POST",
+          headers: {
+            accept: "application/vnd.github+json",
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+            "x-github-api-version": "2022-11-28"
+          },
+          body: JSON.stringify({ ref: "main", inputs: { dictionary_payload: chunk.serialized } }),
+          credentials: "omit"
+        });
+        if (!response.ok) {
+          const uncertain = response.status >= 500;
+          if (uncertain) {
+            for (const id of chunk.ids) uncertainDispatchIds.add(id);
+          }
+          const reason = response.status === 401
+            ? "GitHub từ chối token. Kiểm tra token còn hạn và được chọn đúng repository."
+            : response.status === 403
+              ? "Token cần quyền Actions: Read and write; tổ chức có thể yêu cầu duyệt token."
+              : uncertain
+                ? `GitHub trả HTTP ${response.status} cho nhóm ${index + 1}/${chunks.length}; trạng thái xử lý chưa xác định.`
+                : `GitHub từ chối nhóm ${index + 1}/${chunks.length} (HTTP ${response.status}).`;
+          importStatus.textContent = acceptedThisAttempt
+            ? `GitHub đã nhận ${acceptedThisAttempt}/${chunks.length} nhóm trong lần gửi này. ${reason} Dữ liệu nháp vẫn còn trên trang.`
+            : `${reason} Dữ liệu nháp vẫn còn trên trang.`;
+          if (acceptedThisAttempt) workflowLink.hidden = false;
+          updateImportButton();
+          return;
+        }
+        for (const id of chunk.ids) acceptedDispatchIds.add(id);
+        acceptedThisAttempt += 1;
+        workflowLink.hidden = false;
+        importStatus.textContent = `GitHub đã nhận ${acceptedThisAttempt}/${chunks.length} nhóm…`;
+      } catch {
+        for (const id of chunk.ids) uncertainDispatchIds.add(id);
+        const prefix = acceptedThisAttempt ? `GitHub đã nhận ${acceptedThisAttempt}/${chunks.length} nhóm. ` : "";
+        importStatus.textContent = `${prefix}Kết nối bị gián đoạn khi gửi nhóm ${index + 1}/${chunks.length}; trạng thái nhóm này chưa xác định. Mở Actions để kiểm tra trước khi gửi lại. Dữ liệu nháp vẫn còn trên trang.`;
+        if (acceptedThisAttempt) workflowLink.hidden = false;
         updateImportButton();
         return;
       }
-      importStatus.textContent = "Đã gửi yêu cầu lưu. Workflow sẽ xác minh bản dịch, ghi JSON, build và deploy website.";
-      workflowLink.hidden = false;
-    } catch {
-      importStatus.textContent = "Không kết nối được GitHub. Dữ liệu còn trên trang; kiểm tra mạng rồi gửi lại.";
-      updateImportButton();
     }
+    importStatus.textContent = `GitHub đã nhận ${acceptedThisAttempt} nhóm chứa ${items.length} từ. Workflow sẽ xác minh dữ liệu; hãy kiểm tra trạng thái trước khi xem là đã lưu.`;
+    updateImportButton();
   }
 
   function initializeWorkbench(data) {
@@ -499,6 +643,8 @@
   });
   articleSelect.addEventListener("change", () => {
     selectedArticleId = articleSelect.value;
+    selectedReviewIds.clear();
+    setBulkReviewStatus("");
     for (const candidate of candidates) selectedCandidateIds.delete(candidate.id);
     updateCandidateMeta();
     renderCandidateList();
@@ -507,6 +653,26 @@
     updateImportButton();
   });
   applyBulk.addEventListener("click", applyBulkTranslations);
+  reviewSelectAll.addEventListener("change", () => setReviewSelection(reviewSelectAll.checked));
+  reviewSelectVisible.addEventListener("click", () => setReviewSelection(true));
+  reviewClearSelection.addEventListener("click", () => setReviewSelection(false));
+  reviewMarkSelected.addEventListener("click", markSelectedReviewed);
+  reviewUnmarkSelected.addEventListener("click", unmarkSelectedReviewed);
+  reviewBulk.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      selectedReviewIds.clear();
+      updateReviewSelection();
+      setBulkReviewStatus("Đã bỏ chọn các từ trong danh sách hiện tại.");
+      return;
+    }
+    const isSelectAll = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a";
+    const target = event.target;
+    const selectionControl = target.matches("[data-review-id], [data-review-select-all], [data-review-bulk] button");
+    if (isSelectAll && selectionControl) {
+      event.preventDefault();
+      setReviewSelection(true);
+    }
+  });
   githubToken.addEventListener("input", updateImportButton);
   submitTranslations.addEventListener("click", submitManualTranslations);
 
