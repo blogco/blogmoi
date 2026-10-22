@@ -1558,8 +1558,9 @@ async function startExpenseTracker() {
         conflict_retry: "Xung đột phiên bản",
         payload_invalid: "GitHub từ chối nội dung",
       };
-      if (error.code === "network" || navigator.onLine === false) updateCloudStatus("offline", "Mất mạng · chờ kết nối");
-      else updateCloudStatus("error", states[error.code] || "Đồng bộ thất bại");
+      const requestFailed = error.code === "network" || error.code === "timeout";
+      if (requestFailed && navigator.onLine === false) updateCloudStatus("offline", "Mất mạng · chờ kết nối");
+      else updateCloudStatus("error", states[error.code] || (requestFailed ? "GitHub API không phản hồi" : "Đồng bộ thất bại"));
       cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đồng bộ. Dữ liệu cục bộ vẫn được giữ.";
       if (!githubSync.connected) setCloudConnected(false);
     } finally {
@@ -1637,7 +1638,8 @@ async function startExpenseTracker() {
       githubSync.disconnect();
       setCloudConnected(false);
       const states = { unauthorized: "Token không hợp lệ", forbidden: "Thiếu quyền", rate_limited: "GitHub giới hạn API", not_found: "Không truy cập được repository/tệp" };
-      updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Mất mạng · dữ liệu được giữ" : states[error.code] || "Kết nối thất bại");
+      const requestFailed = error.code === "network" || error.code === "timeout";
+      updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", states[error.code] || (requestFailed ? "GitHub API không phản hồi" : "Kết nối thất bại"));
       cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể kết nối GitHub. Dữ liệu cục bộ vẫn được giữ.";
     } finally {
       connectButton.disabled = false;
@@ -1659,7 +1661,8 @@ async function startExpenseTracker() {
         const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
         showMigrationPreview(snapshot.document, remote.document);
       } catch (error) {
-        updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Mất mạng · dữ liệu được giữ" : "Không thể đọc repository/tệp");
+        const requestFailed = error.code === "network" || error.code === "timeout";
+        updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", requestFailed ? "GitHub API không phản hồi" : "Không thể đọc repository/tệp");
         cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đọc dữ liệu trên GitHub. Dữ liệu cục bộ vẫn được giữ.";
       }
     }

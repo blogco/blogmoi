@@ -96,7 +96,11 @@ test("accepts classic and fine-grained PATs without prefix checks and trims whit
 
 test("reports repository 404 separately while treating the data file 404 as an empty file", async () => {
   const missingRepository = client(makeGitHub({ repositoryStatus: 404 }).fetchImpl);
-  await assert.rejects(missingRepository.connect("test-token"), error => error.code === "not_found" && error.status === 404);
+  await assert.rejects(missingRepository.connect("test-token"), error => error.code === "not_found"
+    && error.status === 404
+    && error.diagnostics.phase === "repository"
+    && error.diagnostics.endpoint === "https://api.github.com/repos/blogco/blogmoi"
+    && error.message.includes("repository blogco/blogmoi"));
 
   const api = makeGitHub();
   const sync = client(api.fetchImpl);
@@ -145,7 +149,11 @@ test("reports invalid write payloads as 422 and keeps local data", async () => {
   const sync = client(api.fetchImpl);
   await connect(sync);
   const local = doc([record("payload-denied")]);
-  await assert.rejects(sync.sync({ local, base: doc() }), error => error.code === "payload_invalid" && error.status === 422);
+  await assert.rejects(sync.sync({ local, base: doc() }), error => error.code === "payload_invalid"
+    && error.status === 422
+    && error.diagnostics.phase === "write"
+    && error.diagnostics.endpoint === `https://api.github.com${contentPath}?ref=main`
+    && error.diagnostics.error === "Invalid request");
   assert.equal(writes, 1);
   assert.equal(api.state.commits.length, 0);
   assert.equal(local.transactions.length, 1);
@@ -175,6 +183,81 @@ test("development diagnostics log API metadata without exposing PATs", async () 
   assert.match(output, /remaining/u);
   assert.doesNotMatch(output, new RegExp(token));
   assert.doesNotMatch(output, /Authorization/u);
+});
+
+test("uses the official GitHub REST URLs, CORS mode, and supported request headers", async () => {
+  const api = makeGitHub();
+  const calls = [];
+  const sync = client(async (url, options) => {
+    calls.push({ url: String(url), options });
+    return api.fetchImpl(url, options);
+  });
+  await connect(sync);
+  await sync.sync({ local: doc([record("wire-contract")]), base: doc() });
+
+  assert.deepEqual(calls.map(({ url, options }) => [new URL(url).pathname, options.method || "GET"]), [
+    ["/user", "GET"],
+    ["/repos/blogco/blogmoi", "GET"],
+    [contentPath, "GET"],
+    [contentPath, "GET"],
+    [contentPath, "PUT"],
+  ]);
+  for (const { url, options } of calls) {
+    assert.ok(url.startsWith("https://api.github.com/"));
+    assert.equal(options.mode, "cors");
+    assert.equal(options.credentials, "omit");
+    assert.equal(options.referrerPolicy, "no-referrer");
+    assert.equal(options.headers.Accept, "application/vnd.github+json");
+    assert.equal(options.headers["X-GitHub-Api-Version"], "2022-11-28");
+    assert.deepEqual(Object.keys(options.headers).sort(), ["Accept", "Authorization", "X-GitHub-Api-Version", ...(options.method === "PUT" ? ["Content-Type"] : [])].sort());
+    assert.equal(options.headers.Authorization, "Bearer test-token");
+    assert.equal(Object.hasOwn(options, "redirect"), false);
+  }
+  assert.equal(new URL(calls[2].url).searchParams.get("ref"), "main");
+  assert.equal(new URL(calls[4].url).searchParams.get("ref"), "main");
+});
+
+test("surfaces sanitized fetch diagnostics without logging PAT or Authorization header", async () => {
+  const token = "unit-test-private-secret-value";
+  const entries = [];
+  const originalDebug = console.debug;
+  console.debug = (...args) => entries.push(args);
+  try {
+    const sync = new GitHubExpenseSync({
+      development: true,
+      fetchImpl: async () => { throw new TypeError(`Failed to fetch; Authorization: Bearer ${token}`); },
+    });
+    await assert.rejects(sync.connect(token), error => error.code === "network"
+      && error.diagnostics.phase === "authentication"
+      && error.diagnostics.endpoint === "https://api.github.com/user"
+      && error.diagnostics.status === null
+      && error.diagnostics.error.includes("TypeError: Failed to fetch")
+      && !error.message.includes(token)
+      && !error.diagnostics.error.includes("Authorization"));
+  } finally {
+    console.debug = originalDebug;
+  }
+  const output = JSON.stringify(entries);
+  assert.match(output, /authentication/u);
+  assert.match(output, /https:\/\/api\.github\.com\/user/u);
+  assert.match(output, /TypeError/u);
+  assert.doesNotMatch(output, new RegExp(token));
+  assert.doesNotMatch(output, /Authorization/u);
+});
+
+test("distinguishes a request timeout from a network rejection", async () => {
+  const sync = new GitHubExpenseSync({
+    timeoutMs: 1,
+    validateTransaction,
+    waitImpl: async () => {},
+    fetchImpl: (_url, options) => new Promise((resolve, reject) => {
+      options.signal.addEventListener("abort", () => reject(new DOMException("The operation was aborted.", "AbortError")), { once: true });
+    }),
+  });
+  await assert.rejects(sync.connect("test-token"), error => error.code === "timeout"
+    && error.diagnostics.phase === "authentication"
+    && error.diagnostics.status === null
+    && error.diagnostics.error.includes("AbortError"));
 });
 
 test("writes only changed data to main with the dedicated commit message", async () => {
@@ -241,6 +324,27 @@ test("re-reads after a lost PUT response and avoids a duplicate commit", async (
   assert.equal(result.wrote, true);
   assert.deepEqual(api.state.file.document, local);
   assert.equal(api.state.commits.length, 1);
+});
+
+test("reconciles an unconfirmed PUT once but does not retry a CORS-like write failure", async () => {
+  const api = makeGitHub();
+  let putAttempts = 0;
+  const fetchImpl = async (url, options) => {
+    if (options.method === "PUT") {
+      putAttempts += 1;
+      throw new TypeError("Failed to fetch");
+    }
+    return api.fetchImpl(url, options);
+  };
+  const sync = client(fetchImpl);
+  await connect(sync);
+  const local = doc([record("write-not-confirmed")]);
+  const before = structuredClone(local);
+  await assert.rejects(sync.sync({ local, base: doc() }), error => error.code === "network" && error.diagnostics.phase === "write");
+  assert.deepEqual(local, before);
+  assert.equal(putAttempts, 1);
+  assert.equal(api.state.file, null);
+  assert.equal(api.state.commits.length, 0);
 });
 
 test("does not create a commit for an empty initial sync", async () => {
