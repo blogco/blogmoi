@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "transactions": [
+    {
+      "id": "0328d9d0-1196-4a5e-b9c6-3db9a989c3cf",
+      "merchant": "Starbucks",
+      "itemName": "Matcha Latte",
+      "amount": 50000,
+      "date": "2026-10-23",
+      "taste": "không đường",
+      "category": "Đồ uống",
+      "iconId": "matcha",
+      "iconManuallySet": false,
+      "notes": "Nguyen Van Troi",
+      "createdAt": "2026-10-22T18:44:58.654Z",
+      "updatedAt": "2026-10-22T18:44:58.654Z"
+    },
+    {
+      "id": "4b38c1ef-ad95-45b2-ba91-ccfa46afb27e",
+      "merchant": "Highlands",
+      "itemName": "Matcha Latte",
+      "amount": 50000,
+      "date": "2026-10-23",
+      "taste": "không đường",
+      "category": "Đồ uống",
+      "iconId": "matcha",
+      "iconManuallySet": false,
+      "notes": "",
+      "createdAt": "2026-10-22T18:55:54.956Z",
+      "updatedAt": "2026-10-22T18:55:54.956Z"
+    },
+    {
+      "id": "f2e9098d-2a70-457c-bf65-2a95648f93eb",
+      "merchant": "Starbucks",
+      "itemName": "Matcha Latte",
+      "amount": 225000,
+      "date": "2026-09-25",
+      "taste": "không đường",
+      "category": "Đồ uống",
+      "iconId": "matcha",
+      "iconManuallySet": false,
+      "notes": "",
+      "createdAt": "2026-10-22T18:56:43.244Z",
+      "updatedAt": "2026-10-22T18:56:43.244Z"
+    }
+  ],
+  "tombstones": []
+}
