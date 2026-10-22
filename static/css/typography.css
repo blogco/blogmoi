@@ -1,0 +1,120 @@
+@layer typography {
+  :root {
+    --font-sans: "Be Vietnam Pro", "Noto Sans KR", "Apple SD Gothic Neo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: var(--font-sans);
+    --type-body: clamp(1.0625rem, 1.02rem + .16vw, 1.125rem);
+    --type-article: clamp(1.1875rem, 1.12rem + .2vw, 1.25rem);
+    --type-h2: clamp(1.875rem, 1.7rem + .55vw, 2.125rem);
+    --type-article-h1: clamp(42px, 3.4vw, 48px);
+    --type-article-h2: clamp(30px, 2.2vw, 34px);
+    --type-article-h3: clamp(23px, 1.8vw, 26px);
+    --weight-medium: 500;
+    --weight-bold: 700;
+    --weight-heavy: 800;
+    --leading-body: 1.75;
+    --leading-heading: 1.22;
+  }
+
+  html { font-synthesis: style; }
+  body { font-family: var(--font-sans); font-size: var(--type-body); font-weight: var(--weight-medium); line-height: var(--leading-body); }
+  h1, h2, h3, h4 { font-family: var(--font-display); font-synthesis: style; }
+  h1 { font-weight: var(--weight-heavy); line-height: var(--leading-heading); letter-spacing: -.025em; }
+  h2 { font-weight: var(--weight-heavy); line-height: 1.25; letter-spacing: -.02em; }
+  h3, h4 { font-weight: var(--weight-bold); line-height: 1.3; letter-spacing: -.012em; }
+
+  .brand-mark { font-family: var(--font-sans); font-weight: var(--weight-heavy); letter-spacing: -.04em; }
+  .brand-name { font-family: var(--font-sans); font-size: 1.28rem; font-weight: var(--weight-heavy); letter-spacing: -.025em; }
+  .primary-nav a { color: var(--ink); font-family: var(--font-sans); font-size: 1rem; font-weight: var(--weight-bold); }
+  .footer-links a { color: var(--ink); font-size: .9375rem; font-weight: var(--weight-bold); }
+  .eyebrow { font-size: .875rem; font-weight: var(--weight-bold); letter-spacing: .035em; text-transform: none; }
+
+  .hero h1, .page-hero h1 { font-family: var(--font-display); font-size: clamp(3rem, 5.7vw, 5.25rem); font-weight: var(--weight-heavy); line-height: 1.14; letter-spacing: -.03em; }
+  .hero-lede, .page-hero > p:last-of-type { font-size: clamp(1.0625rem, 1rem + .25vw, 1.125rem); font-weight: var(--weight-medium); line-height: 1.75; }
+  .hero-art__note span { font-size: .875rem; font-weight: var(--weight-bold); letter-spacing: .04em; }
+  .hero-art__note strong { font-family: var(--font-display); font-size: 1.5rem; font-weight: var(--weight-bold); line-height: 1.25; }
+  .hero-art__caption { font-size: .8125rem; font-weight: var(--weight-bold); letter-spacing: .045em; }
+  .hero-strip { flex-wrap: wrap; font-size: .8125rem; font-weight: var(--weight-bold); letter-spacing: .035em; text-transform: none; }
+
+  .section-heading h2, .discovery h2 { font-family: var(--font-display); font-size: var(--type-h2); font-weight: var(--weight-heavy); line-height: 1.22; letter-spacing: -.025em; }
+  .article-card h3 { font-family: var(--font-display); font-size: clamp(1.25rem, 1.1rem + .4vw, 1.5rem); font-weight: var(--weight-bold); line-height: 1.3; letter-spacing: -.015em; }
+  .article-card__body > p:not(.eyebrow) { color: var(--muted); font-size: 1rem; font-weight: var(--weight-medium); line-height: 1.65; }
+  .article-card__body .eyebrow { font-size: .8125rem; }
+  .card-meta { font-size: .875rem; font-weight: var(--weight-medium); }
+  .empty-editorial h2, .empty-editorial h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: var(--weight-bold); line-height: 1.3; }
+  .topic-links a, .topic-links p { font-size: 1rem; font-weight: var(--weight-bold); line-height: 1.5; }
+  .footer-main p { font-size: .9375rem; font-weight: var(--weight-medium); line-height: 1.7; }
+  .site-footer small { font-size: .875rem; font-weight: var(--weight-medium); }
+  .page-copy h2 { font-family: var(--font-display); font-size: var(--type-h2); font-weight: var(--weight-bold); line-height: 1.25; }
+  .taxonomy-index, .taxonomy-card > span:last-child { font-size: .875rem; font-weight: var(--weight-medium); }
+  .taxonomy-card strong { font-family: var(--font-display); font-size: 1.25rem; font-weight: var(--weight-bold); line-height: 1.3; }
+  .tag-cloud, .topic-pills { font-size: .9375rem; font-weight: var(--weight-medium); }
+  .search-box input { font-size: 1rem; font-weight: var(--weight-medium); }
+  .search-shortcut, .search-status { font-size: .875rem; font-weight: var(--weight-medium); }
+  .button, .text-link { font-family: var(--font-sans); font-weight: var(--weight-bold); }
+
+  .article-breadcrumbs { font-size: .9375rem; font-weight: var(--weight-medium); }
+  .article-kicker { font-size: .875rem; font-weight: var(--weight-bold); letter-spacing: .035em; }
+  .article-hero h1 { font-family: var(--font-display); font-size: var(--type-article-h1); font-weight: var(--weight-heavy); line-height: 1.2; letter-spacing: -.02em; }
+  .article-deck { font-size: clamp(1.125rem, 1.08rem + .15vw, 1.25rem); font-weight: var(--weight-medium); line-height: 1.7; }
+  .article-byline { font-size: .9375rem; font-weight: var(--weight-medium); line-height: 1.5; }
+  .article-hero__media figcaption { font-size: .875rem; font-weight: var(--weight-medium); }
+
+  .keypoints .eyebrow { font-size: .875rem; font-weight: var(--weight-bold); }
+  .keypoints h2 { font-size: 1.1875rem; font-weight: var(--weight-heavy); line-height: 1.3; }
+  .keypoints li { font-size: 1.125rem; font-weight: var(--weight-medium); line-height: 1.7; }
+  .component-empty { font-size: 1rem; font-weight: var(--weight-medium); line-height: 1.65; }
+  .article-sidebar__section > h2 { font-size: 1rem; font-weight: var(--weight-bold); }
+  .article-sidebar .toc { font-size: .9375rem; font-weight: var(--weight-medium); line-height: 1.6; }
+  .article-sidebar .toc .eyebrow { font-size: .875rem; }
+  .topic-pills a { font-size: .875rem; font-weight: var(--weight-bold); }
+
+  .article-content__body { font-family: var(--font-sans); font-size: var(--type-article); font-weight: var(--weight-medium); line-height: 1.75; }
+  .article-content__body h2 { font-family: var(--font-display); font-size: var(--type-article-h2); font-weight: var(--weight-heavy); line-height: 1.25; letter-spacing: -.02em; }
+  .article-content__body h3 { font-family: var(--font-display); font-size: var(--type-article-h3); font-weight: var(--weight-bold); line-height: 1.3; letter-spacing: -.015em; }
+  .article-content__body blockquote { font-family: var(--font-sans); font-size: 1.125em; font-weight: var(--weight-medium); line-height: 1.7; }
+  .article-content__body table { font-family: var(--font-sans); font-size: 1rem; font-weight: var(--weight-medium); line-height: 1.6; }
+  .article-content__body th { font-weight: var(--weight-bold); }
+  .article-content__body figcaption { font-size: .875rem; font-weight: var(--weight-medium); }
+  .article-tags a { font-size: .875rem; font-weight: var(--weight-medium); }
+
+  .article-panel__heading h2 { font-family: var(--font-display); font-size: 1.75rem; font-weight: var(--weight-heavy); line-height: 1.25; letter-spacing: -.02em; }
+  .article-panel__number { font-size: .875rem; font-weight: var(--weight-bold); }
+  .source-details dt { font-size: .9375rem; font-weight: var(--weight-medium); }
+  .source-details dd { font-size: 1rem; font-weight: var(--weight-medium); line-height: 1.65; }
+  .source-note { font-size: .9375rem; font-weight: var(--weight-medium); line-height: 1.7; }
+  .internal-links-list a > span { font-size: .875rem; font-weight: var(--weight-bold); letter-spacing: .035em; }
+  .internal-links-list strong { font-family: var(--font-display); font-size: 1.25rem; font-weight: var(--weight-bold); line-height: 1.35; }
+  .internal-links-list time { font-size: .875rem; font-weight: var(--weight-medium); }
+  .faq-item summary { font-size: 1.125rem; font-weight: var(--weight-bold); line-height: 1.55; }
+  .faq-item__answer { font-size: 1.0625rem; font-weight: var(--weight-medium); line-height: 1.75; }
+
+  @media (max-width: 620px) {
+    body { font-size: 1.0625rem; }
+    .brand-name { font-size: 1.1875rem; }
+    .primary-nav a { font-size: 1rem; }
+    .hero h1 { font-size: clamp(2.75rem, 12vw, 3.75rem); }
+    .hero-strip { gap: 9px; font-size: .8125rem; }
+    .section-heading h2, .discovery h2 { font-size: clamp(1.875rem, 8vw, 2.125rem); }
+    .section-heading .text-link { max-width: 145px; font-size: .9375rem; }
+    .footer-links a { font-size: .9375rem; }
+    .page-hero h1 { font-size: clamp(2.625rem, 10vw, 3.5rem); }
+    .search-shortcut { display: none; }
+  }
+
+  @media (max-width: 767px) {
+    :root {
+      --type-article-h2: clamp(25px, 4vw, 28px);
+      --type-article-h3: clamp(21px, 3.2vw, 23px);
+    }
+    .article-hero h1 { font-size: clamp(30px, 8vw, 34px); line-height: 1.22; }
+    .article-deck { font-size: 1.0625rem; }
+    .article-byline { font-size: .875rem; }
+    .keypoints li { font-size: 1.0625rem; }
+    .article-content__body { font-size: clamp(1.0625rem, 4.5vw, 1.125rem); line-height: 1.75; }
+    .article-content__body table { font-size: .9375rem; }
+    .article-panel__heading h2 { font-size: 1.5625rem; }
+    .internal-links-list strong { font-size: 1.1875rem; }
+    .faq-item summary { font-size: 1.0625rem; }
+    .faq-item__answer { font-size: 1rem; }
+  }
+}

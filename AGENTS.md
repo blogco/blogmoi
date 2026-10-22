@@ -17,6 +17,7 @@
 
 ## Design and accessibility
 - Use semantic design tokens and components in `static/css/site.css`.
+- Centralized type scales live in `static/css/typography.css`; self-host only the Latin and Vietnamese Be Vietnam Pro WOFF2 subsets in `static/fonts/` and keep their OFL license. Avoid remote font requests, unsupported faux weights, and font declarations below weight 400.
 - Keep typography readable, support Vietnamese and Korean system font fallbacks, and use accessible contrast and visible focus states.
 - Keep brand, navigation, and actions in distinct header regions. Collapse the navigation before it clips; prevent horizontal overflow and content obstruction.
 - Give icon-only controls accessible names. Support keyboard navigation, reduced motion, and light/dark preferences.

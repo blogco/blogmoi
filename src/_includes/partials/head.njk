@@ -1,6 +1,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
+<link rel="preload" href="{{ '/fonts/be-vietnam-pro-500-vietnamese.woff2' | url }}" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="{{ '/fonts/be-vietnam-pro-500-latin.woff2' | url }}" as="font" type="font/woff2" crossorigin="anonymous">
 <meta name="description" content="{{ description or site.description }}">
 <link rel="canonical" href="{{ canonicalUrl }}">
 <meta property="og:type" content="{{ ogType }}">
@@ -14,5 +16,7 @@
 <link rel="alternate" type="application/rss+xml" title="{{ site.title }} RSS" href="{{ '/index.xml' | url }}">
 <link rel="sitemap" type="application/xml" href="{{ '/sitemap.xml' | url }}">
 <link rel="icon" href="{{ '/images/blogmoi-mark.svg' | url }}" type="image/svg+xml">
+<link rel="stylesheet" href="{{ '/css/fonts.css' | url }}">
 <link rel="stylesheet" href="{{ '/css/site.css' | url }}">
+<link rel="stylesheet" href="{{ '/css/typography.css' | url }}">
 {% if structuredData %}<script type="application/ld+json">{{ structuredData | json | safe }}</script>{% endif %}
