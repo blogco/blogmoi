@@ -1,6 +1,15 @@
+import {
+  GitHubExpenseSync,
+  countUnsyncedExpenseChanges,
+  expenseStateFingerprint,
+  getExpenseMigrationPreview,
+} from "./expense-cloud-sync.js";
+
 const DATABASE_NAME = "blogmoi-expenses";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 const STORE_NAME = "transactions";
+const SYNC_STORE_NAME = "sync-meta";
+const CLOUD_SCHEMA_VERSION = 1;
 const CATEGORIES = ["Đồ uống", "Đồ ăn", "Khác"];
 const CATEGORY_COLORS = ["#087f8c", "#2463eb", "#ef8c79"];
 export const FOOD_ICONS = Object.freeze({
@@ -460,6 +469,7 @@ function openDatabase() {
     request.onupgradeneeded = () => {
       const database = request.result;
       if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME, { keyPath: "id" });
+      if (!database.objectStoreNames.contains(SYNC_STORE_NAME)) database.createObjectStore(SYNC_STORE_NAME, { keyPath: "key" });
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error || new Error("Không thể mở kho dữ liệu trên thiết bị."));
@@ -467,16 +477,139 @@ function openDatabase() {
   });
 }
 
-function dbRequest(database, mode, action) {
+function dbRequest(database, mode, action, storeName = STORE_NAME) {
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(STORE_NAME, mode);
-    const request = action(transaction.objectStore(STORE_NAME));
+    const transaction = database.transaction(storeName, mode);
+    const request = action(transaction.objectStore(storeName));
     let result;
     request.onsuccess = () => { result = request.result; };
     request.onerror = () => reject(request.error || new Error("Không thể hoàn tất thao tác với dữ liệu."));
     transaction.oncomplete = () => resolve(result);
     transaction.onerror = () => reject(transaction.error || new Error("Không thể hoàn tất thao tác với dữ liệu."));
     transaction.onabort = () => reject(transaction.error || new Error("Thao tác với dữ liệu đã bị hủy."));
+  });
+}
+
+function defaultSyncMeta() {
+  return { key: "state", repository: null, base: null, lastSyncedAt: null, remoteSha: null, tombstones: [] };
+}
+
+async function readSyncMeta(database) {
+  return (await dbRequest(database, "readonly", store => store.get("state"), SYNC_STORE_NAME)) || defaultSyncMeta();
+}
+
+function localExpenseDocument(records, tombstones = []) {
+  const activeIds = new Set(records.map(record => record.id));
+  return {
+    schemaVersion: CLOUD_SCHEMA_VERSION,
+    transactions: records.map(record => validateTransaction(record)),
+    tombstones: tombstones.filter(item => item && !activeIds.has(item.id)),
+  };
+}
+
+async function captureLocalExpenseState(database) {
+  const [records, meta] = await Promise.all([
+    dbRequest(database, "readonly", store => store.getAll()),
+    readSyncMeta(database),
+  ]);
+  return { document: localExpenseDocument(records, meta.tombstones), meta };
+}
+
+function writeTransactionsAndRestore(database, records) {
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NAME, SYNC_STORE_NAME], "readwrite");
+    const store = transaction.objectStore(STORE_NAME);
+    const metaStore = transaction.objectStore(SYNC_STORE_NAME);
+    const metaRequest = metaStore.get("state");
+    metaRequest.onsuccess = () => {
+      const meta = metaRequest.result || defaultSyncMeta();
+      const restoredIds = new Set(records.map(record => record.id));
+      meta.tombstones = (meta.tombstones || []).filter(tombstone => !restoredIds.has(tombstone.id));
+      metaStore.put(meta);
+      for (const record of records) store.put(record);
+    };
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error("Không thể cập nhật dữ liệu trên thiết bị."));
+    transaction.onabort = () => reject(transaction.error || new Error("Thao tác với dữ liệu đã bị hủy."));
+  });
+}
+
+function deleteExpenseWithTombstone(database, id) {
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NAME, SYNC_STORE_NAME], "readwrite");
+    transaction.objectStore(STORE_NAME).delete(id);
+    const metaStore = transaction.objectStore(SYNC_STORE_NAME);
+    const metaRequest = metaStore.get("state");
+    metaRequest.onsuccess = () => {
+      const meta = metaRequest.result || defaultSyncMeta();
+      const tombstones = (meta.tombstones || []).filter(tombstone => tombstone.id !== id);
+      tombstones.push({ id, deletedAt: new Date().toISOString() });
+      meta.tombstones = tombstones;
+      metaStore.put(meta);
+    };
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error("Không thể xóa giao dịch."));
+    transaction.onabort = () => reject(transaction.error || new Error("Thao tác với dữ liệu đã bị hủy."));
+  });
+}
+
+function applySyncedDocument(database, snapshot, result, repository) {
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([STORE_NAME, SYNC_STORE_NAME], "readwrite");
+    const transactionStore = transaction.objectStore(STORE_NAME);
+    const metaStore = transaction.objectStore(SYNC_STORE_NAME);
+    const recordsRequest = transactionStore.getAll();
+    const metaRequest = metaStore.get("state");
+    let records;
+    let currentMeta;
+    let applied = false;
+    const applyIfReady = () => {
+      if (applied || records === undefined || currentMeta === undefined) return;
+      applied = true;
+      const current = localExpenseDocument(records, currentMeta.tombstones || []);
+      const snapshotStates = new Map();
+      const currentStates = new Map();
+      const resultStates = new Map();
+      for (const record of snapshot.transactions) snapshotStates.set(record.id, { kind: "record", value: record });
+      for (const tombstone of snapshot.tombstones) snapshotStates.set(tombstone.id, { kind: "deleted", value: tombstone });
+      for (const record of current.transactions) currentStates.set(record.id, { kind: "record", value: record });
+      for (const tombstone of current.tombstones) currentStates.set(tombstone.id, { kind: "deleted", value: tombstone });
+      for (const record of result.document.transactions) resultStates.set(record.id, { kind: "record", value: record });
+      for (const tombstone of result.document.tombstones) resultStates.set(tombstone.id, { kind: "deleted", value: tombstone });
+
+      const selectedStates = new Map();
+      const ids = new Set([...snapshotStates.keys(), ...currentStates.keys(), ...resultStates.keys()]);
+      for (const id of ids) {
+        const currentState = currentStates.get(id);
+        const snapshotState = snapshotStates.get(id);
+        const localChangedInFlight = expenseStateFingerprint(currentState) !== expenseStateFingerprint(snapshotState);
+        const selected = localChangedInFlight ? currentState : resultStates.get(id);
+        if (selected) selectedStates.set(id, selected);
+      }
+      const finalRecords = [];
+      const finalTombstones = [];
+      for (const state of selectedStates.values()) {
+        if (state.kind === "record") finalRecords.push(state.value);
+        if (state.kind === "deleted") finalTombstones.push(state.value);
+      }
+      transactionStore.clear();
+      for (const record of finalRecords) transactionStore.put(record);
+      const nextMeta = {
+        ...currentMeta,
+        key: "state",
+        repository,
+        base: result.document,
+        lastSyncedAt: new Date().toISOString(),
+        remoteSha: result.sha || null,
+        tombstones: finalTombstones,
+      };
+      metaStore.put(nextMeta);
+    };
+    recordsRequest.onsuccess = () => { records = recordsRequest.result; applyIfReady(); };
+    metaRequest.onsuccess = () => { currentMeta = metaRequest.result || defaultSyncMeta(); applyIfReady(); };
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error || new Error("Không thể áp dụng dữ liệu đồng bộ."));
+    transaction.onabort = () => reject(transaction.error || new Error("Không thể áp dụng dữ liệu đồng bộ."));
   });
 }
 
@@ -921,6 +1054,162 @@ async function startExpenseTracker() {
   const database = await openDatabase();
   let transactions = (await dbRequest(database, "readonly", store => store.getAll())).map(record => validateTransaction(record));
   let editingId = "";
+  const githubSync = new GitHubExpenseSync({ validateTransaction });
+  const cloudStatus = document.querySelector("#cloud-sync-status");
+  const cloudMessage = document.querySelector("#cloud-sync-message");
+  const cloudForm = document.querySelector("#cloud-connect-form");
+  const cloudControls = document.querySelector("#cloud-connected-controls");
+  const cloudMigration = document.querySelector("#cloud-migration");
+  const cloudConflicts = document.querySelector("#cloud-conflicts");
+  const cloudConflictList = document.querySelector("#cloud-conflict-list");
+  let syncMeta = await readSyncMeta(database);
+  let syncTimer = 0;
+  let syncInProgress = false;
+  let syncAgainRequested = false;
+  let pendingSyncBase = null;
+  let currentConflicts = [];
+  let conflictResolutions = {};
+
+  const updateCloudStatus = (state, message) => {
+    cloudStatus.dataset.state = state;
+    cloudStatus.textContent = message;
+  };
+
+  const formatSyncTimestamp = value => {
+    if (!value || !Number.isFinite(Date.parse(value))) return "Chưa có";
+    return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+  };
+
+  const updateCloudMeta = async () => {
+    syncMeta = await readSyncMeta(database);
+    const local = await captureLocalExpenseState(database);
+    const pending = countUnsyncedExpenseChanges(local.document, syncMeta.base, validateTransaction);
+    document.querySelector("#cloud-repository-label").textContent = syncMeta.repository
+      ? `${syncMeta.repository.owner}/${syncMeta.repository.repository}`
+      : "Chưa chọn";
+    document.querySelector("#cloud-last-sync").textContent = formatSyncTimestamp(syncMeta.lastSyncedAt);
+    document.querySelector("#cloud-pending-count").textContent = `${formatNumber(pending)} giao dịch`;
+    return { local, pending };
+  };
+
+  const setCloudConnected = (connected, username = "") => {
+    cloudForm.hidden = connected;
+    cloudControls.hidden = !connected;
+    if (connected) {
+      document.querySelector("#cloud-connected-as").textContent = `Đã kết nối tài khoản ${username}. Token chỉ còn trong bộ nhớ tab này.`;
+    }
+  };
+
+  const clearCloudPrompts = () => {
+    cloudMigration.hidden = true;
+    cloudConflicts.hidden = true;
+    cloudConflictList.replaceChildren();
+    currentConflicts = [];
+    conflictResolutions = {};
+    pendingSyncBase = null;
+    document.querySelector("#cloud-resolve").disabled = true;
+  };
+
+  const formatConflictState = state => {
+    if (!state) return "Không có giao dịch (đã xóa)";
+    if (state.kind === "deleted") return `Đã xóa · ${formatSyncTimestamp(state.value.deletedAt)}`;
+    return `${state.value.itemName} · ${state.value.merchant} · ${formatVnd(state.value.amount)} · sửa ${formatSyncTimestamp(state.value.updatedAt)}`;
+  };
+
+  const renderCloudConflicts = conflicts => {
+    currentConflicts = conflicts;
+    conflictResolutions = {};
+    cloudConflictList.replaceChildren();
+    for (const [index, conflict] of conflicts.entries()) {
+      const group = makeElement("fieldset", "cloud-conflict");
+      const legend = makeElement("legend", "", `Giao dịch ${index + 1}: ${conflict.id}`);
+      const choices = makeElement("div", "cloud-conflict-choices");
+      for (const [choice, label, state] of [["local", "Giữ bản trên thiết bị", conflict.local], ["remote", "Giữ bản trên GitHub", conflict.remote]]) {
+        const button = makeElement("button", "button button--secondary cloud-conflict-choice", label);
+        button.type = "button";
+        button.dataset.conflictId = conflict.id;
+        button.dataset.choice = choice;
+        button.setAttribute("aria-pressed", "false");
+        const description = makeElement("span", "cloud-conflict-choice__description", formatConflictState(state));
+        button.append(description);
+        choices.append(button);
+      }
+      group.append(legend, choices);
+      cloudConflictList.append(group);
+    }
+    cloudConflicts.hidden = false;
+    cloudMigration.hidden = true;
+    updateCloudStatus("conflict", `Xung đột · ${conflicts.length} giao dịch cần lựa chọn`);
+    document.querySelector("#cloud-resolve").disabled = true;
+  };
+
+  const showMigrationPreview = (localDocument, remoteDocument) => {
+    const preview = getExpenseMigrationPreview(localDocument, remoteDocument, validateTransaction);
+    document.querySelector("#cloud-migration-summary").textContent = `Trên thiết bị: ${formatNumber(preview.localCount)} giao dịch · GitHub: ${formatNumber(preview.cloudCount)} giao dịch · Trùng: ${formatNumber(preview.duplicates)} · Chỉ có ở thiết bị: ${formatNumber(preview.localOnly)} · Chỉ có trên GitHub: ${formatNumber(preview.cloudOnly)} · Cùng ID khác nội dung: ${formatNumber(preview.conflicts)}. Dữ liệu sẽ được gộp theo ID; xung đột cần bạn chọn.`;
+    cloudMigration.hidden = false;
+    cloudConflicts.hidden = true;
+    pendingSyncBase = null;
+    updateCloudStatus("waiting", "Đã kết nối · chờ xác nhận gộp dữ liệu");
+  };
+
+  const runCloudSync = async (baseOverride, resolutions = {}) => {
+    if (!githubSync.connected) return;
+    if (navigator.onLine === false) {
+      updateCloudStatus("waiting", "Chờ mạng");
+      cloudMessage.textContent = "Không có kết nối mạng. Dữ liệu cục bộ vẫn được giữ.";
+      return;
+    }
+    if (syncInProgress) { syncAgainRequested = true; return; }
+    syncInProgress = true;
+    clearTimeout(syncTimer);
+    cloudMessage.textContent = "";
+    updateCloudStatus("syncing", "Đang đồng bộ");
+    try {
+      const snapshot = await captureLocalExpenseState(database);
+      const base = baseOverride === undefined ? snapshot.meta.base : baseOverride;
+      const result = await githubSync.sync({ local: snapshot.document, base, resolutions });
+      if (result.status === "conflict") {
+        pendingSyncBase = base ?? null;
+        renderCloudConflicts(result.conflicts);
+        return;
+      }
+      await applySyncedDocument(database, snapshot.document, result, githubSync.repository);
+      await persistAndRender();
+      const { pending } = await updateCloudMeta();
+      clearCloudPrompts();
+      updateCloudStatus(pending ? "waiting" : "synced", pending ? `Đã đồng bộ bản chụp · ${formatNumber(pending)} thay đổi đang chờ` : "Đã đồng bộ");
+      cloudMessage.textContent = result.wrote ? "GitHub đã xác nhận lưu dữ liệu." : "Dữ liệu đã khớp với GitHub; không tạo commit mới.";
+      if (pending) syncAgainRequested = true;
+    } catch (error) {
+      if (error.code === "network" || navigator.onLine === false) updateCloudStatus("waiting", "Chờ mạng");
+      else updateCloudStatus("error", "Lỗi đồng bộ");
+      cloudMessage.textContent = error.message || "Không thể đồng bộ. Dữ liệu cục bộ vẫn được giữ.";
+      if (!githubSync.connected) setCloudConnected(false);
+    } finally {
+      syncInProgress = false;
+      if (syncAgainRequested && githubSync.connected && cloudConflicts.hidden) {
+        syncAgainRequested = false;
+        scheduleCloudSync();
+      }
+    }
+  };
+
+  function scheduleCloudSync() {
+    if (!githubSync.connected) return;
+    updateCloudMeta().catch(() => {});
+    if (!cloudConflicts.hidden) {
+      updateCloudStatus("conflict", `Xung đột · ${currentConflicts.length} giao dịch cần lựa chọn`);
+      return;
+    }
+    if (syncInProgress) { syncAgainRequested = true; return; }
+    if (navigator.onLine === false) {
+      updateCloudStatus("waiting", "Chờ mạng");
+      return;
+    }
+    updateCloudStatus("waiting", "Chờ đồng bộ");
+    clearTimeout(syncTimer);
+    syncTimer = window.setTimeout(() => runCloudSync(undefined), 850);
+  }
 
   const persistAndRender = async () => {
     transactions = (await dbRequest(database, "readonly", store => store.getAll())).map(record => validateTransaction(record));
@@ -939,6 +1228,111 @@ async function startExpenseTracker() {
     parseStatus.textContent = "";
     parseStatus.removeAttribute("data-tone");
   };
+
+  if (syncMeta.repository) {
+    document.querySelector("#cloud-owner").value = syncMeta.repository.owner;
+    document.querySelector("#cloud-repository").value = syncMeta.repository.repository;
+  }
+  await updateCloudMeta();
+
+  cloudForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const tokenInput = document.querySelector("#cloud-token");
+    const token = tokenInput.value;
+    tokenInput.value = "";
+    const connectButton = document.querySelector("#cloud-connect");
+    connectButton.disabled = true;
+    cloudMessage.textContent = "";
+    clearCloudPrompts();
+    updateCloudStatus("syncing", "Đang xác thực GitHub");
+    try {
+      const connection = await githubSync.connect(token, document.querySelector("#cloud-owner").value, document.querySelector("#cloud-repository").value);
+      setCloudConnected(true, connection.username);
+      cloudMessage.textContent = "Đã xác thực token và xác nhận repository đang ở chế độ private.";
+      const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
+      const sameRepository = snapshot.meta.repository
+        && snapshot.meta.repository.owner.toLocaleLowerCase("en-US") === connection.repository.owner.toLocaleLowerCase("en-US")
+        && snapshot.meta.repository.repository.toLocaleLowerCase("en-US") === connection.repository.repository.toLocaleLowerCase("en-US")
+        && snapshot.meta.repository.path === connection.repository.path;
+      if (sameRepository && snapshot.meta.base) {
+        await runCloudSync(snapshot.meta.base);
+      } else {
+        showMigrationPreview(snapshot.document, remote.document);
+      }
+      await updateCloudMeta();
+    } catch (error) {
+      githubSync.disconnect();
+      setCloudConnected(false);
+      updateCloudStatus(error.code === "network" ? "waiting" : "error", error.code === "network" ? "Chờ mạng" : "Lỗi kết nối");
+      cloudMessage.textContent = error.message || "Không thể kết nối GitHub.";
+    } finally {
+      connectButton.disabled = false;
+    }
+  });
+
+  document.querySelector("#cloud-migrate").addEventListener("click", () => {
+    cloudMigration.hidden = true;
+    pendingSyncBase = null;
+    runCloudSync(null);
+  });
+
+  document.querySelector("#cloud-sync-now").addEventListener("click", async () => {
+    clearCloudPrompts();
+    const metadata = await readSyncMeta(database);
+    if (metadata.base) runCloudSync(metadata.base);
+    else {
+      try {
+        const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
+        showMigrationPreview(snapshot.document, remote.document);
+      } catch (error) {
+        updateCloudStatus(error.code === "network" ? "waiting" : "error", error.code === "network" ? "Chờ mạng" : "Lỗi đồng bộ");
+        cloudMessage.textContent = error.message || "Không thể đọc dữ liệu trên GitHub.";
+      }
+    }
+  });
+
+  document.querySelector("#cloud-disconnect").addEventListener("click", () => {
+    clearTimeout(syncTimer);
+    githubSync.disconnect();
+    document.querySelector("#cloud-token").value = "";
+    setCloudConnected(false);
+    clearCloudPrompts();
+    updateCloudStatus("disconnected", "Chưa kết nối");
+    cloudMessage.textContent = "Đã ngắt kết nối. Dữ liệu và trạng thái đồng bộ cục bộ vẫn được giữ.";
+  });
+
+  cloudConflictList.addEventListener("click", event => {
+    const button = event.target.closest("[data-conflict-id][data-choice]");
+    if (!button) return;
+    const conflict = currentConflicts.find(item => item.id === button.dataset.conflictId);
+    if (!conflict) return;
+    conflictResolutions[conflict.id] = {
+      choice: button.dataset.choice,
+      localFingerprint: conflict.localFingerprint,
+      remoteFingerprint: conflict.remoteFingerprint,
+    };
+    for (const option of cloudConflictList.querySelectorAll(`[data-conflict-id="${CSS.escape(conflict.id)}"]`)) {
+      option.setAttribute("aria-pressed", String(option === button));
+    }
+    document.querySelector("#cloud-resolve").disabled = currentConflicts.some(item => !conflictResolutions[item.id]);
+  });
+
+  document.querySelector("#cloud-resolve").addEventListener("click", () => {
+    const base = pendingSyncBase;
+    runCloudSync(base, conflictResolutions);
+  });
+
+  window.addEventListener("online", () => {
+    if (githubSync.connected) scheduleCloudSync();
+  });
+  window.addEventListener("offline", () => {
+    if (githubSync.connected) updateCloudStatus("waiting", "Chờ mạng");
+  });
+  window.addEventListener("pagehide", () => {
+    clearTimeout(syncTimer);
+    githubSync.disconnect();
+    document.querySelector("#cloud-token").value = "";
+  }, { once: true });
 
   document.querySelector("#analyze-expense").addEventListener("click", () => {
     const parsed = parseExpenseText(document.querySelector("#expense-natural-input").value);
@@ -968,11 +1362,12 @@ async function startExpenseTracker() {
         createdAt: previous?.createdAt,
         updatedAt: new Date().toISOString(),
       });
-      await dbRequest(database, "readwrite", store => store.put(record));
+      await writeTransactionsAndRestore(database, [record]);
       resetForm();
       document.querySelector("#expense-natural-input").value = "";
       await persistAndRender();
       parseStatus.textContent = previous ? "Đã cập nhật giao dịch trên thiết bị này." : "Đã lưu giao dịch trên thiết bị này.";
+      scheduleCloudSync();
       document.querySelector("#expense-dashboard").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       parseStatus.textContent = error.message || "Không thể lưu giao dịch.";
@@ -1000,9 +1395,10 @@ async function startExpenseTracker() {
       const confirmed = window.confirm(`Xóa giao dịch “${record.itemName}” tại ${record.merchant}? Thao tác này không thể hoàn tác.`);
       if (!confirmed) return;
       try {
-        await dbRequest(database, "readwrite", store => store.delete(record.id));
+        await deleteExpenseWithTombstone(database, record.id);
         if (editingId === record.id) resetForm();
         await persistAndRender();
+        scheduleCloudSync();
       } catch (error) {
         showStorageError(error.message || "Không thể xóa giao dịch.");
       }
@@ -1034,10 +1430,11 @@ async function startExpenseTracker() {
       }
       if (!Array.isArray(rows)) throw new Error("Tệp không có danh sách giao dịch hợp lệ.");
       const prepared = prepareImportRows(rows, transactions);
-      for (const record of prepared.imported) await dbRequest(database, "readwrite", store => store.add(record));
+      await writeTransactionsAndRestore(database, prepared.imported);
       await persistAndRender();
       parseStatus.textContent = `Đã nhập ${prepared.imported.length} giao dịch; bỏ qua ${prepared.skipped.duplicate} mục trùng và ${prepared.skipped.invalid} mục không hợp lệ.`;
       parseStatus.removeAttribute("data-tone");
+      scheduleCloudSync();
     } catch (error) {
       showStorageError(`Không thể nhập bản sao lưu: ${error.message || "Tệp không hợp lệ."}`);
     } finally {

@@ -8,7 +8,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
   <div class="expense-hero__heading">
     <div>
       <h1 id="expense-title">Chi phí <span>hàng tháng</span></h1>
-      <p>Ghi nhanh bằng lời, xem rõ từng khoản. Dữ liệu của bạn nằm trong trình duyệt này.</p>
+      <p>Ghi nhanh bằng lời, xem rõ từng khoản. Dữ liệu được lưu trên thiết bị và có thể đồng bộ qua repository GitHub riêng.</p>
     </div>
     <a class="expense-hero__jump" href="#expense-dashboard">Xem báo cáo <span aria-hidden="true">↓</span></a>
   </div>
@@ -21,7 +21,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <p class="expense-index">01 / NHẬP CHI PHÍ</p>
         <h2 id="entry-title">Một câu là đủ để bắt đầu</h2>
       </div>
-      <span class="local-badge"><span aria-hidden="true">●</span> Chỉ lưu trên thiết bị</span>
+      <span class="local-badge"><span aria-hidden="true">●</span> Lưu cục bộ</span>
     </div>
 
     <form id="expense-form" novalidate>
@@ -95,6 +95,73 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <input id="dashboard-month" type="month" aria-label="Chọn tháng báo cáo">
       </div>
     </div>
+
+    <section class="cloud-sync-panel" aria-labelledby="cloud-sync-title">
+      <div class="cloud-sync-heading">
+        <div>
+          <p class="expense-index">ĐỒNG BỘ RIÊNG TƯ</p>
+          <h3 id="cloud-sync-title">GitHub Cloud Sync</h3>
+          <p class="cloud-sync-intro">Dùng một repository private riêng để mở cùng dữ liệu trên nhiều thiết bị. IndexedDB vẫn là bản cache cục bộ.</p>
+        </div>
+        <span class="cloud-sync-status" id="cloud-sync-status" data-state="disconnected" role="status" aria-live="polite">Chưa kết nối</span>
+      </div>
+
+      <div class="cloud-sync-meta" aria-live="polite">
+        <p>Repository <strong id="cloud-repository-label">Chưa chọn</strong></p>
+        <p>Đồng bộ thành công cuối <strong id="cloud-last-sync">Chưa có</strong></p>
+        <p>Chờ đồng bộ <strong id="cloud-pending-count">0 giao dịch</strong></p>
+      </div>
+
+      <form class="cloud-connect-form" id="cloud-connect-form">
+        <div class="cloud-connect-fields">
+          <div class="expense-field">
+            <label class="expense-label" for="cloud-owner">Chủ sở hữu GitHub</label>
+            <input id="cloud-owner" type="text" maxlength="39" value="blogco" autocomplete="username" required>
+          </div>
+          <div class="expense-field">
+            <label class="expense-label" for="cloud-repository">Repository private</label>
+            <input id="cloud-repository" type="text" maxlength="100" value="blogmoi-expenses-private" autocomplete="off" required>
+          </div>
+          <div class="expense-field cloud-token-field">
+            <label class="expense-label" for="cloud-token">Fine-grained Personal Access Token</label>
+            <input id="cloud-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+          </div>
+        </div>
+        <button class="button button--primary" type="submit" id="cloud-connect">Kết nối GitHub</button>
+      </form>
+
+      <div class="cloud-connected-controls" id="cloud-connected-controls" hidden>
+        <p id="cloud-connected-as"></p>
+        <button class="button button--secondary" id="cloud-sync-now" type="button">Đồng bộ ngay</button>
+        <button class="button button--secondary" id="cloud-disconnect" type="button">Ngắt kết nối</button>
+      </div>
+
+      <details class="cloud-setup-help">
+        <summary>Cách tạo repository private và token</summary>
+        <ol>
+          <li>Tạo repository mới, ví dụ <code>blogmoi-expenses-private</code>, chọn chế độ <strong>Private</strong> và khởi tạo README.</li>
+          <li>Tạo Fine-grained PAT, chọn đúng chủ sở hữu và chỉ cấp quyền vào repository dữ liệu này.</li>
+          <li>Trong Repository permissions, đặt <strong>Contents: Read and write</strong>, sau đó dán token vào biểu mẫu kết nối.</li>
+        </ol>
+        <p>Nếu repository chưa tồn tại hoặc token không có quyền, trang sẽ giữ dữ liệu cục bộ và hướng dẫn thử lại. Trang không tự tạo repository và không chuyển dữ liệu sang repository public.</p>
+      </details>
+
+      <p class="cloud-security-note">Token chỉ tồn tại trong bộ nhớ của tab này và bị xóa khi ngắt kết nối hoặc tải lại trang. Repository private không phải mã hóa đầu cuối: người có quyền truy cập repository có thể đọc dữ liệu. Token có thể hết hạn hoặc bị thu hồi.</p>
+      <p class="cloud-sync-message" id="cloud-sync-message" role="status" aria-live="polite"></p>
+
+      <section class="cloud-migration" id="cloud-migration" aria-labelledby="cloud-migration-title" hidden>
+        <h4 id="cloud-migration-title">Xem trước lần đồng bộ đầu</h4>
+        <p id="cloud-migration-summary"></p>
+        <button class="button button--primary" id="cloud-migrate" type="button">Gộp dữ liệu an toàn</button>
+      </section>
+
+      <section class="cloud-conflicts" id="cloud-conflicts" aria-labelledby="cloud-conflicts-title" hidden>
+        <h4 id="cloud-conflicts-title">Cần chọn phiên bản cho từng xung đột</h4>
+        <p>Một giao dịch đã được sửa ở cả hai nơi. Chọn bản cần giữ; các lựa chọn khác sẽ được đồng bộ sau khi GitHub xác nhận.</p>
+        <div class="cloud-conflict-list" id="cloud-conflict-list"></div>
+        <button class="button button--primary" id="cloud-resolve" type="button" disabled>Áp dụng lựa chọn</button>
+      </section>
+    </section>
 
     <div class="expense-kpis" aria-live="polite" aria-atomic="true">
       <article class="kpi-card kpi-card--primary">
@@ -184,7 +251,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
           <button class="button button--secondary" id="export-csv" type="button">Xuất CSV</button>
         </div>
       </div>
-      <div class="privacy-note" role="note"><strong>Dữ liệu riêng tư:</strong> giao dịch chỉ được lưu trong IndexedDB của trình duyệt trên thiết bị này. Dữ liệu không tự đồng bộ giữa các thiết bị và có thể mất nếu bạn xóa dữ liệu trình duyệt. Hãy xuất bản sao lưu định kỳ.</div>
+      <div class="privacy-note" role="note"><strong>Dữ liệu riêng tư:</strong> giao dịch luôn có bản cache trong IndexedDB và có thể đồng bộ lên repository GitHub private mà bạn chọn. Nếu không kết nối, dữ liệu chờ đồng bộ trên thiết bị này. Hãy xuất bản sao lưu định kỳ; dữ liệu cục bộ có thể mất nếu xóa dữ liệu trình duyệt.</div>
       <div class="transaction-filters" aria-label="Tìm kiếm và lọc giao dịch">
         <div class="expense-field filter-search"><label class="expense-label" for="transaction-search">Tìm giao dịch</label><input id="transaction-search" type="search" placeholder="Tìm quán, món, ghi chú…"></div>
         <div class="expense-field"><label class="expense-label" for="transaction-month">Tháng</label><select id="transaction-month"><option value="all">Tất cả tháng</option></select></div>

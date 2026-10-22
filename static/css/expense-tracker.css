@@ -99,6 +99,52 @@ html[data-theme="dark"] .kpi-card--comparison .kpi-value[data-trend="down"] { co
 .line-chart .chart-point:focus { fill: var(--teal); outline: none; stroke-width: 4; }
 .chart-tooltip { position: absolute; z-index: 1; max-width: min(250px, 75vw); padding: 7px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--navy); color: #fff; font-size: .75rem; font-weight: 700; pointer-events: none; box-shadow: var(--shadow); }
 .chart-empty { margin: 10px 0 0; padding: 16px; border-radius: 9px; background: var(--wash); color: var(--muted); font-size: .87rem; text-align: center; }
+.cloud-sync-panel { min-width: 0; padding: clamp(18px, 2.8vw, 28px); border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: 0 8px 26px rgb(23 38 56 / 4%); }
+.cloud-sync-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
+.cloud-sync-heading h3 { margin: 0; font-size: clamp(1.2rem, 2vw, 1.55rem); letter-spacing: -.025em; }
+.cloud-sync-intro { max-width: 700px; margin: 7px 0 0; color: var(--muted); font-size: .84rem; line-height: 1.55; }
+.cloud-sync-status { display: inline-flex; flex: 0 0 auto; align-items: center; min-height: 32px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--wash); color: var(--muted); font-size: .75rem; font-weight: 800; }
+.cloud-sync-status::before { width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: currentColor; content: ""; }
+.cloud-sync-status[data-state="synced"] { border-color: color-mix(in srgb, var(--teal), var(--line) 60%); background: color-mix(in srgb, var(--mint), var(--surface) 50%); color: var(--teal); }
+.cloud-sync-status[data-state="syncing"] { color: var(--blue); }
+.cloud-sync-status[data-state="waiting"] { color: #9a6818; }
+.cloud-sync-status[data-state="conflict"],
+.cloud-sync-status[data-state="error"] { color: #a13329; }
+html[data-theme="dark"] .cloud-sync-status[data-state="waiting"] { color: #ffd487; }
+html[data-theme="dark"] .cloud-sync-status[data-state="conflict"],
+html[data-theme="dark"] .cloud-sync-status[data-state="error"] { color: #ff9b8e; }
+.cloud-sync-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+.cloud-sync-meta p { min-width: 0; margin: 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--muted); font-size: .72rem; }
+.cloud-sync-meta strong { display: block; overflow-wrap: anywhere; margin-top: 4px; color: var(--ink); font-size: .82rem; font-variant-numeric: tabular-nums; }
+.cloud-connect-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.cloud-token-field { grid-column: 1 / -1; }
+.cloud-connect-form > .button { min-height: 43px; }
+.cloud-connected-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+.cloud-connected-controls p { flex: 1 1 100%; margin: 0 0 3px; color: var(--muted); font-size: .8rem; }
+.cloud-setup-help { margin-top: 17px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.cloud-setup-help summary { width: fit-content; color: var(--teal); font-weight: 800; cursor: pointer; }
+.cloud-setup-help ol { margin: 10px 0; padding-left: 21px; }
+.cloud-setup-help p { margin: 8px 0 0; }
+.cloud-setup-help strong { color: var(--ink); }
+.cloud-security-note { margin: 12px 0 0; color: var(--muted); font-size: .73rem; line-height: 1.55; }
+.cloud-sync-message { min-height: 1.5em; margin: 9px 0 0; color: var(--muted); font-size: .78rem; }
+.cloud-migration,
+.cloud-conflicts { margin-top: 11px; padding: 15px; border: 1px solid color-mix(in srgb, var(--teal), var(--line) 55%); border-radius: 10px; background: color-mix(in srgb, var(--mint), var(--surface) 78%); }
+.cloud-migration h4,
+.cloud-conflicts h4 { margin: 0; font-size: .98rem; }
+.cloud-migration p,
+.cloud-conflicts > p { color: var(--muted); font-size: .79rem; line-height: 1.55; }
+.cloud-conflicts { border-color: color-mix(in srgb, #b34b34, var(--line) 55%); background: color-mix(in srgb, #fff0d6, var(--surface) 70%); }
+html[data-theme="dark"] .cloud-conflicts { background: color-mix(in srgb, #473415, var(--surface) 70%); }
+.cloud-conflict-list { display: grid; gap: 10px; margin: 13px 0; }
+.cloud-conflict { min-width: 0; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.cloud-conflict legend { max-width: 100%; overflow-wrap: anywhere; padding-inline: 5px; color: var(--ink); font-size: .75rem; font-weight: 800; }
+.cloud-conflict-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.cloud-conflict-choice { min-width: 0; min-height: 50px; text-align: left; font-size: .75rem; }
+.cloud-conflict-choice[aria-pressed="true"] { border-color: var(--teal); box-shadow: inset 0 0 0 1px var(--teal); color: var(--teal); }
+.cloud-conflict-choice__description { display: block; overflow-wrap: anywhere; margin-top: 3px; color: var(--muted); font-size: .69rem; font-weight: 500; line-height: 1.4; }
+.cloud-sync-panel button:focus-visible,
+.cloud-setup-help summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .chart-data-details { margin-top: 9px; color: var(--muted); font-size: .8rem; }
 .chart-data-details summary { width: fit-content; cursor: pointer; color: var(--teal); font-weight: 700; }
 .table-scroll { max-width: 100%; margin-top: 10px; overflow-x: auto; }
@@ -202,6 +248,14 @@ html[data-theme="dark"] .transaction-actions .delete-transaction { color: #ff9b8
   .expense-dashboard { margin-top: 36px; }
   .dashboard-heading { align-items: start; flex-direction: row; }
   .month-control { width: 150px; }
+  .cloud-sync-heading { flex-direction: column; }
+  .cloud-sync-meta { grid-template-columns: 1fr; gap: 7px; margin-block: 14px; }
+  .cloud-sync-meta p { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cloud-sync-meta strong { margin: 0; text-align: right; }
+  .cloud-connect-fields { grid-template-columns: 1fr; gap: 9px; }
+  .cloud-token-field { grid-column: auto; }
+  .cloud-connected-controls .button { flex: 1 1 auto; }
+  .cloud-conflict-choices { grid-template-columns: 1fr; }
   .month-control .expense-label { font-size: .76rem; }
   .expense-kpis { gap: 8px; }
   .kpi-card { padding: 14px 12px; }
