@@ -24,6 +24,10 @@
     --wash: #f1f4f2;
     --line: #dfe5e2;
     --focus: #2463eb;
+    --article-page-width: 1560px;
+    --article-reading-width: 920px;
+    --article-detail-width: 1120px;
+    --article-sidebar-width: 260px;
     --season-spring-bg: #FAEAF0;
     --season-spring-text: #93445f;
     --season-summer-bg: #FFF2D6;
