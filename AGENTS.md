@@ -1,39 +1,35 @@
 # Blogmoi project instructions
 
-## Architecture
-- Hugo Extended 0.163.1; static HTML, CSS and small vanilla JavaScript only.
-- Vietnamese is the default language; English and Korean are configured as language roots, with no invented translations.
-- Production base URL is https://blogco.github.io/blogmoi/. Build asset and navigation URLs with Hugo URL functions so /blogmoi/ remains intact.
-- Content lives in Hugo page bundles under content/. Article posts use content/posts/<stable-slug>/index.md; media belongs in static/uploads/.
-- Templates are under layouts/, shared pieces under layouts/partials/, site styles under static/css/, and browser code under static/js/.
-- cms_server.py is a local-only publisher and is never part of Hugo output.
+## Phase 1 architecture
+- Eleventy 3.1.7, Node.js 24 LTS, ESM, Nunjucks layouts and Markdown articles.
+- This phase is the static blog and UI only. Do not add CMS routes, editor code, authentication, publishing APIs, or draft storage.
+- The build command is `npm run build`; Eleventy writes to `_site/` and uses `/blogmoi/` as its path prefix.
+- Production origin is `https://blogco.github.io`; the deployed site is `https://blogco.github.io/blogmoi/`.
+- Templates and source pages live in `src/`; shared layouts and partials live in `src/_includes/`; global data lives in `src/_data/`; article Markdown lives in `src/posts/`; passthrough assets live in `static/`.
+- Use Nunjucks for templates and minimal vanilla JavaScript for progressive enhancement. Do not add React, Vite, Tailwind, or a client-side app framework.
 
 ## Naming and content
-- Use lowercase kebab-case slugs and meaningful filenames. Keep article URLs stable after first publish.
-- Do not invent posts, translations, citations, author identities, or claims. Editorial suggestions must derive from supplied article content.
-- Article metadata includes title, description, author, date, language, categories, tags, cover, SEO fields, Q&A, sources, and related links.
-- Keep private drafts in browser IndexedDB only. Do not add draft files to the public repository.
+- Keep public article URLs stable at `/<slug>/`. Use lowercase kebab-case source filenames and explicit `slug` front matter when a legacy URL requires it.
+- Preserve existing content, media, metadata, and URLs during migrations. Do not delete valuable published content.
+- Do not invent articles, translations, citations, author identities, contacts, or claims. English and Korean content can be added under `src/en/` and `src/ko/` with explicit language metadata; do not create placeholder translations.
+- Article metadata should include title, description, date, language, author, categories, tags, cover image, and SEO fields when supplied.
+- Future CMS integration should write validated article bundles and media into the source tree, then trigger the existing GitHub Actions deployment. Do not implement CMS code during Phase 1.
 
 ## Design and accessibility
-- Use semantic CSS custom properties from static/css/site.css.
-- Use responsive spacing, readable body sizing, visible focus, semantic controls, keyboard support, and WCAG AA contrast.
-- Keep header brand, navigation, and actions in separate regions. Collapse navigation before it clips.
-- Give icon-only controls accessible names. Respect reduced motion and system color preferences.
+- Use semantic design tokens and components in `static/css/site.css`.
+- Keep typography readable, support Vietnamese and Korean system font fallbacks, and use accessible contrast and visible focus states.
+- Keep brand, navigation, and actions in distinct header regions. Collapse the navigation before it clips; prevent horizontal overflow and content obstruction.
+- Give icon-only controls accessible names. Support keyboard navigation, reduced motion, and light/dark preferences.
+- Avoid external fonts and scripts unless there is a measured benefit.
 
-## CMS and security
-- Treat editor output as untrusted. Sanitize on both client and local publisher; allow only documented rich-text tags and attributes.
-- Preserve rich content through save, preview, publish, and reopen. Rich HTML is stored inside the rich shortcode; Goldmark unsafe rendering stays disabled.
-- Never claim publish success before the GitHub API confirms a commit. Keep drafts intact on errors and conflicts.
-- Draft storage may contain article text and local image data, but never GitHub tokens or backend session credentials.
-- GitHub credentials stay in the operating system's Git credential helper and are used only by the local publisher.
-- Never hardcode a PAT, GitHub token, OAuth secret, private key, or session secret.
-- GitHub publishing is restricted to blogco/blogmoi, branch main, content/posts/, and static/uploads/.
-- Validate local origin, paths, file size, image type, metadata, and sanitized HTML in the publisher.
-- Do not enable unsafe Markdown rendering globally or add untrusted inline scripts.
+## Security and performance
+- Treat Markdown and front matter as source content; never inject untrusted values as raw HTML or inline JavaScript.
+- Keep search static and DOM-safe. Do not include credentials, tokens, secrets, private drafts, or authentication state in the public site.
+- Keep dependencies minimal and pinned in `package-lock.json`. CI uses `npm ci`; do not add browser downloads, Playwright, Chromium, AI, OCR, or unrelated build steps.
+- Do not create fake CMS authentication or imply that static GitHub Pages can publish content by itself.
 
 ## Deployment and Git
-- The Pages workflow is the only site deployment workflow. It runs hugo --gc --minify; no Node/npm install, Vite, browser download, or AI/OCR step.
-- Keep the local publisher out of the Hugo build and Pages workflow.
-- Verify origin is https://github.com/blogco/blogmoi.git before pushing. Never modify, commit to, or push to old blogco/blogco.
-- Preserve unrelated changes and never force-push. Validate Hugo build, workflow YAML, base-path URLs, CMS sanitation, and git diff --check before release.
-- Do not invent posts, translations, citations, author identities, or claims.
+- Maintain exactly one Pages deployment workflow in `.github/workflows/`. It builds with Eleventy into `_site/`, uploads `_site/`, and deploys using official GitHub Pages actions.
+- Validate `npm ci`, `npm run build`, output paths, sitemap/feed, search JSON, and `git diff --check` before release. Never claim visual/browser testing that was not performed.
+- Follow one feature, one commit, one push, one deployment, one ASCII report. Keep unrelated changes separate; never force-push.
+- Verify `origin` is `https://github.com/blogco/blogmoi.git` before pushing. Never modify, commit to, or push to the old `blogco/blogco` repository.

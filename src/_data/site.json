@@ -1,0 +1,9 @@
+{
+  "title": "Blogmoi",
+  "description": "Góc nhìn rõ ràng về công nghệ, kinh doanh và những thay đổi quanh ta.",
+  "url": "https://blogco.github.io",
+  "pathPrefix": "/blogmoi/",
+  "language": "vi",
+  "locale": "vi_VN",
+  "repository": "https://github.com/blogco/blogmoi"
+}

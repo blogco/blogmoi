@@ -1,7 +1,7 @@
 # GitHub Pages deployment
 
-The only site workflow is .github/workflows/deploy.yml. It runs on pushes to main and manual dispatch, pins Hugo Extended 0.163.1, builds with hugo --gc --minify, then uses the official configure-pages, upload-pages-artifact, and deploy-pages actions.
+The single workflow at `.github/workflows/deploy.yml` runs on pushes to `main` and manual dispatch. It uses Node.js 24 LTS, `npm ci`, `npm run build`, `actions/upload-pages-artifact@v4`, and `actions/deploy-pages@v4`.
 
-The repository Pages source must be set to GitHub Actions. The workflow reports Hugo build time and total runtime in its summary.
+Eleventy is configured with the `/blogmoi/` path prefix and writes to `_site/`. The artifact action must upload `_site/`, the actual build directory. The prior Hugo workflow failed because its artifact step expected `_site/` while Hugo emitted `public/`; that mismatch was confirmed in the failed Actions log and corrected when the site still used Hugo.
 
-The production URL is https://blogco.github.io/blogmoi/.
+The workflow records Eleventy build time separately from total workflow time after checkout. GitHub-hosted runner and Pages service time vary.

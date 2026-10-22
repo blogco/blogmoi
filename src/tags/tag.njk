@@ -1,0 +1,11 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: collections.tagGroups
+  size: 1
+  alias: tag
+permalink: "/tags/{{ tag.slug }}/index.html"
+eleventyExcludeFromCollections: true
+---
+<section class="page-hero"><p class="eyebrow">Thẻ bài viết</p><h1>#{{ tag.name }}</h1><p>{{ tag.posts.length }} bài viết.</p></section>
+<section class="section listing-section"><div class="article-grid">{% for post in tag.posts %}{% include "partials/article-card.njk" %}{% endfor %}</div></section>

@@ -1,0 +1,8 @@
+---
+permalink: /index.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>{{ site.title | xmlEscape }}</title><link>{{ '/' | absoluteUrl | xmlEscape }}</link><description>{{ site.description | xmlEscape }}</description><language>vi-VN</language><lastBuildDate>{{ collections.posts[0].date | default(page.date) | dateRfc822 }}</lastBuildDate>
+{% for post in collections.posts %}<item><title>{{ post.data.title | xmlEscape }}</title><link>{{ post.url | absoluteUrl | xmlEscape }}</link><guid isPermaLink="true">{{ post.url | absoluteUrl | xmlEscape }}</guid><description>{{ post.data.description | default('') | xmlEscape }}</description><pubDate>{{ post.date | dateRfc822 }}</pubDate><category>{{ (post.data.categories or ['Blogmoi'])[0] | xmlEscape }}</category></item>
+{% endfor %}</channel></rss>

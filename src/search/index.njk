@@ -1,0 +1,8 @@
+---
+layout: layouts/base.njk
+permalink: /search/index.html
+title: Tìm kiếm
+description: Tìm bài viết trên Blogmoi.
+---
+<section class="page-hero"><p class="eyebrow">Tìm trong Blogmoi</p><h1>Điều bạn<br><span>đang tìm là gì?</span></h1><label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Từ khóa tìm kiếm</span><input type="search" placeholder="Nhập từ khóa, chủ đề..." autocomplete="off" data-search-input data-search-index="{{ '/search-index.json' | url }}" aria-describedby="search-status"><span class="search-shortcut" aria-hidden="true">⌘ K</span></label><p class="search-status" id="search-status" role="status" data-search-status>Nhập từ khóa để tìm kiếm.</p></section>
+<section class="section listing-section"><div class="article-grid" data-search-results aria-live="polite"></div></section>

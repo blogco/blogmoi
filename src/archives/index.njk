@@ -1,0 +1,14 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: collections.posts
+  size: 9
+  alias: archivePosts
+  generatePageOnEmptyData: true
+permalink: "/archives/{% if pagination.pageNumber > 0 %}page/{{ pagination.pageNumber + 1 }}/{% endif %}index.html"
+title: Bài viết
+description: Tất cả bài viết đã xuất bản trên Blogmoi.
+---
+<section class="page-hero"><p class="eyebrow">Thư viện</p><h1>Những bài viết<br><span>đáng để lưu lại.</span></h1><p>Khám phá các góc nhìn mới nhất từ Blogmoi.</p></section>
+<section class="section listing-section">{% if archivePosts.length %}<div class="article-grid">{% for post in archivePosts %}{% include "partials/article-card.njk" %}{% endfor %}</div>{% else %}<div class="empty-editorial"><span class="empty-mark" aria-hidden="true">b.</span><div><h2>Kho bài viết đang được chuẩn bị</h2><p>Các bài viết sẽ xuất hiện tại đây khi được xuất bản.</p></div></div>{% endif %}
+{% if pagination.href.previous or pagination.href.next %}<nav class="pagination" aria-label="Phân trang bài viết">{% if pagination.href.previous %}<a href="{{ pagination.href.previous | url }}" rel="prev">← Mới hơn</a>{% endif %}<span>Trang {{ pagination.pageNumber + 1 }} / {{ pagination.pages.length }}</span>{% if pagination.href.next %}<a href="{{ pagination.href.next | url }}" rel="next">Cũ hơn →</a>{% endif %}</nav>{% endif %}</section>

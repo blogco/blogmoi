@@ -1,4 +1,4 @@
-name: Deploy Hugo site to GitHub Pages
+name: Deploy Eleventy site to GitHub Pages
 
 on:
   push:
@@ -24,30 +24,34 @@ jobs:
         uses: actions/checkout@v6
       - name: Start deployment timer
         run: date +%s > /tmp/blogmoi-deploy-start
-      - name: Set up Hugo
-        uses: peaceiris/actions-hugo@v3
+      - name: Set up Node.js LTS
+        uses: actions/setup-node@v6
         with:
-          hugo-version: 0.163.1
-          extended: true
+          node-version: 24
+          cache: npm
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Build site
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Build Eleventy site
         run: |
           build_start=$(date +%s%N)
-          hugo --gc --minify
+          npm run build
           build_end=$(date +%s%N)
           build_ms=$(( (build_end - build_start) / 1000000 ))
-          echo "Hugo build: $build_ms ms" >> "$GITHUB_STEP_SUMMARY"
+          echo "Eleventy build: $build_ms ms" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: public/
+          path: _site/
       - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
       - name: Report total duration
         if: always()
         run: |
-          total_start=$(cat /tmp/blogmoi-deploy-start)
-          total_seconds=$(( $(date +%s) - total_start ))
-          echo "Workflow total after checkout: $total_seconds seconds" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f /tmp/blogmoi-deploy-start ]; then
+            total_start=$(cat /tmp/blogmoi-deploy-start)
+            total_seconds=$(( $(date +%s) - total_start ))
+            echo "Workflow total after checkout: $total_seconds seconds" >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -1,24 +1,60 @@
 (() => {
-  const nav = document.querySelector("#primary-nav");
-  const toggle = document.querySelector(".menu-toggle");
-  toggle?.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") !== "true";
-    toggle.setAttribute("aria-expanded", String(open));
-    nav?.classList.toggle("is-open", open);
+  "use strict";
+
+  const root = document.documentElement;
+  const nav = document.querySelector("[data-nav]");
+  const menu = document.querySelector("[data-menu-toggle]");
+  const theme = document.querySelector("[data-theme-toggle]");
+  const desktop = window.matchMedia("(min-width: 961px)");
+
+  function setMenu(open) {
+    if (!nav || !menu) return;
+    if (desktop.matches) {
+      nav.hidden = false;
+      menu.setAttribute("aria-expanded", "false");
+      return;
+    }
+    nav.hidden = !open;
+    menu.setAttribute("aria-expanded", String(open));
+    menu.setAttribute("aria-label", open ? "Đóng điều hướng" : "Mở điều hướng");
+  }
+
+  if (desktop.matches && nav) nav.hidden = false;
+  menu?.addEventListener("click", () => setMenu(menu.getAttribute("aria-expanded") !== "true"));
+  nav?.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setMenu(false);
   });
   document.addEventListener("click", (event) => {
-    if (!nav?.contains(event.target) && !toggle?.contains(event.target)) {
-      nav.classList.remove("is-open");
-      toggle?.setAttribute("aria-expanded", "false");
+    if (!nav?.contains(event.target) && !menu?.contains(event.target)) setMenu(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setMenu(false);
+      menu?.focus();
+    }
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      const input = document.querySelector("[data-search-input]");
+      if (input) {
+        event.preventDefault();
+        input.focus();
+      }
     }
   });
-  const page = document.documentElement;
-  let saved = "";
-  try { saved = localStorage.getItem("blogmoi-theme") || ""; } catch {}
-  if (saved === "dark" || saved === "light") page.dataset.theme = saved;
-  else if (matchMedia("(prefers-color-scheme: dark)").matches) page.dataset.theme = "dark";
-  document.querySelector(".theme-toggle")?.addEventListener("click", () => {
-    page.dataset.theme = page.dataset.theme === "dark" ? "light" : "dark";
-    try { localStorage.setItem("blogmoi-theme", page.dataset.theme); } catch {}
+  desktop.addEventListener("change", () => setMenu(false));
+
+  const preference = (() => {
+    try { return localStorage.getItem("blogmoi-theme") || ""; } catch { return ""; }
+  })();
+  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = preference === "dark" || preference === "light" ? preference : systemDark ? "dark" : "light";
+
+  function labelThemeButton() {
+    theme?.setAttribute("aria-label", root.dataset.theme === "dark" ? "Bật giao diện sáng" : "Bật giao diện tối");
+  }
+  labelThemeButton();
+  theme?.addEventListener("click", () => {
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+    try { localStorage.setItem("blogmoi-theme", root.dataset.theme); } catch { /* Preference remains for this page view. */ }
+    labelThemeButton();
   });
 })();

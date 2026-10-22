@@ -1,0 +1,8 @@
+---
+layout: layouts/base.njk
+permalink: /categories/index.html
+title: Chủ đề
+description: Khám phá các chủ đề được viết trên Blogmoi.
+---
+<section class="page-hero"><p class="eyebrow">Chủ đề</p><h1>Khám phá qua<br><span>những kết nối mới.</span></h1><p>Các chủ đề được hình thành từ nội dung bài viết đã xuất bản.</p></section>
+<section class="section listing-section"><div class="taxonomy-grid">{% for category in collections.categoryGroups %}<a class="taxonomy-card" href="{{ ('/categories/' + category.slug + '/') | url }}"><span class="taxonomy-index">{{ loop.index | padStart(2, '0') }}</span><strong>{{ category.name }}</strong><span>{{ category.posts.length }} bài viết <i aria-hidden="true">↗</i></span></a>{% else %}<div class="empty-editorial"><span class="empty-mark" aria-hidden="true">b.</span><div><h2>Chủ đề sẽ xuất hiện tại đây</h2><p>Khi có bài viết được xuất bản, bạn có thể duyệt chúng theo chủ đề.</p></div></div>{% endfor %}</div></section>

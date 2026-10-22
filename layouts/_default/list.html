@@ -1,3 +1,0 @@
-{{ define "main" }}<section class="page-hero"><p class="eyebrow">{{ if eq .Section "categories" }}Chủ đề{{ else if eq .Section "tags" }}Thẻ{{ else }}Blogmoi{{ end }}</p><h1>{{ .Title }}</h1>{{ with .Description }}<p>{{ . }}</p>{{ end }}</section>
-<section class="section listing-section">{{ if .Pages }}<div class="article-grid">{{ range .Paginator.Pages }}{{ partial "article-card.html" . }}{{ end }}</div>{{ else }}<p class="quiet-empty">Chưa có bài viết trong mục này.</p>{{ end }}
-{{ template "_internal/pagination.html" . }}</section>{{ end }}

@@ -1,0 +1,8 @@
+---
+layout: layouts/base.njk
+permalink: /tags/index.html
+title: Thẻ bài viết
+description: Tìm bài viết theo thẻ chủ đề trên Blogmoi.
+---
+<section class="page-hero"><p class="eyebrow">Từ khóa</p><h1>Duyệt bài viết<br><span>theo thẻ.</span></h1></section>
+<section class="section listing-section"><div class="tag-cloud">{% for tag in collections.tagGroups %}<a href="{{ ('/tags/' + tag.slug + '/') | url }}">#{{ tag.name }} <span>{{ tag.posts.length }}</span></a>{% else %}<p class="quiet-empty">Thẻ bài viết sẽ xuất hiện khi nội dung được xuất bản.</p>{% endfor %}</div></section>

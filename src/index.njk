@@ -1,0 +1,40 @@
+---
+layout: layouts/base.njk
+permalink: /index.html
+title: Blogmoi
+description: Góc nhìn rõ ràng về công nghệ, kinh doanh và những thay đổi quanh ta.
+---
+<section class="hero-wrap">
+  <div class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> BLOGMOI · EDITORIAL</p>
+      <h1>Hiểu sâu hơn.<br><span>Nhìn xa hơn.</span></h1>
+      <p class="hero-lede">Những góc nhìn có căn cứ về công nghệ, kinh doanh và các chuyển động định hình cuộc sống.</p>
+      <div class="hero-actions"><a class="button button--primary" href="{{ '/archives/' | url }}">Khám phá bài viết <span aria-hidden="true">↗</span></a><a class="text-link" href="{{ '/about/' | url }}">Tìm hiểu Blogmoi</a></div>
+    </div>
+    <div class="hero-art" aria-label="Hình minh họa trừu tượng về ý tưởng và chuyển động" role="img">
+      <div class="hero-art__orbit hero-art__orbit--one"></div><div class="hero-art__orbit hero-art__orbit--two"></div>
+      <div class="hero-art__core"></div>
+      <div class="hero-art__note"><span>01 / PERSPECTIVE</span><strong>Ideas<br>in motion.</strong><b>b.</b></div>
+      <div class="hero-art__caption">CONTEXT <i></i> CLARITY <i></i> CHANGE</div>
+    </div>
+  </div>
+  <div class="hero-strip"><span>Independent perspective</span><span class="strip-line"></span><span>Vietnamese-first editorial</span></div>
+</section>
+
+<section class="section section--featured" aria-labelledby="featured-title">
+  <div class="section-heading"><div><p class="eyebrow">Được chọn lọc</p><h2 id="featured-title">Bài viết nổi bật</h2></div><a class="text-link" href="{{ '/archives/' | url }}">Tất cả bài viết <span aria-hidden="true">→</span></a></div>
+  {% set featured = collections.posts | featuredPosts %}
+  {% if featured.length %}<div class="article-grid">{% for post in featured.slice(0, 3) %}{% include "partials/article-card.njk" %}{% endfor %}</div>
+  {% else %}<div class="empty-editorial"><span class="empty-mark" aria-hidden="true">b.</span><div><h3>Bài viết đầu tiên đang được biên tập</h3><p>Nội dung sẽ xuất hiện tại đây sau khi được biên tập và xuất bản.</p></div></div>{% endif %}
+</section>
+
+<section class="discovery" aria-labelledby="discovery-title">
+  <div><p class="eyebrow">Khám phá theo chủ đề</p><h2 id="discovery-title">Ý tưởng tốt bắt đầu từ câu hỏi phù hợp.</h2></div>
+  <div class="topic-links">{% if collections.categoryGroups.length %}{% for category in collections.categoryGroups %}<a href="{{ ('/categories/' + category.slug + '/') | url }}">{{ category.name }}<span aria-hidden="true">↗</span></a>{% endfor %}{% else %}<p>Chủ đề sẽ được tạo từ các bài viết đã xuất bản.</p>{% endif %}</div>
+</section>
+
+<section class="section section--latest" aria-labelledby="latest-title">
+  <div class="section-heading"><div><p class="eyebrow">Mới nhất</p><h2 id="latest-title">Bài viết gần đây</h2></div><a class="text-link" href="{{ '/archives/' | url }}">Mở kho lưu trữ <span aria-hidden="true">→</span></a></div>
+  {% if collections.posts.length %}<div class="article-grid">{% for post in collections.posts.slice(0, 3) %}{% include "partials/article-card.njk" %}{% endfor %}</div>{% else %}<p class="quiet-empty">Chưa có bài viết. Hãy quay lại sau.</p>{% endif %}
+</section>

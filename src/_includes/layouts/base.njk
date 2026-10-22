@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="{{ lang or 'vi' }}" data-theme="light">
+<head>
+  {% set title = seoTitle or title or site.title %}
+  {% set description = seoDescription or description or site.description %}
+  {% set canonicalUrl = canonical or page.url | absoluteUrl %}
+  {% set socialImage = ogImage or cover or '/images/blogmoi-mark.svg' %}
+  {% set ogImageUrl = socialImage | absoluteUrl %}
+  {% set ogType = 'article' if type == 'article' else 'website' %}
+  {% if type == 'article' %}{% set structuredData = {"@context":"https://schema.org","@type":"BlogPosting","headline":title,"description":description,"datePublished":date | dateIso,"dateModified":lastModified or date | dateIso,"author":{"@type":"Person","name":author or "Blogmoi"},"mainEntityOfPage":canonicalUrl,"publisher":{"@type":"Organization","name":site.title},"inLanguage":lang or "vi"} %}{% endif %}
+  {% include "partials/head.njk" %}
+  <title>{{ title }}{% if title != site.title %} · {{ site.title }}{% else %} — Góc nhìn rõ ràng{% endif %}</title>
+</head>
+<body>
+  {% include "partials/header.njk" %}
+  <main id="main-content">{{ content | safe }}</main>
+  {% include "partials/footer.njk" %}
+  <script src="{{ '/js/site.js' | url }}" defer></script>
+  {% if page.url == '/search/' %}<script src="{{ '/js/search.js' | url }}" defer></script>{% endif %}
+</body>
+</html>
