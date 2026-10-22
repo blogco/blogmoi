@@ -1,0 +1,192 @@
+---
+layout: layouts/base.njk
+title: Chi phí hàng tháng
+description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhận gợi ý từ dữ liệu lưu trên thiết bị.
+---
+<section class="expense-hero" aria-labelledby="expense-title">
+  <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Công cụ cá nhân · Lưu trên thiết bị</p>
+  <div class="expense-hero__heading">
+    <div>
+      <h1 id="expense-title">Chi phí <span>hàng tháng</span></h1>
+      <p>Ghi nhanh bằng lời, xem rõ từng khoản. Dữ liệu của bạn nằm trong trình duyệt này.</p>
+    </div>
+    <a class="expense-hero__jump" href="#expense-dashboard">Xem báo cáo <span aria-hidden="true">↓</span></a>
+  </div>
+</section>
+
+<div class="expense-app" id="expense-app" data-state="loading">
+  <section class="expense-panel expense-entry" aria-labelledby="entry-title">
+    <div class="expense-section-heading">
+      <div>
+        <p class="expense-index">01 / NHẬP CHI PHÍ</p>
+        <h2 id="entry-title">Một câu là đủ để bắt đầu</h2>
+      </div>
+      <span class="local-badge"><span aria-hidden="true">●</span> Chỉ lưu trên thiết bị</span>
+    </div>
+
+    <form id="expense-form" novalidate>
+      <label class="expense-label" for="expense-natural-input">Mô tả giao dịch</label>
+      <p class="expense-hint" id="expense-input-hint">Ví dụ: Matcha Latte không đường 50k hôm nay Highlands</p>
+      <div class="natural-input-row">
+        <textarea id="expense-natural-input" rows="3" aria-describedby="expense-input-hint" placeholder="Nhập món, số tiền, ngày hoặc quán…"></textarea>
+        <button class="button button--primary analyze-button" type="button" id="analyze-expense">Phân tích câu</button>
+      </div>
+      <p class="parse-status" id="parse-status" role="status" aria-live="polite"></p>
+
+      <div class="expense-fields" id="expense-fields">
+        <div class="expense-field">
+          <label class="expense-label" for="expense-merchant">Quán / thương hiệu <span class="field-review" data-review="merchant" hidden></span></label>
+          <input id="expense-merchant" name="merchant" type="text" maxlength="100" autocomplete="organization" required>
+        </div>
+        <div class="expense-field">
+          <label class="expense-label" for="expense-item">Tên món / khoản chi <span class="field-review" data-review="itemName" hidden></span></label>
+          <input id="expense-item" name="itemName" type="text" maxlength="120" required>
+        </div>
+        <div class="expense-field expense-field--amount">
+          <label class="expense-label" for="expense-amount">Số tiền (VND) <span class="field-review" data-review="amount" hidden></span></label>
+          <input id="expense-amount" name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="50.000" required>
+        </div>
+        <div class="expense-field">
+          <label class="expense-label" for="expense-date">Ngày giao dịch <span class="field-review" data-review="date" hidden></span></label>
+          <input id="expense-date" name="date" type="date" required>
+        </div>
+        <div class="expense-field">
+          <label class="expense-label" for="expense-taste">Vị / khẩu vị <span class="field-review" data-review="taste" hidden></span></label>
+          <input id="expense-taste" name="taste" type="text" maxlength="80" placeholder="Không đường, ít đá…">
+        </div>
+        <div class="expense-field">
+          <label class="expense-label" for="expense-category">Danh mục <span class="field-review" data-review="category" hidden></span></label>
+          <select id="expense-category" name="category" required>
+            <option value="">Chọn danh mục</option>
+            <option value="Đồ uống">Đồ uống</option>
+            <option value="Đồ ăn">Đồ ăn</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </div>
+        <div class="expense-field expense-field--wide">
+          <label class="expense-label" for="expense-notes">Ghi chú <span class="expense-optional">Không bắt buộc</span></label>
+          <textarea id="expense-notes" name="notes" rows="2" maxlength="500" placeholder="Ghi chú thêm nếu cần"></textarea>
+        </div>
+      </div>
+      <div class="expense-form-actions">
+        <button class="button button--primary" type="submit" id="save-expense">Lưu giao dịch</button>
+        <button class="button button--secondary" type="button" id="cancel-edit" hidden>Hủy chỉnh sửa</button>
+        <p class="expense-hint">Hệ thống chỉ lưu khi bạn bấm nút này.</p>
+      </div>
+    </form>
+  </section>
+
+  <section class="expense-dashboard" id="expense-dashboard" aria-labelledby="dashboard-title">
+    <div class="expense-section-heading dashboard-heading">
+      <div>
+        <p class="expense-index">02 / BÁO CÁO & GÓC NHÌN</p>
+        <h2 id="dashboard-title">Tổng quan chi phí</h2>
+      </div>
+      <div class="month-control">
+        <label class="expense-label" for="dashboard-month">Tháng báo cáo</label>
+        <input id="dashboard-month" type="month" aria-label="Chọn tháng báo cáo">
+      </div>
+    </div>
+
+    <div class="expense-kpis" aria-live="polite" aria-atomic="true">
+      <article class="kpi-card kpi-card--primary">
+        <p class="kpi-label">Tổng chi tiêu</p>
+        <p class="kpi-value" id="kpi-total">—</p>
+        <p class="kpi-caption" id="kpi-period">Tháng đang chọn</p>
+      </article>
+      <article class="kpi-card">
+        <p class="kpi-label">Giao dịch</p>
+        <p class="kpi-value" id="kpi-count">—</p>
+        <p class="kpi-caption">Trong tháng</p>
+      </article>
+      <article class="kpi-card">
+        <p class="kpi-label">Trung bình / ngày có chi</p>
+        <p class="kpi-value" id="kpi-average">—</p>
+        <p class="kpi-caption" id="kpi-active-days">Tính theo ngày có giao dịch</p>
+      </article>
+      <article class="kpi-card kpi-card--comparison">
+        <p class="kpi-label">So với tháng trước</p>
+        <p class="kpi-value" id="kpi-comparison">—</p>
+        <p class="kpi-caption" id="kpi-comparison-caption">Chưa đủ dữ liệu để so sánh</p>
+      </article>
+    </div>
+
+    <section class="chart-panel spending-panel" aria-labelledby="spending-title">
+      <div class="chart-heading">
+        <div>
+          <p class="chart-kicker">DIỄN BIẾN THEO NGÀY</p>
+          <h3 id="spending-title">Chi tiêu trong tháng</h3>
+        </div>
+        <p class="chart-summary" id="spending-summary">Tổng theo ngày giao dịch</p>
+      </div>
+      <div class="line-chart-wrap">
+        <svg class="line-chart" id="daily-chart" viewBox="0 0 800 280" role="img" aria-label="Biểu đồ chi tiêu theo ngày" aria-describedby="daily-chart-data"></svg>
+        <div class="chart-tooltip" id="daily-tooltip" role="status" aria-live="polite" hidden></div>
+      </div>
+      <p class="chart-empty" id="daily-empty" hidden>Chưa có giao dịch trong tháng này. Biểu đồ sẽ hiển thị khi bạn lưu khoản chi đầu tiên.</p>
+      <details class="chart-data-details">
+        <summary id="daily-chart-data">Xem bảng số liệu theo ngày</summary>
+        <div class="table-scroll">
+          <table>
+            <caption>Chi tiêu theo ngày trong tháng được chọn</caption>
+            <thead><tr><th scope="col">Ngày</th><th scope="col">Số giao dịch</th><th scope="col">Tổng chi tiêu</th></tr></thead>
+            <tbody id="daily-data-table"></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <div class="chart-grid">
+      <section class="chart-panel" aria-labelledby="category-title">
+        <div class="chart-heading">
+          <div><p class="chart-kicker">CƠ CẤU CHI TIÊU</p><h3 id="category-title">Theo danh mục</h3></div>
+        </div>
+        <div class="donut-layout">
+          <svg class="donut-chart" id="category-chart" viewBox="0 0 220 220" role="img" aria-label="Biểu đồ tỷ trọng theo danh mục" aria-describedby="category-legend"></svg>
+          <ul class="chart-legend" id="category-legend" aria-label="Chú giải danh mục"></ul>
+        </div>
+        <p class="chart-empty" id="category-empty" hidden>Chưa có dữ liệu danh mục cho tháng này.</p>
+      </section>
+
+      <section class="chart-panel" aria-labelledby="merchant-title">
+        <div class="chart-heading">
+          <div><p class="chart-kicker">ĐIỂM CHI NHIỀU NHẤT</p><h3 id="merchant-title">Top quán / thương hiệu</h3></div>
+        </div>
+        <ol class="merchant-bars" id="merchant-bars"></ol>
+        <p class="chart-empty" id="merchant-empty" hidden>Chưa có dữ liệu quán / thương hiệu cho tháng này.</p>
+      </section>
+    </div>
+
+    <section class="insights-panel" aria-labelledby="insights-title">
+      <div class="expense-section-heading">
+        <div><p class="expense-index">PHÂN TÍCH NGOẠI TUYẾN</p><h3 id="insights-title">Góc nhìn từ dữ liệu của bạn</h3></div>
+        <span class="insights-badge">Không gửi dữ liệu ra ngoài</span>
+      </div>
+      <div class="insight-list" id="insight-list" aria-live="polite"></div>
+      <p class="health-note">Gợi ý về khẩu vị chỉ dựa trên tên món và ghi chú bạn nhập; không suy ra lượng đường, calo, chất béo hay tình trạng sức khỏe. Đây là thông tin tham khảo, không phải tư vấn y tế.</p>
+    </section>
+
+    <section class="transactions-panel" aria-labelledby="transactions-title">
+      <div class="expense-section-heading transactions-heading">
+        <div><p class="expense-index">LỊCH SỬ GIAO DỊCH</p><h3 id="transactions-title">Các khoản chi</h3></div>
+        <div class="backup-actions">
+          <input id="backup-file" class="sr-only" type="file" accept=".json,.csv,application/json,text/csv">
+          <label class="button button--secondary import-button" for="backup-file">Nhập bản sao lưu</label>
+          <button class="button button--secondary" id="export-json" type="button">Xuất JSON</button>
+          <button class="button button--secondary" id="export-csv" type="button">Xuất CSV</button>
+        </div>
+      </div>
+      <div class="privacy-note" role="note"><strong>Dữ liệu riêng tư:</strong> giao dịch chỉ được lưu trong IndexedDB của trình duyệt trên thiết bị này. Dữ liệu không tự đồng bộ giữa các thiết bị và có thể mất nếu bạn xóa dữ liệu trình duyệt. Hãy xuất bản sao lưu định kỳ.</div>
+      <div class="transaction-filters" aria-label="Tìm kiếm và lọc giao dịch">
+        <div class="expense-field filter-search"><label class="expense-label" for="transaction-search">Tìm giao dịch</label><input id="transaction-search" type="search" placeholder="Tìm quán, món, ghi chú…"></div>
+        <div class="expense-field"><label class="expense-label" for="transaction-month">Tháng</label><select id="transaction-month"><option value="all">Tất cả tháng</option></select></div>
+        <div class="expense-field"><label class="expense-label" for="transaction-category">Danh mục</label><select id="transaction-category"><option value="all">Tất cả danh mục</option><option value="Đồ uống">Đồ uống</option><option value="Đồ ăn">Đồ ăn</option><option value="Khác">Khác</option></select></div>
+        <div class="expense-field"><label class="expense-label" for="transaction-sort">Sắp xếp</label><select id="transaction-sort"><option value="date-desc">Ngày mới nhất</option><option value="date-asc">Ngày cũ nhất</option><option value="amount-desc">Số tiền cao nhất</option><option value="amount-asc">Số tiền thấp nhất</option></select></div>
+      </div>
+      <p class="transaction-status" id="transaction-status" role="status" aria-live="polite"></p>
+      <div class="transaction-list" id="transaction-list"></div>
+      <p class="transaction-empty" id="transaction-empty" hidden>Chưa có giao dịch phù hợp. Hãy thêm khoản chi đầu tiên ở phía trên.</p>
+      <p class="storage-error" id="storage-error" role="alert" hidden></p>
+    </section>
+  </section>
+</div>

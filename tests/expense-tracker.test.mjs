@@ -1,0 +1,124 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  aggregateMonth,
+  formatVnd,
+  getMonthlyComparison,
+  parseCsv,
+  parseExpenseText,
+  prepareImportRows,
+  serializeCsv,
+  validateTransaction,
+} from "../static/js/expense-tracker.js";
+
+const fixedNow = new Date(2026, 9, 23, 12);
+
+function transaction(overrides = {}) {
+  return {
+    id: "expense-1",
+    merchant: "Highlands",
+    itemName: "Matcha Latte",
+    amount: 50_000,
+    date: "2026-10-23",
+    taste: "Không đường",
+    category: "Đồ uống",
+    notes: "",
+    createdAt: "2026-10-23T05:00:00.000Z",
+    updatedAt: "2026-10-23T05:00:00.000Z",
+    ...overrides,
+  };
+}
+
+test("parses the example sentence into editable values", () => {
+  const result = parseExpenseText("Matcha Latte không đường 50k hôm nay 23 tháng 10 năm 2026 Highlands", fixedNow);
+  assert.deepEqual(
+    { merchant: result.merchant, itemName: result.itemName, amount: result.amount, date: result.date, taste: result.taste, category: result.category },
+    { merchant: "Highlands", itemName: "Matcha Latte", amount: 50_000, date: "2026-10-23", taste: "không đường", category: "Đồ uống" },
+  );
+  assert.deepEqual(Object.values(result.review), [false, false, false, false, false, false]);
+});
+
+test("parses relative dates, money formats, and variable word order", () => {
+  assert.equal(parseExpenseText("50 nghìn Phở bò hôm qua tại quán Phở 24", fixedNow).date, "2026-10-22");
+  assert.equal(parseExpenseText("bánh mì 50.000 hôm nay tại Tiệm An", fixedNow).amount, 50_000);
+  assert.equal(parseExpenseText("Highlands mua Matcha Latte 50k ngày 23/10/2026 không đường", fixedNow).itemName, "Matcha Latte");
+  assert.equal(parseExpenseText("Highlands mua Matcha Latte 50k ngày 23/10/2026 không đường", fixedNow).date, "2026-10-23");
+});
+
+test("leaves missing details empty and marks uncertain fields for review", () => {
+  const result = parseExpenseText("Matcha Latte", fixedNow);
+  assert.equal(result.merchant, "");
+  assert.equal(result.amount, "");
+  assert.equal(result.date, "");
+  assert.equal(result.category, "Đồ uống");
+  assert.equal(result.review.merchant, true);
+  assert.equal(result.review.amount, true);
+  assert.equal(result.review.date, true);
+  const partialDate = parseExpenseText("bánh mì 50.000 ngày 23/10", fixedNow);
+  assert.equal(partialDate.date, "");
+  assert.equal(partialDate.review.date, true);
+  assert.equal(partialDate.itemName, "bánh mì");
+});
+
+test("requires valid and complete fields before a transaction can be stored", () => {
+  assert.throws(() => validateTransaction({ itemName: "Matcha Latte", amount: 50_000, date: "2026-10-23", category: "Đồ uống" }), /Tên quán/);
+  assert.throws(() => validateTransaction(transaction({ date: "2026-02-30" })), /Ngày giao dịch/);
+  assert.throws(() => validateTransaction(transaction({ amount: 50.5 })), /số nguyên/);
+  const valid = validateTransaction(transaction(), { now: fixedNow, makeId: () => "generated" });
+  assert.equal(valid.amount, 50_000);
+  assert.equal(valid.category, "Đồ uống");
+});
+
+test("aggregates totals, transaction counts, active-day averages and merchant totals", () => {
+  const rows = [
+    transaction(),
+    transaction({ id: "expense-2", itemName: "Trà đào", amount: 30_000, date: "2026-10-23", category: "Đồ uống" }),
+    transaction({ id: "expense-3", merchant: "Tiệm An", itemName: "Bánh mì", amount: 20_000, date: "2026-10-24", category: "Đồ ăn" }),
+  ];
+  const summary = aggregateMonth(rows, "2026-10");
+  assert.equal(summary.total, 100_000);
+  assert.equal(summary.count, 3);
+  assert.equal(summary.activeDays, 2);
+  assert.equal(summary.averagePerActiveDay, 50_000);
+  assert.deepEqual(summary.merchants.map(item => [item.merchant, item.total]), [["Highlands", 80_000], ["Tiệm An", 20_000]]);
+  assert.equal(formatVnd(summary.total), "100.000 ₫");
+});
+
+test("compares the same elapsed days and handles a missing or zero previous month", () => {
+  const rows = [
+    transaction({ id: "oct-1", amount: 60_000, date: "2026-10-10" }),
+    transaction({ id: "oct-2", amount: 10_000, date: "2026-10-25" }),
+    transaction({ id: "sep-1", amount: 50_000, date: "2026-09-10" }),
+    transaction({ id: "sep-2", amount: 90_000, date: "2026-09-25" }),
+  ];
+  const comparison = getMonthlyComparison(rows, "2026-10", fixedNow);
+  assert.equal(comparison.currentTotal, 60_000);
+  assert.equal(comparison.previousTotal, 50_000);
+  assert.equal(comparison.difference, 10_000);
+  assert.equal(comparison.percentage, 20);
+  assert.equal(comparison.throughDay, 23);
+  assert.equal(getMonthlyComparison([transaction()], "2026-10", fixedNow), null);
+  assert.equal(getMonthlyComparison([transaction({ date: "2026-10-10" }), transaction({ id: "prev-zero", date: "2026-09-10", amount: 0 })], "2026-10", fixedNow), null);
+});
+
+test("exports and restores CSV with commas, quotes, and line breaks", () => {
+  const rows = [transaction({ merchant: "Quán, \"An\"", notes: "ngồi tầng 2\ngần cửa sổ" })];
+  const csv = serializeCsv(rows);
+  const restored = parseCsv(csv);
+  assert.equal(restored[0].merchant, rows[0].merchant);
+  assert.equal(restored[0].notes, rows[0].notes);
+  assert.equal(Number(restored[0].amount), rows[0].amount);
+});
+
+test("validates imported rows and skips duplicates by ID or transaction details", () => {
+  const base = transaction();
+  const result = prepareImportRows([
+    base,
+    { ...base, id: "different-id" },
+    { ...base, id: "new-id", itemName: "Bánh mì", category: "Đồ ăn" },
+    { ...base, id: "invalid", amount: -1 },
+  ], [base], { now: fixedNow, makeId: () => "generated" });
+  assert.equal(result.imported.length, 1);
+  assert.equal(result.imported[0].itemName, "Bánh mì");
+  assert.deepEqual(result.skipped, { duplicate: 2, invalid: 1 });
+});
