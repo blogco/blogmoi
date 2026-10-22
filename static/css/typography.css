@@ -83,6 +83,10 @@
   .internal-links-list time { font-size: .875rem; font-weight: var(--weight-medium); }
   .faq-item summary { font-size: 1.125rem; font-weight: var(--weight-bold); line-height: 1.55; }
   .faq-item__answer { font-size: 1.0625rem; font-weight: var(--weight-medium); line-height: 1.75; }
+  .topic-discovery__label { font-size: .875rem; font-weight: var(--weight-bold); letter-spacing: .035em; }
+  .topic-discovery-card h3 { font-size: 1.25rem; font-weight: var(--weight-bold); line-height: 1.35; }
+  .topic-discovery__description { font-size: 1rem; font-weight: var(--weight-medium); line-height: 1.65; }
+  .topic-discovery__link { font-size: 1rem; font-weight: var(--weight-bold); }
 
   @media (max-width: 620px) {
     body { font-size: 1.0625rem; }

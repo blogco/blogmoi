@@ -1,3 +1,5 @@
+import { resolveTopicSuggestions, syncEditorialTopicStatuses } from "./lib/editorial-topic-discovery.js";
+
 const PATH_PREFIX = "/blogmoi/";
 const SITE_ORIGIN = "https://blogco.github.io";
 
@@ -29,11 +31,13 @@ function groupPosts(posts, field) {
 export default function (eleventyConfig) {
   eleventyConfig.addGlobalData("year", new Date().getFullYear());
   eleventyConfig.addPassthroughCopy({ static: "." });
-  eleventyConfig.addCollection("posts", (api) =>
-    api.getFilteredByGlob("src/posts/**/*.md")
+  eleventyConfig.addCollection("posts", (api) => {
+    const posts = api.getFilteredByGlob("src/posts/**/*.md")
       .filter((post) => !post.data.draft)
-      .sort((a, b) => b.date - a.date)
-  );
+      .sort((a, b) => b.date - a.date);
+    syncEditorialTopicStatuses(posts);
+    return posts;
+  });
   eleventyConfig.addCollection("categoryGroups", (api) => groupPosts(api.getFilteredByGlob("src/posts/**/*.md").filter((post) => !post.data.draft), "categories"));
   eleventyConfig.addCollection("tagGroups", (api) => groupPosts(api.getFilteredByGlob("src/posts/**/*.md").filter((post) => !post.data.draft), "tags"));
 
@@ -54,6 +58,8 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("relatedPosts", (posts, currentUrl, categories = []) => posts
     .filter((post) => post.url !== currentUrl && (post.data.categories || []).some((category) => categories.includes(category)))
     .slice(0, 3));
+  eleventyConfig.addFilter("topicSuggestions", (posts, currentUrl, relatedPosts = []) =>
+    resolveTopicSuggestions(posts, currentUrl, relatedPosts));
   eleventyConfig.addFilter("featuredPosts", (posts) => posts.filter((post) => post.data.featured));
   eleventyConfig.addFilter("dateReadable", (date) => new Intl.DateTimeFormat("vi-VN", {
     dateStyle: "long", timeZone: "Asia/Ho_Chi_Minh"

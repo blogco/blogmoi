@@ -1,0 +1,22 @@
+{% if topicDiscovery.length %}
+<section class="article-panel topic-discovery-panel" aria-labelledby="topic-discovery-title">
+  <div class="article-panel__heading"><span class="article-panel__number">04</span><h2 id="topic-discovery-title">Khám phá tiếp chủ đề này</h2></div>
+  <p class="topic-discovery__intro">Muốn tìm hiểu sâu hơn? Khám phá những góc nhìn liên quan đến nội dung bạn vừa đọc.</p>
+  <ul class="topic-discovery__grid">
+    {% for item in topicDiscovery %}
+      <li class="topic-discovery-card{% if item.kind == 'published' %} topic-discovery-card--published{% endif %}">
+        {% if item.kind == "published" %}
+          <p class="topic-discovery__label">Đã có bài viết</p>
+          <h3>{{ item.title }}</h3>
+          {% if item.description %}<p class="topic-discovery__description">{{ item.description }}</p>{% endif %}
+          <a class="topic-discovery__link" href="{{ item.url | url }}">Đọc bài viết <span aria-hidden="true">→</span></a>
+        {% else %}
+          <p class="topic-discovery__label">Chủ đề có thể bạn quan tâm</p>
+          <h3>{{ item.title }}</h3>
+          <p class="topic-discovery__description">{{ item.rationale }}</p>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}

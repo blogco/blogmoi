@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "suggestions": [
+    {
+      "id": "ssg-reproducible-benchmark",
+      "title": "Benchmark Eleventy, Hugo và Astro trên cùng một bộ nội dung",
+      "sourceArticles": [
+        "top-5-cong-nghe-tao-website-tinh-2026",
+        "xay-dung-blog-tinh-voi-eleventy-11ty"
+      ],
+      "rationale": "Bài so sánh hiện mô tả tốc độ theo định tính và không có benchmark. Một phép đo dùng cùng nội dung, template và máy chạy sẽ giúp người đọc so sánh kết quả trong điều kiện cụ thể.",
+      "connections": {
+        "top-5-cong-nghe-tao-website-tinh-2026": "Bài so sánh nói rõ chưa có benchmark; phép đo có điều kiện công khai sẽ giúp người đọc tự đối chiếu thay vì suy ra tốc độ từ nhận định chung.",
+        "xay-dung-blog-tinh-voi-eleventy-11ty": "Bài hướng dẫn mô tả cấu hình Blogmoi nhưng không đo thời gian build; benchmark cùng bộ nội dung có thể bổ sung dữ liệu thực tế cho lựa chọn công cụ."
+      },
+      "readerSearchIntent": "Muốn so sánh thời gian build thực tế giữa các SSG trên cùng điều kiện.",
+      "keywords": [
+        "benchmark Eleventy Hugo Astro",
+        "so sánh tốc độ build SSG",
+        "thời gian build website tĩnh"
+      ],
+      "relatedArticles": [
+        "top-5-cong-nghe-tao-website-tinh-2026",
+        "xay-dung-blog-tinh-voi-eleventy-11ty"
+      ],
+      "priority": "high",
+      "status": "proposed",
+      "match": {
+        "allTerms": ["benchmark", "eleventy", "hugo", "astro"]
+      }
+    },
+    {
+      "id": "hugo-to-eleventy-migration-checklist",
+      "title": "Chuyển blog từ Hugo sang Eleventy: checklist giữ URL và quy trình deploy",
+      "sourceArticles": [
+        "top-5-cong-nghe-tao-website-tinh-2026",
+        "xay-dung-blog-tinh-voi-eleventy-11ty"
+      ],
+      "rationale": "Repository ghi nhận Blogmoi đã chuyển từ Hugo sang Eleventy, còn bài hướng dẫn tập trung vào kiến trúc đang chạy. Một checklist chuyển đổi riêng có thể làm rõ cách rà permalink, template, build và Pages.",
+      "connections": {
+        "top-5-cong-nghe-tao-website-tinh-2026": "Bài so sánh nêu trải nghiệm chọn Eleventy sau Hugo; checklist chuyển đổi sẽ mở rộng câu chuyện thành các bước có thể áp dụng.",
+        "xay-dung-blog-tinh-voi-eleventy-11ty": "Bài hiện tại mô tả cấu trúc sau khi chuyển; checklist có thể bổ sung các bước chuyển URL, template và triển khai."
+      },
+      "readerSearchIntent": "Muốn chuyển một blog Hugo sang Eleventy mà vẫn giữ đường dẫn và quy trình xuất bản.",
+      "keywords": [
+        "chuyển Hugo sang Eleventy",
+        "migration Hugo Eleventy",
+        "giữ permalink khi đổi SSG"
+      ],
+      "relatedArticles": [
+        "top-5-cong-nghe-tao-website-tinh-2026",
+        "xay-dung-blog-tinh-voi-eleventy-11ty"
+      ],
+      "priority": "medium",
+      "status": "proposed",
+      "match": {
+        "allTerms": ["hugo", "eleventy", "chuyển"]
+      }
+    },
+    {
+      "id": "debug-vietnamese-font-subsets",
+      "title": "Cách kiểm tra unicode-range và font fallback tiếng Việt",
+      "sourceArticles": ["vi-sao-blogmoi-chon-be-vietnam-pro"],
+      "rationale": "Case study giải thích subset Latin/Vietnamese và rủi ro khi thiếu dấu kết hợp. Một hướng dẫn kiểm tra trong trình duyệt có thể giúp chẩn đoán glyph bị thiếu hoặc fallback sai.",
+      "connections": {
+        "vi-sao-blogmoi-chon-be-vietnam-pro": "Bài hiện tại mô tả cách chia subset và unicode-range; hướng dẫn kiểm tra sẽ nối phần cấu hình với cách tìm lỗi hiển thị dấu tiếng Việt."
+      },
+      "readerSearchIntent": "Muốn tìm nguyên nhân dấu tiếng Việt bị thiếu, sai font hoặc tải nhầm subset.",
+      "keywords": [
+        "kiểm tra unicode-range tiếng Việt",
+        "font fallback tiếng Việt",
+        "WOFF2 Vietnamese subset"
+      ],
+      "relatedArticles": [
+        "vi-sao-blogmoi-chon-be-vietnam-pro",
+        "xay-dung-blog-tinh-voi-eleventy-11ty"
+      ],
+      "priority": "high",
+      "status": "proposed",
+      "match": {
+        "allTerms": ["unicode-range", "font", "tiếng việt"]
+      }
+    },
+    {
+      "id": "measure-font-swap-cls",
+      "title": "Đo CLS khi dùng font tự host: fallback, preload và font metrics",
+      "sourceArticles": ["vi-sao-blogmoi-chon-be-vietnam-pro"],
+      "rationale": "Case study ghi rõ repository chưa có phép đo CLS hoặc font metric overrides. Một bài thực hành có thể chỉ cách kiểm tra layout shift khi font fallback được thay bằng font tự host.",
+      "connections": {
+        "vi-sao-blogmoi-chon-be-vietnam-pro": "Bài hiện tại nêu giới hạn chưa đo CLS; hướng dẫn đo sẽ giúp người đọc kiểm tra tác động của font-display và metrics trên chính trang của họ."
+      },
+      "readerSearchIntent": "Muốn đo layout shift khi font web tải xong và thay font fallback.",
+      "keywords": [
+        "CLS khi tải font",
+        "đo layout shift font swap",
+        "font-display preload metrics"
+      ],
+      "relatedArticles": [
+        "vi-sao-blogmoi-chon-be-vietnam-pro"
+      ],
+      "priority": "medium",
+      "status": "proposed",
+      "match": {
+        "allTerms": ["cls", "font", "font-display"]
+      }
+    }
+  ]
+}

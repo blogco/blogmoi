@@ -6,6 +6,7 @@ layout: layouts/base.njk
 
   {% set articleToc = content | toc %}
   {% set relatedPosts = collections.posts | relatedPosts(page.url, categories or []) %}
+  {% set topicDiscovery = collections.posts | topicSuggestions(page.url, relatedPosts) %}
   <div class="article-layout">
     <div class="article-main" id="article-content">
       {% include "components/ai-keypoints.njk" %}
@@ -24,5 +25,6 @@ layout: layouts/base.njk
     {% include "components/copyright-sources.njk" %}
     {% include "components/internal-links.njk" %}
     {% include "components/article-faq.njk" %}
+    {% include "components/topic-discovery.njk" %}
   </div>
 </article>

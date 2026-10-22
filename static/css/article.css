@@ -127,6 +127,17 @@
   .faq-item[open] .faq-item__icon::after { transform: translate(-50%, -50%) rotate(0); }
   .faq-item__answer { max-width: 75ch; padding: 0 42px 18px 3px; color: var(--muted); line-height: 1.75; white-space: pre-line; }
 
+  .topic-discovery-panel { border-color: color-mix(in srgb, var(--teal) 22%, var(--line)); }
+  .topic-discovery__intro { max-width: 65ch; margin: -4px 0 20px; color: var(--muted); }
+  .topic-discovery__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .topic-discovery-card { display: flex; min-width: 0; min-height: 190px; flex-direction: column; align-items: flex-start; gap: 11px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .topic-discovery-card--published { background: color-mix(in srgb, var(--mint) 24%, var(--surface)); }
+  .topic-discovery__label { margin: 0; color: var(--teal); }
+  .topic-discovery-card h3 { margin: 0; color: var(--ink); }
+  .topic-discovery__description { margin: 0; color: var(--muted); }
+  .topic-discovery__link { display: inline-flex; align-items: center; gap: 8px; margin-top: auto; color: var(--teal); text-decoration: none; }
+  .topic-discovery__link:hover { text-decoration: underline; }
+
   @media (max-width: 1199px) {
     .article-layout { grid-template-areas: "sidebar" "main"; grid-template-columns: minmax(0, 900px); gap: 24px; }
     .article-sidebar { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: none; overflow: visible; scrollbar-gutter: auto; }
@@ -151,6 +162,7 @@
     .article-endmatter { margin-top: 54px; }
     .internal-links-list { grid-template-columns: minmax(0, 1fr); }
     .internal-links-list a { min-height: 110px; }
+    .topic-discovery__grid { grid-template-columns: minmax(0, 1fr); }
     .source-details > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
   }
 }
