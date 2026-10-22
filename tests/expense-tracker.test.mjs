@@ -112,6 +112,68 @@ test("compares full calendar months and reports missing or zero previous month",
   assert.equal(getMonthlyComparison([transaction({ date: "2026-10-10" }), transaction({ id: "prev-zero", date: "2026-09-10", amount: 0 })], "2026-10").status, "zero");
 });
 
+test("all-time and selected-month comparisons use transaction dates across year boundaries", () => {
+  const rows = [
+    transaction({ id: "oct", amount: 100_000, date: "2026-10-15", createdAt: "2026-09-01T00:00:00.000Z", updatedAt: "2027-01-01T00:00:00.000Z" }),
+    transaction({ id: "sep", amount: 225_000, date: "2026-09-15", createdAt: "2026-10-01T00:00:00.000Z", updatedAt: "2026-08-01T00:00:00.000Z" }),
+    transaction({ id: "aug", amount: 80_000, date: "2026-08-15" }),
+    transaction({ id: "dec", amount: 125_000, date: "2026-12-15" }),
+    transaction({ id: "jan", amount: 50_000, date: "2027-01-15" }),
+  ];
+
+  const allTime = getMonthlyComparison(rows, "all", fixedNow);
+  assert.equal(allTime.currentMonth, "2026-10");
+  assert.equal(allTime.previousMonth, "2026-09");
+  assert.equal(allTime.currentTotal, 100_000);
+  assert.equal(allTime.previousTotal, 225_000);
+  assert.equal(allTime.difference, -125_000);
+  assert.ok(Math.abs(allTime.percentage - (-55.55555555555556)) < 1e-10);
+
+  const selectedOctober = getMonthlyComparison(rows, "2026-10", fixedNow);
+  assert.equal(selectedOctober.currentTotal, 100_000);
+  assert.equal(selectedOctober.previousTotal, 225_000);
+  assert.equal(selectedOctober.difference, -125_000);
+
+  const selectedSeptember = getMonthlyComparison(rows, "2026-09", fixedNow);
+  assert.equal(selectedSeptember.currentMonth, "2026-09");
+  assert.equal(selectedSeptember.previousMonth, "2026-08");
+  assert.equal(selectedSeptember.previousTotal, 80_000);
+
+  const selectedJanuary = getMonthlyComparison(rows, "2027-01", fixedNow);
+  assert.equal(selectedJanuary.currentMonth, "2027-01");
+  assert.equal(selectedJanuary.previousMonth, "2026-12");
+  assert.equal(selectedJanuary.currentTotal, 50_000);
+  assert.equal(selectedJanuary.previousTotal, 125_000);
+});
+
+test("monthly comparison refreshes after transaction add, edit, and delete", () => {
+  let rows = [
+    transaction({ id: "oct", amount: 100_000, date: "2026-10-15" }),
+    transaction({ id: "sep", amount: 225_000, date: "2026-09-15" }),
+  ];
+  const compareCurrentMonth = () => getMonthlyComparison(rows, "all", fixedNow);
+  assert.equal(compareCurrentMonth().currentTotal, 100_000);
+
+  rows = [...rows, transaction({ id: "oct-added", amount: 25_000, date: "2026-10-02" })];
+  assert.equal(compareCurrentMonth().currentTotal, 125_000);
+
+  rows = rows.map(row => row.id === "oct-added" ? { ...row, amount: 50_000, updatedAt: "2026-10-24T00:00:00.000Z" } : row);
+  assert.equal(compareCurrentMonth().currentTotal, 150_000);
+
+  rows = rows.filter(row => row.id !== "oct-added");
+  assert.equal(compareCurrentMonth().currentTotal, 100_000);
+});
+
+test("dashboard uses one shared comparison for the KPI and detail insight after sync and reload", () => {
+  const script = readFileSync(new URL("../static/js/expense-tracker.js", import.meta.url), "utf8");
+  assert.match(script, /const comparison = getMonthlyComparison\(transactions, selection\.period\);\s*renderKpis\(summary, comparison, selection\);/u);
+  assert.match(script, /renderInsights\(transactions, summary, comparison, selection\);/u);
+  assert.doesNotMatch(script, /selection\.period === "all"\s*\?\s*null\s*:\s*getMonthlyComparison/u);
+  assert.doesNotMatch(script, /Chọn một tháng để so với tháng liền trước/u);
+  assert.match(script, /const persistAndRender = async \(\) => \{[\s\S]*?renderDashboard\(transactions, dashboardMode,/u);
+  assert.match(script, /renderDashboard\(transactions, dashboardMode, currentMonth\)/u);
+});
+
 test("exports and restores CSV with commas, quotes, and line breaks", () => {
   const rows = [transaction({ merchant: "Quán, \"An\"", notes: "ngồi tầng 2\ngần cửa sổ", iconId: "fried", iconManuallySet: true })];
   const csv = serializeCsv(rows);

@@ -518,15 +518,19 @@ export function buildPeriodExport(transactions, selection) {
   };
 }
 
-export function getMonthlyComparison(transactions, selectedMonth) {
-  const previousMonth = shiftMonth(selectedMonth, -1);
-  const currentPeriod = selectPeriodTransactions(transactions, selectedMonth);
+export function getMonthlyComparison(transactions, selectedMonth, now = new Date()) {
+  const currentMonth = selectedMonth === "all"
+    ? now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0")
+    : selectedMonth;
+  const previousMonth = shiftMonth(currentMonth, -1);
+  const currentPeriod = selectPeriodTransactions(transactions, currentMonth);
   const previousPeriod = selectPeriodTransactions(transactions, previousMonth);
   const previousTotal = previousPeriod.reduce((total, transaction) => total + transaction.amount, 0);
   const currentTotal = currentPeriod.reduce((total, transaction) => total + transaction.amount, 0);
   const difference = currentTotal - previousTotal;
   return {
     status: !previousPeriod.length ? "missing" : previousTotal === 0 ? "zero" : "compared",
+    currentMonth,
     previousMonth,
     currentCount: currentPeriod.length,
     previousCount: previousPeriod.length,
@@ -1052,17 +1056,20 @@ function drawMerchantBars(summary) {
 function getInsightRecords(transactions, summary, comparison, selection) {
   if (!summary.count) return [];
   const insights = [];
-  const scopeLabel = selection.period === "all" ? "toàn bộ thời gian" : monthLabel(selection.period);
-  if (selection.period === "all") {
-    insights.push({ type: "Xu hướng chi tiêu", text: "Bạn đã ghi nhận " + formatVnd(summary.total) + " qua " + summary.count + " giao dịch trong toàn bộ thời gian. So sánh tháng trước không áp dụng cho phạm vi này." });
-  } else if (!comparison || comparison.status === "missing") {
-    insights.push({ type: "Xu hướng chi tiêu", text: "Bạn đã ghi nhận " + formatVnd(summary.total) + " qua " + summary.count + " giao dịch trong " + scopeLabel + ". Không có dữ liệu tháng trước để so sánh." });
+  const comparisonCurrent = comparison?.currentMonth
+    ? monthLabel(comparison.currentMonth).toLocaleLowerCase("vi-VN")
+    : selection.period === "all" ? "tháng hiện tại" : monthLabel(selection.period).toLocaleLowerCase("vi-VN");
+  const comparisonPrevious = comparison?.previousMonth
+    ? monthLabel(comparison.previousMonth).toLocaleLowerCase("vi-VN")
+    : "tháng trước";
+  if (!comparison || comparison.status === "missing") {
+    insights.push({ type: "Xu hướng chi tiêu", text: "Không có giao dịch trong " + comparisonPrevious + " để so sánh với " + comparisonCurrent + "." });
   } else if (comparison.status === "zero") {
-    insights.push({ type: "Xu hướng chi tiêu", text: "Không thể tính phần trăm thay đổi vì tổng tháng trước bằng 0 ₫." });
+    insights.push({ type: "Xu hướng chi tiêu", text: "Không thể tính phần trăm thay đổi so với " + comparisonPrevious + " vì tổng tháng trước bằng 0 đ." });
   } else {
     const direction = comparison.difference > 0 ? "tăng" : comparison.difference < 0 ? "giảm" : "không đổi";
     const percent = formatComparisonPercent(Math.abs(comparison.percentage)) + "%";
-    insights.push({ type: "Xu hướng chi tiêu", text: "Chi tiêu " + scopeLabel + " " + direction + " " + formatVnd(Math.abs(comparison.difference)) + " (" + percent + ") so với " + monthLabel(comparison.previousMonth) + "." });
+    insights.push({ type: "Xu hướng chi tiêu", text: "Chi tiêu " + comparisonCurrent + " " + direction + " " + formatNumber(Math.abs(comparison.difference)) + " đ (" + percent + ") so với " + comparisonPrevious + "." });
   }
 
   const groupedItems = new Map();
@@ -1214,19 +1221,15 @@ function renderKpis(summary, comparison, selection) {
   const comparisonValue = document.querySelector("#kpi-comparison");
   const caption = document.querySelector("#kpi-comparison-caption");
   comparisonValue.removeAttribute("data-trend");
-  if (selection.period === "all") {
-    comparisonValue.textContent = "Không áp dụng";
-    caption.textContent = "Chọn một tháng để so với tháng liền trước.";
-    return;
-  }
   if (!comparison || comparison.status === "missing") {
     comparisonValue.textContent = "—";
-    caption.textContent = "Không có dữ liệu tháng trước (" + monthLabel(shiftMonth(selection.period, -1)) + ").";
+    const previousMonth = comparison?.previousMonth || shiftMonth(selection.period, -1);
+    caption.textContent = "Không có giao dịch trong tháng trước (" + monthLabel(previousMonth).toLocaleLowerCase("vi-VN") + ").";
     return;
   }
   if (comparison.status === "zero") {
     comparisonValue.textContent = "Không xác định";
-    caption.textContent = "Tháng trước có giao dịch nhưng tổng bằng 0 ₫; không thể chia cho 0.";
+    caption.textContent = "Tháng trước (" + monthLabel(comparison.previousMonth).toLocaleLowerCase("vi-VN") + ") có giao dịch nhưng tổng bằng 0 đ; không thể chia cho 0.";
     return;
   }
   const trend = comparison.difference > 0 ? "up" : comparison.difference < 0 ? "down" : "flat";
@@ -1234,7 +1237,7 @@ function renderKpis(summary, comparison, selection) {
   comparisonValue.textContent = percentageSign + formatComparisonPercent(Math.abs(comparison.percentage)) + "%";
   comparisonValue.dataset.trend = trend;
   const direction = comparison.difference > 0 ? "Tăng" : comparison.difference < 0 ? "Giảm" : "Không đổi";
-  caption.textContent = direction + " " + formatVnd(Math.abs(comparison.difference)) + " · so với " + monthLabel(comparison.previousMonth);
+  caption.textContent = direction + " " + formatNumber(Math.abs(comparison.difference)) + " đ so với " + monthLabel(comparison.previousMonth).toLocaleLowerCase("vi-VN");
 }
 
 function sortTransactions(transactions, sortMode) {
@@ -1312,7 +1315,7 @@ function refreshMonthFilter(transactions) {
 function renderDashboard(transactions, mode = "all", customMonth = "") {
   const selection = resolveDashboardSelection(mode, customMonth);
   const summary = aggregatePeriod(transactions, selection.period);
-  const comparison = selection.period === "all" ? null : getMonthlyComparison(transactions, selection.period);
+  const comparison = getMonthlyComparison(transactions, selection.period);
   renderKpis(summary, comparison, selection);
   document.querySelector("#spending-summary").textContent = selection.label + " · " + formatNumber(summary.count) + " giao dịch · " + formatVnd(summary.total);
   document.querySelector("#spending-kicker").textContent = selection.period === "all" ? "DIỄN BIẾN THEO THÁNG" : "DIỄN BIẾN THEO NGÀY";
