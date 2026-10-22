@@ -1,0 +1,104 @@
+---
+layout: layouts/base.njk
+title: Từ điển VI-KR
+description: Tra cứu từ vựng tiếng Việt, tiếng Hàn và tiếng Anh từ các bài viết Blogmoi đã được biên tập.
+permalink: /tu-dien-vi-kr/index.html
+type: page
+---
+<div class="dictionary-page" data-dictionary data-index-url="{{ '/dictionary-index.json' | url }}">
+  <nav class="dictionary-breadcrumb" aria-label="Đường dẫn">
+    <a href="{{ '/' | url }}">Blogmoi</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">Từ điển VI-KR</span>
+  </nav>
+
+  <div class="dictionary-layout">
+    <aside class="dictionary-intro" aria-labelledby="dictionary-title">
+      <p class="dictionary-eyebrow">Blogmoi / Học ngôn ngữ</p>
+      <h1 id="dictionary-title">Từ điển<br><span>Việt — Hàn</span></h1>
+      <p class="dictionary-intro__copy">Từ vựng ba ngôn ngữ được tuyển chọn từ các bài viết đã xuất bản và biên tập.</p>
+      <div class="dictionary-illustration" aria-hidden="true">
+        <div class="dictionary-illustration__orbit"></div>
+        <div class="dictionary-illustration__book">
+          <span>VI</span><span>KR</span><span>EN</span>
+        </div>
+        <span class="dictionary-illustration__spark dictionary-illustration__spark--one">✦</span>
+        <span class="dictionary-illustration__spark dictionary-illustration__spark--two">+</span>
+      </div>
+      <p class="dictionary-note">Mỗi mục từ giữ liên kết tới bài viết gốc. Bản dịch và ví dụ chỉ xuất hiện sau khi được duyệt.</p>
+    </aside>
+
+    <main class="dictionary-main" aria-label="Tra cứu từ vựng">
+      <form class="dictionary-search" data-search-form role="search">
+        <label class="visually-hidden" for="dictionary-query">Tìm tiếng Việt, tiếng Hàn hoặc tiếng Anh</label>
+        <span class="dictionary-search__icon" aria-hidden="true">⌕</span>
+        <input id="dictionary-query" type="search" data-dictionary-query data-search-input autocomplete="off" placeholder="Tìm tiếng Việt / 한국어 / English…">
+        <kbd aria-hidden="true">⌘ K</kbd>
+      </form>
+
+      <div class="dictionary-toolbar">
+        <label class="visually-hidden" for="dictionary-field">Lọc theo lĩnh vực</label>
+        <select id="dictionary-field" data-dictionary-field>
+          <option value="">Tất cả lĩnh vực</option>
+          {% for field in dictionary.fields %}<option value="{{ field.name }}">{{ field.name }} · {{ field.count }}</option>{% endfor %}
+        </select>
+        <span class="dictionary-result-count">{{ dictionary.entryCount }} mục từ</span>
+      </div>
+
+      <div class="dictionary-stats" aria-label="Thống kê từ điển">
+        <div><strong>{{ dictionary.entryCount }}</strong><span>Mục từ</span></div>
+        <div><strong>{{ dictionary.fieldCount }}</strong><span>Lĩnh vực</span></div>
+        <div><strong>{{ dictionary.sourcePostCount }}</strong><span>Bài viết nguồn</span></div>
+      </div>
+
+      <p class="dictionary-live" data-dictionary-status role="status" aria-live="polite">Đang tải từ điển…</p>
+
+      <div class="dictionary-table-wrap" data-table-wrap>
+        <table class="dictionary-table">
+          <caption class="visually-hidden">Từ vựng tiếng Việt, tiếng Hàn, tiếng Anh, ví dụ và lĩnh vực</caption>
+          <thead><tr><th scope="col">#</th><th scope="col">Tiếng Việt</th><th scope="col">Tiếng Hàn</th><th scope="col">Tiếng Anh</th><th scope="col">Ví dụ / cách biểu hiện</th><th scope="col">Lĩnh vực</th><th scope="col"><span class="visually-hidden">Thao tác</span></th></tr></thead>
+          <tbody data-dictionary-rows></tbody>
+        </table>
+      </div>
+      <div class="dictionary-cards" data-dictionary-cards></div>
+
+      <div class="dictionary-empty" data-dictionary-empty hidden>
+        <span aria-hidden="true">文</span>
+        <h2>Chưa có mục từ đã duyệt</h2>
+        <p>Các từ được trích xuất từ bài viết sẽ xuất hiện tại đây sau khi bản dịch, ví dụ và nguồn được biên tập xác nhận.</p>
+      </div>
+      <div class="dictionary-empty" data-dictionary-no-results hidden>
+        <span aria-hidden="true">⌕</span>
+        <h2>Chưa tìm thấy kết quả</h2>
+        <p>Thử từ khóa khác hoặc chọn “Tất cả lĩnh vực”.</p>
+      </div>
+
+      <nav class="dictionary-pagination" data-dictionary-pagination aria-label="Phân trang kết quả"></nav>
+    </main>
+
+    <aside class="dictionary-topics" aria-labelledby="dictionary-topics-title">
+      <p class="dictionary-eyebrow">Khám phá theo chủ đề</p>
+      <h2 id="dictionary-topics-title">Từ vựng nổi bật</h2>
+      <div class="dictionary-topic-list" data-dictionary-topics>
+        {% if dictionary.fields.length %}
+          {% for field in dictionary.fields %}<div class="dictionary-topic"><span>{{ field.name }}</span><b>{{ field.count }}</b></div>{% endfor %}
+        {% else %}
+          <p class="dictionary-topic-empty">Chủ đề sẽ hiện khi có mục từ được duyệt.</p>
+        {% endif %}
+      </div>
+      <div class="dictionary-topics__foot"><span class="dictionary-dot" aria-hidden="true"></span>Chỉ mục từ đã duyệt được công khai</div>
+    </aside>
+  </div>
+</div>
+
+<dialog class="dictionary-dialog" data-dictionary-dialog aria-labelledby="dictionary-dialog-title">
+  <div class="dictionary-dialog__header">
+    <div><p class="dictionary-eyebrow">Từ điển VI-KR</p><h2 id="dictionary-dialog-title">Chi tiết từ vựng</h2></div>
+    <button class="dictionary-close" type="button" data-dialog-close aria-label="Đóng chi tiết">×</button>
+  </div>
+  <div class="dictionary-detail" data-dictionary-detail></div>
+  <div class="dictionary-dialog__actions">
+    <button class="dictionary-action dictionary-action--primary" type="button" data-detail-copy>Sao chép ba ngôn ngữ</button>
+    <a class="dictionary-action" data-detail-source href="#">Mở bài viết gốc ↗</a>
+  </div>
+</dialog>
