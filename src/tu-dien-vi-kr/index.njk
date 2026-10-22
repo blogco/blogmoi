@@ -5,50 +5,65 @@ description: Tra cứu từ vựng tiếng Việt, tiếng Hàn và tiếng Anh 
 permalink: /tu-dien-vi-kr/index.html
 type: page
 ---
-<div class="dictionary-page" data-dictionary data-index-url="{{ '/dictionary-index.json' | url }}">
+<div class="dictionary-page" data-dictionary data-index-url="{{ '/dictionary-index.json' | url }}" data-candidates-url="{{ '/dictionary-candidates.json' | url }}" data-dispatch-url="https://api.github.com/repos/blogco/blogmoi/actions/workflows/deploy.yml/dispatches" data-actions-url="https://github.com/blogco/blogmoi/actions/workflows/deploy.yml">
   <nav class="dictionary-breadcrumb" aria-label="Đường dẫn">
     <a href="{{ '/' | url }}">Blogmoi</a>
     <span aria-hidden="true">/</span>
     <span aria-current="page">Từ điển VI-KR</span>
   </nav>
 
-  <section class="dictionary-backfill" aria-labelledby="dictionary-backfill-title">
-    <div class="dictionary-backfill__intro">
-      <p class="dictionary-eyebrow">Cập nhật từ vựng</p>
-      <h2 id="dictionary-backfill-title">Cập nhật từ vựng từ bài viết cũ</h2>
-      <p>Quét các bài viết đã xuất bản và đưa từ mới qua cùng quy trình trích xuất, dịch, kiểm tra và biên tập đang dùng cho bài viết mới.</p>
-      <div class="dictionary-backfill__actions">
-        <a class="dictionary-update-action" href="{{ dictionaryStatus.workflowUrl }}" target="_blank" rel="noopener noreferrer">
-          <span aria-hidden="true">↻</span><span>Cập nhật từ vựng từ bài viết cũ</span><span aria-hidden="true">↗</span>
-        </a>
-        <a class="dictionary-backfill__secondary" href="{% if dictionaryStatus.lastRun and dictionaryStatus.lastRun.workflowRunUrl %}{{ dictionaryStatus.lastRun.workflowRunUrl }}{% else %}{{ dictionaryStatus.workflowUrl }}{% endif %}" target="_blank" rel="noopener noreferrer">Xem báo cáo gần nhất ↗</a>
-        <a class="dictionary-backfill__secondary" href="{{ dictionaryStatus.reviewQueueUrl }}" target="_blank" rel="noopener noreferrer">Xem hàng chờ biên tập ↗</a>
+  <section class="dictionary-workbench" aria-labelledby="dictionary-workbench-title">
+    <header class="dictionary-workbench__header">
+      <div>
+        <p class="dictionary-eyebrow">Tự trích xuất · bạn tự dịch và duyệt</p>
+        <h2 id="dictionary-workbench-title">Đưa từ trong bài viết vào từ điển</h2>
+        <p>Bài viết được quét để lấy từ/cụm từ có đánh dấu, thẻ và ngữ cảnh gốc. Chọn bài, sao chép danh sách sang Google Dịch, điền bản dịch rồi xác nhận từng mục trước khi đồng bộ.</p>
       </div>
-      <p class="dictionary-update-note">Liên kết chỉ mở GitHub Actions, không tự khởi chạy. Cần đăng nhập GitHub và có quyền ghi repository để chạy workflow. Trang công khai không chứa token hay quyền quản trị.</p>
-    </div>
+      <div class="dictionary-workbench__stats" aria-label="Trạng thái từ điển">
+        <span><strong>{{ dictionaryStatus.candidateCount }}</strong> từ đang chờ dịch</span>
+        <span><strong>{{ dictionaryStatus.publishedVocabulary }}</strong> mục trong từ điển</span>
+      </div>
+    </header>
 
-    <div class="dictionary-backfill__status" aria-labelledby="dictionary-backfill-status-title">
-      <div class="dictionary-backfill__status-heading">
-        <h3 id="dictionary-backfill-status-title">Trạng thái cập nhật</h3>
-        {% if dictionaryStatus.lastRun %}
-          <p><time datetime="{{ dictionaryStatus.lastRun.recordedAt }}">{{ dictionaryStatus.lastRun.recordedAtLabel }}</time> · {{ dictionaryStatus.lastRun.triggerLabel }}</p>
-        {% else %}
-          <p>Chưa ghi nhận lần quét nào</p>
-        {% endif %}
-      </div>
-      <p class="dictionary-backfill__state" role="status">{{ dictionaryStatus.stateLabel }}</p>
-      <dl class="dictionary-backfill__metrics">
-        <div><dt>Bài viết tìm thấy</dt><dd>{{ dictionaryStatus.articlesDiscovered }}</dd></div>
-        <div><dt>Bài mới / thay đổi</dt><dd>{{ dictionaryStatus.articlesProcessed }}</dd></div>
-        <div><dt>Bài dùng cache</dt><dd>{{ dictionaryStatus.articlesSkipped }}</dd></div>
-        <div><dt>Từ vựng mới</dt><dd>{{ dictionaryStatus.newVocabulary }}</dd></div>
-        <div><dt>Đã dịch trong lần chạy</dt><dd>{{ dictionaryStatus.translationsCompleted }}</dd></div>
-        <div><dt>Chờ dịch</dt><dd>{{ dictionaryStatus.pendingTranslation }}</dd></div>
-        <div><dt>Chờ biên tập</dt><dd>{{ dictionaryStatus.pendingReview }}</dd></div>
-        <div><dt>Đã xuất bản</dt><dd>{{ dictionaryStatus.publishedVocabulary }}</dd></div>
-        <div><dt>Mục cần thử lại</dt><dd>{{ dictionaryStatus.failed }}</dd></div>
-      </dl>
-      <p class="dictionary-backfill__disclaimer">Số liệu là bản ghi gần nhất được lưu trong repository, không phải tiến độ trực tiếp.</p>
+    <div class="dictionary-workbench__grid">
+      <section class="dictionary-workbench__panel" aria-labelledby="dictionary-candidates-title">
+        <p class="dictionary-step">01 · Danh sách trích xuất</p>
+        <h3 id="dictionary-candidates-title">Chọn bài và từ cần dịch</h3>
+        <label class="dictionary-field-label" for="dictionary-article-select">Bài viết / Content ID</label>
+        <select id="dictionary-article-select" data-article-select><option value="">Đang tải danh sách bài viết…</option></select>
+        <p class="dictionary-article-meta" data-article-meta role="status">Chọn một bài viết để xem từ trích xuất.</p>
+        <div class="dictionary-candidate-actions">
+          <button class="dictionary-action" type="button" data-candidates-select>Chọn tất cả</button>
+          <button class="dictionary-action" type="button" data-candidates-clear>Bỏ chọn</button>
+          <button class="dictionary-action dictionary-action--primary" type="button" data-candidates-copy>Sao chép từ đã chọn</button>
+        </div>
+        <p class="dictionary-paste-hint">Sao chép các dòng đã chọn, dịch từng dòng trên <a href="https://translate.google.com/" target="_blank" rel="noopener noreferrer">Google Dịch ↗</a>, rồi dán kết quả vào các cột ở bước 02.</p>
+        <div class="dictionary-candidate-list" data-candidate-list></div>
+        <p class="dictionary-live" data-candidate-status role="status" aria-live="polite">Đang tải từ cần dịch…</p>
+      </section>
+
+      <section class="dictionary-workbench__panel" aria-labelledby="dictionary-translation-title">
+        <p class="dictionary-step">02 · Bản dịch do bạn nhập</p>
+        <h3 id="dictionary-translation-title">Kiểm tra rồi lưu</h3>
+        <div class="dictionary-import-meta" data-import-meta>Chọn từ ở bước 01 để bắt đầu.</div>
+        <div class="dictionary-bulk-paste" data-bulk-fields></div>
+        <button class="dictionary-action dictionary-action--primary" type="button" data-apply-bulk disabled>Áp dụng bản dịch đã dán</button>
+        <p class="dictionary-live" data-bulk-status role="status" aria-live="polite"></p>
+        <div class="dictionary-translation-table-wrap">
+          <table class="dictionary-translation-table">
+            <caption class="visually-hidden">Bản dịch Việt, Hàn, Anh cho các từ đã chọn</caption>
+            <thead><tr><th scope="col">Từ gốc</th><th scope="col">VI</th><th scope="col">KR</th><th scope="col">EN</th><th scope="col">Đã kiểm</th></tr></thead>
+            <tbody data-translation-rows></tbody>
+          </table>
+        </div>
+        <p class="dictionary-paste-hint">Mỗi dòng bản dịch tương ứng với một từ đã chọn. Hãy kiểm tra cách dịch và đánh dấu “Đã kiểm” trước khi lưu.</p>
+        <label class="dictionary-field-label" for="dictionary-github-token">GitHub fine-grained token</label>
+        <input id="dictionary-github-token" class="dictionary-token-input" data-github-token type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
+        <p class="dictionary-token-note">Token chỉ cần quyền <b>Actions: Read and write</b> trên repo <code>blogco/blogmoi</code>. Trang chỉ gửi token tới GitHub để mở workflow lưu dữ liệu; token không được ghi vào storage hay repository.</p>
+        <button class="dictionary-action dictionary-action--primary dictionary-submit" type="button" data-submit-translations disabled>Lưu và đồng bộ lên GitHub</button>
+        <p class="dictionary-live" data-import-status role="status" aria-live="polite"></p>
+        <a class="dictionary-workflow-link" data-workflow-link href="https://github.com/blogco/blogmoi/actions/workflows/deploy.yml" target="_blank" rel="noopener noreferrer" hidden>Theo dõi build và deploy ↗</a>
+      </section>
     </div>
   </section>
 
@@ -56,7 +71,7 @@ type: page
     <aside class="dictionary-intro" aria-labelledby="dictionary-title">
       <p class="dictionary-eyebrow">Blogmoi / Học ngôn ngữ</p>
       <h1 id="dictionary-title">Từ điển<br><span>Việt — Hàn</span></h1>
-      <p class="dictionary-intro__copy">Từ vựng ba ngôn ngữ được tuyển chọn từ các bài viết đã xuất bản và biên tập.</p>
+      <p class="dictionary-intro__copy">Từ vựng ba ngôn ngữ do Blogmoi trích xuất, sau đó được người biên tập dịch và xác nhận.</p>
       <div class="dictionary-illustration" aria-hidden="true">
         <div class="dictionary-illustration__orbit"></div>
         <div class="dictionary-illustration__book">
@@ -65,7 +80,7 @@ type: page
         <span class="dictionary-illustration__spark dictionary-illustration__spark--one">✦</span>
         <span class="dictionary-illustration__spark dictionary-illustration__spark--two">+</span>
       </div>
-      <p class="dictionary-note">Mỗi mục từ giữ liên kết tới bài viết gốc. Bản dịch và ví dụ chỉ xuất hiện sau khi được duyệt.</p>
+      <p class="dictionary-note">Mỗi mục từ giữ liên kết tới bài viết gốc. Chỉ các bản dịch đã được xác nhận mới xuất hiện trong phần tra cứu.</p>
     </aside>
 
     <main class="dictionary-main" aria-label="Tra cứu từ vựng">
@@ -104,8 +119,8 @@ type: page
 
       <div class="dictionary-empty" data-dictionary-empty hidden>
         <span aria-hidden="true">文</span>
-        <h2>Chưa có mục từ đã duyệt</h2>
-        <p>Các từ được trích xuất từ bài viết sẽ xuất hiện tại đây sau khi bản dịch, ví dụ và nguồn được biên tập xác nhận.</p>
+        <h2>Chưa có mục từ được xuất bản</h2>
+        <p>Từ vựng sẽ xuất hiện sau khi bản dịch được nhập, xác nhận và đồng bộ lên GitHub.</p>
       </div>
       <div class="dictionary-empty" data-dictionary-no-results hidden>
         <span aria-hidden="true">⌕</span>
@@ -126,7 +141,7 @@ type: page
           <p class="dictionary-topic-empty">Chủ đề sẽ hiện khi có mục từ được duyệt.</p>
         {% endif %}
       </div>
-      <div class="dictionary-topics__foot"><span class="dictionary-dot" aria-hidden="true"></span>Chỉ mục từ đã duyệt được công khai</div>
+      <div class="dictionary-topics__foot"><span class="dictionary-dot" aria-hidden="true"></span>Chỉ mục từ đã được người biên tập xác nhận mới được công khai</div>
     </aside>
   </div>
 </div>

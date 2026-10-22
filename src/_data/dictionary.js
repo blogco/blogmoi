@@ -1,17 +1,19 @@
 import source from "./dictionary-data.json" with { type: "json" };
 
 const pathPrefix = "/blogmoi/";
-const requiredFields = ["vi", "ko", "en", "definition", "field", "sourceLanguage", "sourceArticle", "updatedAt"];
+const requiredFields = ["id", "vi", "ko", "en", "field", "sourceLanguage", "sourceArticle", "updatedAt"];
 const seen = new Set();
 
 function normalize(value) {
-  return String(value || "").normalize("NFC").toLocaleLowerCase("und").trim();
+  return String(value || "").normalize("NFKC").toLocaleLowerCase("und").trim().replace(/\s+/g, " ");
 }
 
 function publicEntry(entry) {
-  if (!entry || entry.status !== "reviewed") return false;
+  if (!entry || !["reviewed", "published"].includes(entry.status)) return false;
   if (!requiredFields.every((field) => typeof entry[field] === "string" && entry[field].trim())) return false;
-  if (!entry.examples || !["vi", "ko", "en"].every((language) => typeof entry.examples[language] === "string" && entry.examples[language].trim())) return false;
+  if (entry.examples && (typeof entry.examples !== "object" || Object.values(entry.examples).some((value) => typeof value !== "string"))) return false;
+  const hasExample = ["vi", "ko", "en"].some((language) => typeof entry.examples?.[language] === "string" && entry.examples[language].trim());
+  if (!entry.sourceContext && !hasExample) return false;
   if (!/^\/(?!\/)/.test(entry.sourceArticle)) return false;
   const key = [entry.vi, entry.ko, entry.en].map(normalize).join("\u0000");
   if (seen.has(key)) return false;
@@ -37,8 +39,8 @@ const index = entries.map((entry) => ({
   vi: entry.vi,
   ko: entry.ko,
   en: entry.en,
-  definition: entry.definition,
-  examples: entry.examples,
+  definition: typeof entry.definition === "string" ? entry.definition : "",
+  examples: entry.examples || { vi: "", ko: "", en: "" },
   relatedExpressions: Array.isArray(entry.relatedExpressions) ? entry.relatedExpressions : [],
   field: entry.field,
   sourceLanguage: entry.sourceLanguage,

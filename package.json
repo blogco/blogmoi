@@ -12,9 +12,8 @@
     "clean": "node -e \"import('node:fs').then(({rmSync}) => rmSync('_site', {recursive:true, force:true}))\"",
     "test:cms": "node --test tests/cms-core.test.mjs tests/cms-proxy.test.mjs",
     "test:dictionary": "node --test tests/dictionary-pipeline.test.mjs",
-    "dictionary:extract": "node scripts/extract-dictionary.mjs",
-    "dictionary:translate": "node scripts/translate-dictionary.mjs",
-    "dictionary:approve": "node scripts/approve-dictionary-entry.mjs"
+    "dictionary:sync": "node scripts/extract-dictionary.mjs",
+    "dictionary:import": "node scripts/import-dictionary-entries.mjs"
   },
   "devDependencies": {
     "@11ty/eleventy": "3.1.7",

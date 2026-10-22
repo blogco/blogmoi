@@ -7,6 +7,7 @@ import { writeJsonAtomically } from "../lib/dictionary-storage.js";
 const sourceDirectory = "src";
 const pendingPath = "data/dictionary/pending.json";
 const reviewedPath = "src/_data/dictionary-data.json";
+const extractorVersion = 2;
 const allowedLanguages = new Set(["vi", "ko", "en"]);
 const stopTerms = new Set(["la", "là", "cua", "của", "va", "và", "co", "có", "duoc", "được", "de", "để", "cho", "trong", "the", "một", "những", "các", "with", "from", "this", "that", "blogmoi"]);
 const vietnameseWords = new Set("và là của có được trong một những các này đó với cho từ khi sẽ đã đang không một số trên dưới theo thành cần bài viết người sản phẩm nếu vì như nhưng tại đến giữa giúp dùng".split(" "));
@@ -166,7 +167,8 @@ for (const file of files.sort()) {
   const cachedCandidates = Array.isArray(cached?.candidateIds)
     ? cached.candidateIds.map((id) => previousCandidates.get(id)).filter(Boolean)
     : [];
-  const cacheValid = cached?.articleHash === articleHash
+  const cacheValid = cached?.extractorVersion === extractorVersion
+    && cached?.articleHash === articleHash
     && cachedCandidates.length === (cached?.candidateIds || []).length
     && cachedCandidates.every((candidate) => candidate.articleHash === articleHash && candidate.sourceArticle === sourceArticle);
   let currentCandidates;
@@ -186,6 +188,7 @@ for (const file of files.sort()) {
       const unchangedTerm = old?.articleHash === articleHash && old.term === term;
       return {
         id,
+        articleId: cacheKey,
         term,
         sourceLanguage: language,
         field,
@@ -207,6 +210,7 @@ for (const file of files.sort()) {
     return true;
   });
   nextCache[cacheKey] = {
+    extractorVersion,
     articleHash,
     sourceArticle,
     candidateIds: activeCandidates.map((candidate) => candidate.id)
@@ -239,9 +243,10 @@ const queue = {
     articlesDiscovered: publishedArticlesDiscovered,
     articlesProcessed: publishedArticlesDiscovered - articlesSkippedValidCache,
     articlesSkippedValidCache,
+    candidatesExtracted: candidates.length,
     newlyExtracted: candidates.filter((candidate) => !previousCandidates.has(candidate.id)).length,
-    translationsCompleted: 0,
-    translationsFailed: 0
+    awaitingManualTranslation: candidates.filter((candidate) => candidate.status === "extracted").length,
+    publishedEntries: (reviewedData.entries || []).filter((entry) => ["reviewed", "published"].includes(entry.status)).length
   }
 };
 const queueChanged = JSON.stringify(previousQueue) !== JSON.stringify(queue);
@@ -259,14 +264,12 @@ const stats = {
   skippedNonArticle,
   candidatesExtracted: candidates.length,
   newlyExtracted: candidates.filter((candidate) => !previousCandidates.has(candidate.id)).length,
-  translationFailed: candidates.filter((candidate) => candidate.status === "translation_failed").length,
-  awaitingTranslation: candidates.filter((candidate) => ["extracted", "pending_translation"].includes(candidate.status)).length,
-  awaitingReview: candidates.filter((candidate) => ["translated", "pending_review"].includes(candidate.status)).length,
+  awaitingManualTranslation: candidates.filter((candidate) => candidate.status === "extracted").length,
   queueChanged
 };
 
 console.log(`Dictionary scan (${process.env.DICTIONARY_SCAN_MODE || "incremental"}): ${stats.publishedArticlesDiscovered} published, ${stats.articlesProcessed} reprocessed, ${stats.articlesSkippedValidCache} unchanged, ${stats.candidatesExtracted} candidates (${stats.newlyExtracted} new).`);
-console.log(`Draft/unpublished skipped: ${skippedDraftOrUnpublished}; pages/non-articles skipped: ${skippedNonArticle}; future-dated skipped: ${skippedFutureDated}; queue: ${pendingPath}; changed: ${stats.queueChanged}.`);
+console.log(`Draft/unpublished skipped: ${skippedDraftOrUnpublished}; pages/non-articles skipped: ${skippedNonArticle}; future-dated skipped: ${skippedFutureDated}; awaiting manual translation: ${stats.awaitingManualTranslation}; queue: ${pendingPath}; changed: ${stats.queueChanged}.`);
 if (process.env.GITHUB_OUTPUT) {
   await appendFile(process.env.GITHUB_OUTPUT, Object.entries(stats).map(([key, value]) => `${key}=${value}`).join("\n") + "\n");
 }

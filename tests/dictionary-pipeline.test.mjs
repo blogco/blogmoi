@@ -8,8 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const extractor = resolve(repositoryRoot, "scripts/extract-dictionary.mjs");
-const translator = resolve(repositoryRoot, "scripts/translate-dictionary.mjs");
-const approver = resolve(repositoryRoot, "scripts/approve-dictionary-entry.mjs");
+const importer = resolve(repositoryRoot, "scripts/import-dictionary-entries.mjs");
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), "blogmoi-dictionary-"));
@@ -17,6 +16,7 @@ async function fixture(t) {
   await Promise.all([
     mkdir(join(root, "src/posts"), { recursive: true }),
     mkdir(join(root, "src/en"), { recursive: true }),
+    mkdir(join(root, "src/ko"), { recursive: true }),
     mkdir(join(root, "src/_data"), { recursive: true }),
     mkdir(join(root, "data/dictionary"), { recursive: true })
   ]);
@@ -27,187 +27,154 @@ async function fixture(t) {
   return root;
 }
 
-function article({ title = "Bài cũ", slug = "old-article", date = "2020-01-01", extra = "", terms = ["Eleventy", "data cascade"], body = "Eleventy dùng data cascade để tạo trang tĩnh." } = {}) {
-  return `---\ntitle: ${title}\nslug: ${slug}\ndate: ${date}\ncategories:\n  - Công nghệ\n${extra}${terms.length ? `dictionaryTerms:\n${terms.map((term) => `  - ${term}`).join("\n")}\n` : ""}---\n\n${body}\n`;
+function article({ language, slug, terms, body = "" }) {
+  const candidates = terms.map((term) => `- ${term}`).join("\n");
+  const content = terms.map((term) => `**${term}** xuất hiện trong ngữ cảnh bài viết.`).join("\n\n");
+  return `---\ntitle: "Article ${slug}"\nslug: ${slug}\ndate: 2025-01-01\nlang: ${language}\ncategories:\n  - Ngôn ngữ\ndictionaryTerms:\n${candidates}\n---\n\n${content}\n\n${body}\n`;
 }
 
-function run(script, args, cwd, env = {}, nodeArgs = []) {
-  return spawnSync(process.execPath, [...nodeArgs, script, ...args], {
+function run(script, cwd, env = {}) {
+  return spawnSync(process.execPath, [script], {
     cwd,
     encoding: "utf8",
+    timeout: 20_000,
     env: { ...process.env, ...env }
   });
 }
 
-async function readQueue(root) {
-  return JSON.parse(await readFile(join(root, "data/dictionary/pending.json"), "utf8"));
+async function json(root, path) {
+  return JSON.parse(await readFile(join(root, path), "utf8"));
 }
 
-test("backfill discovers published articles, excludes pages and unpublished sources, and skips unchanged articles", async (t) => {
+test("extracts explicit terms from VI, KR and EN articles without translation", async (t) => {
   const root = await fixture(t);
-  await writeFile(join(root, "src/posts/old.md"), article());
-  await writeFile(join(root, "src/posts/draft.md"), article({ slug: "draft", extra: "draft: true\n" }));
-  await writeFile(join(root, "src/posts/future.md"), article({ slug: "future", date: "2099-01-01" }));
-  await writeFile(join(root, "src/posts/unpublished.md"), article({ slug: "unpublished", extra: "published: false\n" }));
-  await writeFile(join(root, "src/posts/page.md"), article({ slug: "page", extra: "type: page\n" }));
-  await writeFile(join(root, "src/en/static-sites.md"), article({
-    title: "Static sites",
-    slug: "static-sites",
-    terms: ["static generation"],
-    extra: "lang: en\n",
-    body: "Static generation creates a site during the build."
-  }));
-  await writeFile(join(root, "src/about.md"), article({ slug: "page-outside-article-collection" }));
+  const sources = [
+    { language: "vi", file: "src/posts/vietnamese.md", slug: "vietnamese", terms: ["ngữ cảnh nguồn", "từ vựng gốc"] },
+    { language: "ko", file: "src/ko/korean.md", slug: "korean", terms: ["원문 문맥", "원본 어휘"] },
+    { language: "en", file: "src/en/english.md", slug: "english", terms: ["source context", "original vocabulary"] }
+  ];
+  for (const item of sources) await writeFile(join(root, item.file), article(item));
 
-  const first = run(extractor, [], root, { DICTIONARY_SCAN_MODE: "backfill" });
-  assert.equal(first.status, 0, first.stderr);
-  let queue = await readQueue(root);
-  assert.equal(queue.lastRun.articlesDiscovered, 2);
-  assert.equal(queue.lastRun.articlesProcessed, 2);
-  assert.equal(queue.lastRun.articlesSkippedValidCache, 0);
-  assert.equal(queue.candidates.length, 3);
-  assert.ok(queue.candidates.some((candidate) => candidate.sourceLanguage === "en"));
-  const ids = queue.candidates.map((candidate) => candidate.id).sort();
+  const result = run(extractor, root);
+  assert.equal(result.status, 0, result.stderr);
+  const queue = await json(root, "data/dictionary/pending.json");
+  assert.equal(queue.candidates.length, 6);
+  assert.deepEqual(new Set(queue.candidates.map((candidate) => candidate.sourceLanguage)), new Set(["vi", "ko", "en"]));
+  assert.ok(queue.candidates.every((candidate) => candidate.status === "extracted" && candidate.translationDraft === null));
+  assert.ok(queue.candidates.every((candidate) => candidate.articleId && candidate.sourceArticle && candidate.sourceContext));
+});
 
-  const second = run(extractor, [], root, {
-    DICTIONARY_SCAN_MODE: "backfill",
-    GITHUB_EVENT_NAME: "workflow_dispatch",
-    GITHUB_REPOSITORY: "blogco/blogmoi",
-    GITHUB_RUN_ID: "12345"
-  });
-  assert.equal(second.status, 0, second.stderr);
-  queue = await readQueue(root);
+test("one scan handles existing and new articles, caches unchanged hashes, and deduplicates terms", async (t) => {
+  const root = await fixture(t);
+  const oldPath = join(root, "src/posts/old.md");
+  const oldArticle = article({ language: "vi", slug: "old", terms: ["bản gốc", "ngữ cảnh"] });
+  await writeFile(oldPath, oldArticle);
+  assert.equal(run(extractor, root).status, 0);
+  await writeFile(join(root, "src/posts/new.md"), article({ language: "vi", slug: "new", terms: ["bản mới", "ngữ cảnh"] }));
+
+  const next = run(extractor, root);
+  assert.equal(next.status, 0, next.stderr);
+  let queue = await json(root, "data/dictionary/pending.json");
   assert.equal(queue.lastRun.articlesDiscovered, 2);
+  assert.equal(queue.lastRun.articlesProcessed, 1);
+  assert.equal(queue.lastRun.articlesSkippedValidCache, 1);
+  assert.equal(queue.candidates.length, 4);
+
+  const same = run(extractor, root);
+  assert.equal(same.status, 0, same.stderr);
+  queue = await json(root, "data/dictionary/pending.json");
   assert.equal(queue.lastRun.articlesProcessed, 0);
   assert.equal(queue.lastRun.articlesSkippedValidCache, 2);
-  assert.equal(queue.lastRun.workflowRunUrl, "https://github.com/blogco/blogmoi/actions/runs/12345");
-  assert.deepEqual(queue.candidates.map((candidate) => candidate.id).sort(), ids);
+  assert.equal(queue.candidates.filter((candidate) => candidate.term === "ngữ cảnh").length, 2);
 });
 
-test("changed article content updates its candidate context and preserves reviewed entries", async (t) => {
+test("imports only verified translations for current article candidates and removes them from the pending list", async (t) => {
   const root = await fixture(t);
-  const sourcePath = join(root, "src/posts/old.md");
-  await writeFile(sourcePath, article({ slug: "old", terms: ["Eleventy"], body: "Eleventy builds a static site." }));
-  const initial = run(extractor, [], root);
-  assert.equal(initial.status, 0, initial.stderr);
-  let queue = await readQueue(root);
+  const articleId = "posts/source.md";
+  const source = article({ language: "vi", slug: "source", terms: ["ngữ cảnh nguồn", "từ vựng gốc"] });
+  await writeFile(join(root, "src", articleId), source);
+  assert.equal(run(extractor, root).status, 0);
+  const queue = await json(root, "data/dictionary/pending.json");
   const candidate = queue.candidates[0];
-  candidate.status = "translated";
-  candidate.translationDraft = { vi: "Eleventy", ko: "일레븐티", en: "Eleventy" };
-  await writeFile(join(root, "data/dictionary/pending.json"), JSON.stringify(queue, null, 2));
-
-  await writeFile(sourcePath, article({ slug: "old", terms: ["Eleventy", "build pipeline"], body: "Eleventy now uses a changed build pipeline for static pages." }));
-  const changed = run(extractor, [], root);
-  assert.equal(changed.status, 0, changed.stderr);
-  queue = await readQueue(root);
-  const updated = queue.candidates.find((item) => item.term === "Eleventy");
-  assert.equal(queue.lastRun.articlesProcessed, 1);
-  assert.equal(queue.lastRun.articlesSkippedValidCache, 0);
-  assert.equal(updated.status, "extracted");
-  assert.equal(updated.translationDraft, null);
-  assert.match(updated.sourceContext, /changed build pipeline/);
-  assert.ok(queue.candidates.some((item) => item.term === "build pipeline"));
-
-  const reviewed = {
+  const item = {
     id: candidate.id,
-    vi: "Eleventy",
-    ko: "일레븐티",
-    en: "Eleventy",
-    definition: "A reviewed term.",
-    examples: { vi: "Ví dụ", ko: "예시", en: "Example" },
-    field: "Công nghệ",
+    verified: true,
+    translations: { vi: candidate.term, ko: "원문 어휘", en: "source vocabulary" },
+    examples: {},
+    definition: ""
+  };
+  const payload = {
+    contentId: candidate.sourceArticle,
+    articleId,
     sourceLanguage: "vi",
-    sourceArticle: "/old/",
-    sourceContext: "Reviewed context.",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-    status: "reviewed"
+    articleHash: candidate.articleHash,
+    items: [item]
   };
-  await writeFile(join(root, "src/_data/dictionary-data.json"), JSON.stringify({ version: 1, entries: [reviewed] }, null, 2));
-  const afterReview = run(extractor, [], root);
-  assert.equal(afterReview.status, 0, afterReview.stderr);
-  queue = await readQueue(root);
-  assert.equal(queue.candidates.some((item) => item.term === "Eleventy"), false);
-  const savedDictionary = JSON.parse(await readFile(join(root, "src/_data/dictionary-data.json"), "utf8"));
-  assert.deepEqual(savedDictionary.entries[0], reviewed);
+  const eventPath = join(root, "event.json");
+  await writeFile(eventPath, JSON.stringify({ inputs: { dictionary_payload: JSON.stringify(payload) } }));
+  const imported = run(importer, root, { GITHUB_EVENT_PATH: eventPath });
+  assert.equal(imported.status, 0, imported.stderr);
+  let dictionary = await json(root, "src/_data/dictionary-data.json");
+  assert.equal(dictionary.entries.length, 1);
+  assert.equal(dictionary.entries[0].status, "reviewed");
+  assert.equal(dictionary.entries[0].vi, candidate.term);
+  assert.equal(dictionary.entries[0].ko, "원문 어휘");
+  assert.equal(dictionary.entries[0].en, "source vocabulary");
+  assert.equal(dictionary.entries[0].examples.vi, candidate.sourceContext);
+
+  const repeat = run(importer, root, { GITHUB_EVENT_PATH: eventPath });
+  assert.equal(repeat.status, 0, repeat.stderr);
+  dictionary = await json(root, "src/_data/dictionary-data.json");
+  assert.equal(dictionary.entries.length, 1);
+  assert.equal(run(extractor, root).status, 0);
+  const updatedQueue = await json(root, "data/dictionary/pending.json");
+  assert.equal(updatedQueue.candidates.some((entry) => entry.id === candidate.id), false);
 });
 
-test("missing translation credentials leave candidates pending without fabricated drafts", async (t) => {
+test("rejects unverified, stale, or tampered article submissions without changing the dictionary", async (t) => {
   const root = await fixture(t);
-  await writeFile(join(root, "src/posts/old.md"), article({ terms: ["Eleventy"] }));
-  const extracted = run(extractor, [], root);
-  assert.equal(extracted.status, 0, extracted.stderr);
-  const translated = run(translator, [], root, { OPENAI_API_KEY: "", DICTIONARY_OPENAI_MODEL: "" });
-  assert.equal(translated.status, 1);
-  assert.match(translated.stderr, /Translation is pending/);
-  const queue = await readQueue(root);
-  assert.equal(queue.candidates[0].status, "extracted");
-  assert.equal(queue.candidates[0].translationDraft, null);
-});
-
-test("translation failure midway preserves successful work and leaves failures retryable", async (t) => {
-  const root = await fixture(t);
-  await writeFile(join(root, "src/posts/old.md"), article({ terms: ["alpha", "beta"] }));
-  const extracted = run(extractor, [], root);
-  assert.equal(extracted.status, 0, extracted.stderr);
-  const mockPath = join(root, "mock-provider.mjs");
-  await writeFile(mockPath, `
-let calls = 0;
-globalThis.fetch = async () => {
-  calls += 1;
-  if (calls === 2) return { ok: false, status: 503 };
-  const draft = {
-    vi: "draft", ko: "초안", en: "draft", definition: "A concise definition.",
-    examples: { vi: "Ví dụ.", ko: "예시.", en: "Example." },
-    relatedExpressions: [], uncertain: false, uncertaintyNote: ""
+  const articleId = "posts/safe.md";
+  await writeFile(join(root, "src", articleId), article({ language: "en", slug: "safe", terms: ["source phrase"] }));
+  assert.equal(run(extractor, root).status, 0);
+  const candidate = (await json(root, "data/dictionary/pending.json")).candidates[0];
+  const payload = {
+    contentId: candidate.sourceArticle,
+    articleId,
+    sourceLanguage: "en",
+    articleHash: candidate.articleHash,
+    items: [{
+      id: candidate.id,
+      verified: false,
+      translations: { vi: "cụm từ nguồn", ko: "원문 표현" }
+    }]
   };
-  return { ok: true, json: async () => ({ output: [{ type: "message", content: [{ type: "output_text", text: JSON.stringify(draft) }] }] }) };
-};
-`);
-  const translated = run(translator, [], root, {
-    OPENAI_API_KEY: "test-only",
-    DICTIONARY_OPENAI_MODEL: "test-model"
-  }, ["--import", mockPath]);
-  assert.equal(translated.status, 1, translated.stdout);
-  const queue = await readQueue(root);
-  assert.equal(queue.candidates.find((candidate) => candidate.term === "alpha").status, "translated");
-  assert.equal(queue.candidates.find((candidate) => candidate.term === "beta").status, "translation_failed");
-  assert.equal(queue.lastRun.translationsCompleted, 1);
-  assert.equal(queue.lastRun.translationsFailed, 1);
+  const eventPath = join(root, "event.json");
+  await writeFile(eventPath, JSON.stringify({ inputs: { dictionary_payload: JSON.stringify(payload) } }));
+  const rejected = run(importer, root, { GITHUB_EVENT_PATH: eventPath });
+  assert.notEqual(rejected.status, 0);
+  const dictionary = await json(root, "src/_data/dictionary-data.json");
+  assert.equal(dictionary.entries.length, 0);
+
+  payload.items[0].verified = true;
+  payload.articleHash = "0".repeat(64);
+  await writeFile(eventPath, JSON.stringify({ inputs: { dictionary_payload: JSON.stringify(payload) } }));
+  const stale = run(importer, root, { GITHUB_EVENT_PATH: eventPath });
+  assert.notEqual(stale.status, 0);
+  assert.match(stale.stderr, /stale_article_hash/);
+  assert.equal((await json(root, "src/_data/dictionary-data.json")).entries.length, 0);
 });
 
-test("approval can be retried without duplicating or overwriting a reviewed entry", async (t) => {
-  const root = await fixture(t);
-  await writeFile(join(root, "src/posts/old.md"), article({ terms: ["Eleventy"] }));
-  const extracted = run(extractor, [], root);
-  assert.equal(extracted.status, 0, extracted.stderr);
-  const queue = await readQueue(root);
-  const candidate = queue.candidates[0];
-  candidate.status = "translated";
-  candidate.translationDraft = {
-    vi: "Eleventy", ko: "일레븐티", en: "Eleventy", definition: "A site generator.",
-    examples: { vi: "Dùng Eleventy.", ko: "Eleventy를 사용합니다.", en: "Use Eleventy." },
-    relatedExpressions: [], uncertain: false
-  };
-  await writeFile(join(root, "data/dictionary/pending.json"), JSON.stringify(queue, null, 2));
-
-  const first = run(approver, [`--id=${candidate.id}`, "--approve"], root);
-  assert.equal(first.status, 0, first.stderr);
-  const saved = JSON.parse(await readFile(join(root, "src/_data/dictionary-data.json"), "utf8"));
-  assert.equal(saved.entries.length, 1);
-  saved.entries[0].ko = "검토된 번역";
-  await writeFile(join(root, "src/_data/dictionary-data.json"), JSON.stringify(saved, null, 2));
-
-  const retry = run(approver, [`--id=${candidate.id}`, "--approve"], root);
-  assert.equal(retry.status, 0, retry.stderr);
-  const afterRetry = JSON.parse(await readFile(join(root, "src/_data/dictionary-data.json"), "utf8"));
-  assert.equal(afterRetry.entries.length, 1);
-  assert.equal(afterRetry.entries[0].ko, "검토된 번역");
-});
-
-test("public launch UI points to the authenticated workflow and does not expose credentials", async () => {
+test("the deployed page uses a transient token and dispatches only the dictionary workflow", async () => {
   const template = await readFile(resolve(repositoryRoot, "src/tu-dien-vi-kr/index.njk"), "utf8");
-  assert.match(template, /dictionaryStatus\.workflowUrl/);
-  assert.match(template, /không tự khởi chạy/i);
-  assert.match(template, /quyền ghi repository/i);
-  assert.doesNotMatch(template, /GITHUB_TOKEN|OPENAI_API_KEY/);
+  const script = await readFile(resolve(repositoryRoot, "static/js/dictionary.js"), "utf8");
+  const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/deploy.yml"), "utf8");
+  assert.match(template, /data-github-token[^>]*type="password"/);
+  assert.match(template, /Content ID/);
+  assert.match(template, /data-candidate-list/);
+  assert.match(workflow, /workflow_dispatch:[\s\S]*dictionary_payload/);
+  assert.match(workflow, /npm run dictionary:import/);
+  assert.match(workflow, /npm run dictionary:sync/);
+  assert.match(template, /actions\/workflows\/deploy\.yml\/dispatches/);
+  assert.match(script, /root\.dataset\.dispatchUrl/);
+  assert.doesNotMatch(script, /localStorage|sessionStorage/);
 });
