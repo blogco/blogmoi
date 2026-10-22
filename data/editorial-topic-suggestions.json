@@ -7,13 +7,15 @@
       "sourceArticles": [
         "top-5-cong-nghe-tao-website-tinh-2026",
         "xay-dung-blog-tinh-voi-eleventy-11ty",
-        "chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy"
+        "chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy",
+        "kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai"
       ],
       "rationale": "Bài so sánh hiện mô tả tốc độ theo định tính và không có benchmark. Một phép đo dùng cùng nội dung, template và máy chạy sẽ giúp người đọc so sánh kết quả trong điều kiện cụ thể.",
       "connections": {
         "top-5-cong-nghe-tao-website-tinh-2026": "Bài so sánh nói rõ chưa có benchmark; phép đo có điều kiện công khai sẽ giúp người đọc tự đối chiếu thay vì suy ra tốc độ từ nhận định chung.",
         "xay-dung-blog-tinh-voi-eleventy-11ty": "Bài hướng dẫn mô tả cấu hình Blogmoi nhưng không đo thời gian build; benchmark cùng bộ nội dung có thể bổ sung dữ liệu thực tế cho lựa chọn công cụ.",
-        "chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy": "Checklist ghi nhận Blogmoi chưa có phép đo Hugo và Eleventy trên cùng điều kiện; benchmark cùng nội dung có thể bổ sung dữ liệu cho lựa chọn SSG."
+        "chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy": "Checklist ghi nhận Blogmoi chưa có phép đo Hugo và Eleventy trên cùng điều kiện; benchmark cùng nội dung có thể bổ sung dữ liệu cho lựa chọn SSG.",
+        "kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai": "Bài này giải thích cách Topic Discovery chạy trong Eleventy nhưng không so sánh thời gian build giữa các SSG; benchmark cùng nội dung với điều kiện công khai sẽ bổ sung một góc nhìn định lượng."
       },
       "readerSearchIntent": "Muốn so sánh thời gian build thực tế giữa các SSG trên cùng điều kiện.",
       "keywords": [
