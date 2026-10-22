@@ -10,6 +10,7 @@
     "build": "eleventy --pathprefix=/blogmoi/",
     "build:local": "eleventy",
     "clean": "node -e \"import('node:fs').then(({rmSync}) => rmSync('_site', {recursive:true, force:true}))\"",
+    "test:dictionary": "node --test tests/dictionary-pipeline.test.mjs",
     "dictionary:extract": "node scripts/extract-dictionary.mjs",
     "dictionary:translate": "node scripts/translate-dictionary.mjs",
     "dictionary:approve": "node scripts/approve-dictionary-entry.mjs"

@@ -504,5 +504,17 @@
         "f74d5e0eb4b18d977dc98e15"
       ]
     }
+  },
+  "lastRun": {
+    "mode": "backfill",
+    "trigger": "local-cli",
+    "recordedAt": "2026-10-22T17:35:42.854Z",
+    "workflowRunUrl": null,
+    "articlesDiscovered": 4,
+    "articlesProcessed": 0,
+    "articlesSkippedValidCache": 4,
+    "newlyExtracted": 0,
+    "translationsCompleted": 0,
+    "translationsFailed": 0
   }
 }

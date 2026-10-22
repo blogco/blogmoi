@@ -1,4 +1,5 @@
-import { appendFile, readFile, writeFile } from "node:fs/promises";
+import { appendFile, readFile } from "node:fs/promises";
+import { writeJsonAtomically } from "../lib/dictionary-storage.js";
 
 const queuePath = "data/dictionary/pending.json";
 const apiKey = process.env.OPENAI_API_KEY;
@@ -67,7 +68,12 @@ let failed = 0;
 
 async function persistQueue() {
   queue.generatedAt = new Date().toISOString();
-  await writeFile(queuePath, `${JSON.stringify(queue, null, 2)}\n`);
+  if (queue.lastRun) {
+    queue.lastRun.translationsCompleted = translated;
+    queue.lastRun.translationsFailed = failed;
+    queue.lastRun.translationUpdatedAt = new Date().toISOString();
+  }
+  await writeJsonAtomically(queuePath, queue);
 }
 
 for (const candidate of pending) {

@@ -12,15 +12,51 @@ type: page
     <span aria-current="page">Từ điển VI-KR</span>
   </nav>
 
+  <section class="dictionary-backfill" aria-labelledby="dictionary-backfill-title">
+    <div class="dictionary-backfill__intro">
+      <p class="dictionary-eyebrow">Cập nhật từ vựng</p>
+      <h2 id="dictionary-backfill-title">Cập nhật từ vựng từ bài viết cũ</h2>
+      <p>Quét các bài viết đã xuất bản và đưa từ mới qua cùng quy trình trích xuất, dịch, kiểm tra và biên tập đang dùng cho bài viết mới.</p>
+      <div class="dictionary-backfill__actions">
+        <a class="dictionary-update-action" href="{{ dictionaryStatus.workflowUrl }}" target="_blank" rel="noopener noreferrer">
+          <span aria-hidden="true">↻</span><span>Cập nhật từ vựng từ bài viết cũ</span><span aria-hidden="true">↗</span>
+        </a>
+        <a class="dictionary-backfill__secondary" href="{% if dictionaryStatus.lastRun and dictionaryStatus.lastRun.workflowRunUrl %}{{ dictionaryStatus.lastRun.workflowRunUrl }}{% else %}{{ dictionaryStatus.workflowUrl }}{% endif %}" target="_blank" rel="noopener noreferrer">Xem báo cáo gần nhất ↗</a>
+        <a class="dictionary-backfill__secondary" href="{{ dictionaryStatus.reviewQueueUrl }}" target="_blank" rel="noopener noreferrer">Xem hàng chờ biên tập ↗</a>
+      </div>
+      <p class="dictionary-update-note">Liên kết chỉ mở GitHub Actions, không tự khởi chạy. Cần đăng nhập GitHub và có quyền ghi repository để chạy workflow. Trang công khai không chứa token hay quyền quản trị.</p>
+    </div>
+
+    <div class="dictionary-backfill__status" aria-labelledby="dictionary-backfill-status-title">
+      <div class="dictionary-backfill__status-heading">
+        <h3 id="dictionary-backfill-status-title">Trạng thái cập nhật</h3>
+        {% if dictionaryStatus.lastRun %}
+          <p><time datetime="{{ dictionaryStatus.lastRun.recordedAt }}">{{ dictionaryStatus.lastRun.recordedAtLabel }}</time> · {{ dictionaryStatus.lastRun.triggerLabel }}</p>
+        {% else %}
+          <p>Chưa ghi nhận lần quét nào</p>
+        {% endif %}
+      </div>
+      <p class="dictionary-backfill__state" role="status">{{ dictionaryStatus.stateLabel }}</p>
+      <dl class="dictionary-backfill__metrics">
+        <div><dt>Bài viết tìm thấy</dt><dd>{{ dictionaryStatus.articlesDiscovered }}</dd></div>
+        <div><dt>Bài mới / thay đổi</dt><dd>{{ dictionaryStatus.articlesProcessed }}</dd></div>
+        <div><dt>Bài dùng cache</dt><dd>{{ dictionaryStatus.articlesSkipped }}</dd></div>
+        <div><dt>Từ vựng mới</dt><dd>{{ dictionaryStatus.newVocabulary }}</dd></div>
+        <div><dt>Đã dịch trong lần chạy</dt><dd>{{ dictionaryStatus.translationsCompleted }}</dd></div>
+        <div><dt>Chờ dịch</dt><dd>{{ dictionaryStatus.pendingTranslation }}</dd></div>
+        <div><dt>Chờ biên tập</dt><dd>{{ dictionaryStatus.pendingReview }}</dd></div>
+        <div><dt>Đã xuất bản</dt><dd>{{ dictionaryStatus.publishedVocabulary }}</dd></div>
+        <div><dt>Mục cần thử lại</dt><dd>{{ dictionaryStatus.failed }}</dd></div>
+      </dl>
+      <p class="dictionary-backfill__disclaimer">Số liệu là bản ghi gần nhất được lưu trong repository, không phải tiến độ trực tiếp.</p>
+    </div>
+  </section>
+
   <div class="dictionary-layout">
     <aside class="dictionary-intro" aria-labelledby="dictionary-title">
       <p class="dictionary-eyebrow">Blogmoi / Học ngôn ngữ</p>
       <h1 id="dictionary-title">Từ điển<br><span>Việt — Hàn</span></h1>
       <p class="dictionary-intro__copy">Từ vựng ba ngôn ngữ được tuyển chọn từ các bài viết đã xuất bản và biên tập.</p>
-      <a class="dictionary-update-action" href="https://github.com/blogco/blogmoi/actions/workflows/deploy.yml" target="_blank" rel="noopener noreferrer" aria-label="Mở GitHub Actions để quét lại toàn bộ bài viết đã xuất bản, bao gồm bài cũ">
-        <span aria-hidden="true">↻</span><span>Cập nhật từ bài viết cũ</span><span aria-hidden="true">↗</span>
-      </a>
-      <p class="dictionary-update-note">Trong GitHub Actions, chọn Run workflow để quét bài cũ. Từ mới cần được dịch và duyệt trước khi hiển thị.</p>
       <div class="dictionary-illustration" aria-hidden="true">
         <div class="dictionary-illustration__orbit"></div>
         <div class="dictionary-illustration__book">

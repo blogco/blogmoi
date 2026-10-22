@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { appendFile, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
-import { dirname, join, relative, sep } from "node:path";
+import { appendFile, readFile, readdir } from "node:fs/promises";
+import { join, relative, sep } from "node:path";
 import matter from "gray-matter";
+import { writeJsonAtomically } from "../lib/dictionary-storage.js";
 
 const sourceDirectory = "src";
 const pendingPath = "data/dictionary/pending.json";
@@ -133,6 +134,7 @@ const candidatesById = new Map();
 let publishedArticlesDiscovered = 0;
 let skippedDraftOrUnpublished = 0;
 let skippedFutureDated = 0;
+let skippedNonArticle = 0;
 let articlesSkippedValidCache = 0;
 let articlesScanned = 0;
 
@@ -142,6 +144,10 @@ for (const file of files.sort()) {
   const data = parsed.data || {};
   if (data.draft === true || data.published === false) {
     skippedDraftOrUnpublished += 1;
+    continue;
+  }
+  if (data.type && data.type !== "article") {
+    skippedNonArticle += 1;
     continue;
   }
   const rawDate = data.date instanceof Date ? data.date : data.date ? new Date(data.date) : null;
@@ -211,33 +217,56 @@ const candidates = [...candidatesById.values()].sort((a, b) => a.sourceArticle.l
 const previousComparable = JSON.stringify({ candidates: previousQueue.candidates || [], articleCache: previousQueue.articleCache || {} });
 const nextComparable = JSON.stringify({ candidates, articleCache: nextCache });
 const unchangedQueue = previousComparable === nextComparable;
+const recordedAt = new Date().toISOString();
+const trigger = process.env.DICTIONARY_TRIGGER || (
+  process.env.GITHUB_EVENT_NAME === "workflow_dispatch"
+    ? "manual-workflow"
+    : process.env.GITHUB_EVENT_NAME === "push" ? "automatic-publish" : "local-cli"
+);
+const workflowRunUrl = process.env.GITHUB_RUN_ID && process.env.GITHUB_REPOSITORY
+  ? `${process.env.GITHUB_SERVER_URL || "https://github.com"}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+  : null;
 const queue = {
   version: 1,
   generatedAt: unchangedQueue ? (previousQueue.generatedAt || new Date().toISOString()) : new Date().toISOString(),
   candidates,
-  articleCache: nextCache
+  articleCache: nextCache,
+  lastRun: {
+    mode: process.env.DICTIONARY_SCAN_MODE || "incremental",
+    trigger,
+    recordedAt,
+    workflowRunUrl,
+    articlesDiscovered: publishedArticlesDiscovered,
+    articlesProcessed: publishedArticlesDiscovered - articlesSkippedValidCache,
+    articlesSkippedValidCache,
+    newlyExtracted: candidates.filter((candidate) => !previousCandidates.has(candidate.id)).length,
+    translationsCompleted: 0,
+    translationsFailed: 0
+  }
 };
+const queueChanged = JSON.stringify(previousQueue) !== JSON.stringify(queue);
 
-await mkdir(dirname(pendingPath), { recursive: true });
-await writeFile(pendingPath, `${JSON.stringify(queue, null, 2)}\n`);
+await writeJsonAtomically(pendingPath, queue);
 
 const stats = {
   markdownFilesDiscovered: files.length,
   publishedArticlesDiscovered,
   articlesScanned,
+  articlesProcessed: publishedArticlesDiscovered - articlesSkippedValidCache,
   articlesSkippedValidCache,
   skippedDraftOrUnpublished,
   skippedFutureDated,
+  skippedNonArticle,
   candidatesExtracted: candidates.length,
   newlyExtracted: candidates.filter((candidate) => !previousCandidates.has(candidate.id)).length,
   translationFailed: candidates.filter((candidate) => candidate.status === "translation_failed").length,
   awaitingTranslation: candidates.filter((candidate) => ["extracted", "pending_translation"].includes(candidate.status)).length,
   awaitingReview: candidates.filter((candidate) => ["translated", "pending_review"].includes(candidate.status)).length,
-  queueChanged: !unchangedQueue
+  queueChanged
 };
 
-console.log(`Dictionary scan (${process.env.DICTIONARY_SCAN_MODE || "incremental"}): ${stats.publishedArticlesDiscovered} published, ${stats.articlesSkippedValidCache} article extraction caches valid, ${stats.candidatesExtracted} candidates (${stats.newlyExtracted} new).`);
-console.log(`Draft/unpublished skipped: ${skippedDraftOrUnpublished}; future-dated skipped: ${skippedFutureDated}; queue: ${pendingPath}; changed: ${stats.queueChanged}.`);
+console.log(`Dictionary scan (${process.env.DICTIONARY_SCAN_MODE || "incremental"}): ${stats.publishedArticlesDiscovered} published, ${stats.articlesProcessed} reprocessed, ${stats.articlesSkippedValidCache} unchanged, ${stats.candidatesExtracted} candidates (${stats.newlyExtracted} new).`);
+console.log(`Draft/unpublished skipped: ${skippedDraftOrUnpublished}; pages/non-articles skipped: ${skippedNonArticle}; future-dated skipped: ${skippedFutureDated}; queue: ${pendingPath}; changed: ${stats.queueChanged}.`);
 if (process.env.GITHUB_OUTPUT) {
   await appendFile(process.env.GITHUB_OUTPUT, Object.entries(stats).map(([key, value]) => `${key}=${value}`).join("\n") + "\n");
 }

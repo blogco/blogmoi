@@ -1,4 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
+import { writeJsonAtomically } from "../lib/dictionary-storage.js";
 
 const queuePath = "data/dictionary/pending.json";
 const dictionaryPath = "src/_data/dictionary-data.json";
@@ -16,6 +17,19 @@ const [queue, dictionary] = await Promise.all([
   readFile(dictionaryPath, "utf8").then(JSON.parse)
 ]);
 const candidateIndex = queue.candidates.findIndex((candidate) => candidate.id === id);
+const existingById = dictionary.entries.find((entry) => entry.id === id);
+if (existingById) {
+  if (candidateIndex >= 0) {
+    queue.candidates.splice(candidateIndex, 1);
+    for (const article of Object.values(queue.articleCache || {})) {
+      article.candidateIds = (article.candidateIds || []).filter((candidateId) => candidateId !== id);
+    }
+    queue.generatedAt = new Date().toISOString();
+    await writeJsonAtomically(queuePath, queue);
+  }
+  console.log(`Already approved ${existingById.vi} / ${existingById.ko} / ${existingById.en}; no reviewed data was overwritten.`);
+  process.exit(0);
+}
 if (candidateIndex < 0) throw new Error(`Candidate ${id} was not found in ${queuePath}.`);
 const candidate = queue.candidates[candidateIndex];
 const draft = candidate.translationDraft;
@@ -48,7 +62,17 @@ const entry = {
 };
 
 const normalizedTuple = (item) => languages.map((language) => String(item[language] || "").normalize("NFC").toLocaleLowerCase("und").trim()).join("\u0000");
-if (dictionary.entries.some((item) => normalizedTuple(item) === normalizedTuple(entry))) throw new Error("An identical trilingual entry already exists in the public data file.");
+const duplicate = dictionary.entries.find((item) => normalizedTuple(item) === normalizedTuple(entry));
+if (duplicate) {
+  queue.candidates.splice(candidateIndex, 1);
+  for (const article of Object.values(queue.articleCache || {})) {
+    article.candidateIds = (article.candidateIds || []).filter((candidateId) => candidateId !== id);
+  }
+  queue.generatedAt = new Date().toISOString();
+  await writeJsonAtomically(queuePath, queue);
+  console.log(`Reused reviewed entry ${duplicate.vi} / ${duplicate.ko} / ${duplicate.en}; duplicate candidate ${id} was cleared.`);
+  process.exit(0);
+}
 
 dictionary.version = dictionary.version || 1;
 dictionary.entries.push(entry);
@@ -58,8 +82,6 @@ for (const article of Object.values(queue.articleCache || {})) {
 }
 queue.generatedAt = new Date().toISOString();
 
-await Promise.all([
-  writeFile(dictionaryPath, `${JSON.stringify(dictionary, null, 2)}\n`),
-  writeFile(queuePath, `${JSON.stringify(queue, null, 2)}\n`)
-]);
+await writeJsonAtomically(dictionaryPath, dictionary);
+await writeJsonAtomically(queuePath, queue);
 console.log(`Approved ${entry.vi} / ${entry.ko} / ${entry.en}. It is now eligible for the public Eleventy build after these repository changes are committed and deployed.`);
