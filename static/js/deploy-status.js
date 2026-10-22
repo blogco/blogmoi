@@ -7,8 +7,10 @@
   const actionsUrl = "https://github.com/blogco/blogmoi/actions";
   const apiUrl = "https://api.github.com/repos/blogco/blogmoi/actions/runs?branch=main&per_page=100";
   const productionWorkflowPath = ".github/workflows/deploy.yml";
-  const cacheKey = "blogmoi-deploy-status-v1";
+  const cacheKey = "blogmoi-deploy-status-v2";
   const cacheDuration = 120_000;
+  const successLimit = 10;
+  const failureLimit = 5;
   const statusTitle = root.querySelector("[data-status-title]");
   const statusSummary = root.querySelector("[data-status-summary]");
   const statusStage = root.querySelector("[data-status-stage]");
@@ -30,6 +32,12 @@
   const dataNote = root.querySelector("[data-data-note]");
   const copyButton = root.querySelector("[data-copy-sha]");
   const copyFeedback = root.querySelector("[data-copy-feedback]");
+  const historyLink = root.querySelector("[data-history-link]");
+  const successList = root.querySelector("[data-success-list]");
+  const failedList = root.querySelector("[data-failed-list]");
+  const successCount = root.querySelector("[data-success-count]");
+  const failedCount = root.querySelector("[data-failed-count]");
+  const historyNote = root.querySelector("[data-history-note]");
 
   function setText(element, value) {
     if (element) element.textContent = value;
@@ -56,6 +64,16 @@
       minute: "2-digit",
       timeZoneName: "short"
     }).format(date)} · giờ địa phương`;
+  }
+
+  function formatHistoryDate(value) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return "Không rõ thời gian";
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    }).format(date);
   }
 
   function formatDuration(startValue, endValue) {
@@ -91,6 +109,25 @@
     return runSteps(snapshot).find((step) => step.name === name);
   }
 
+  function getHistoryRuns(workflowRuns) {
+    const candidates = workflowRuns
+      .filter((candidate) => candidate.path === productionWorkflowPath && candidate.head_branch === "main")
+      .filter((candidate) => typeof candidate.head_sha === "string" && /^[\da-f]{40}$/i.test(candidate.head_sha))
+      .sort((left, right) => Date.parse(right.created_at || "") - Date.parse(left.created_at || ""));
+    const latestByCommit = new Map();
+
+    for (const candidate of candidates) {
+      const sha = candidate.head_sha.toLowerCase();
+      if (!latestByCommit.has(sha)) latestByCommit.set(sha, candidate);
+    }
+
+    const latestRuns = [...latestByCommit.values()];
+    return {
+      successful: latestRuns.filter((candidate) => candidate.status === "completed" && candidate.conclusion === "success").slice(0, successLimit),
+      failed: latestRuns.filter((candidate) => candidate.status === "completed" && candidate.conclusion === "failure").slice(0, failureLimit)
+    };
+  }
+
   async function fetchJson(url) {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8000);
@@ -115,7 +152,7 @@
   function readCache() {
     try {
       const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
-      if (cached && Date.now() - cached.savedAt < cacheDuration && cached.run?.id) return cached;
+      if (cached && Date.now() - cached.savedAt < cacheDuration && cached.run?.id && Array.isArray(cached.history?.successful) && Array.isArray(cached.history?.failed)) return cached;
     } catch { /* Storage may be disabled; fetch directly. */ }
     return null;
   }
@@ -131,23 +168,158 @@
     if (cached) return cached;
 
     const response = await fetchJson(apiUrl);
-    const run = response?.workflow_runs?.find((candidate) => candidate.path === productionWorkflowPath && candidate.head_branch === "main");
+    const workflowRuns = Array.isArray(response?.workflow_runs) ? response.workflow_runs : [];
+    const run = workflowRuns
+      .filter((candidate) => candidate.path === productionWorkflowPath && candidate.head_branch === "main")
+      .sort((left, right) => Date.parse(right.created_at || "") - Date.parse(left.created_at || ""))[0];
     if (!run || !Number.isFinite(Number(run.id))) throw new Error("No production workflow run is available.");
 
-    const statusNeedsJobSteps = run.status === "in_progress" || run.status === "completed" && run.conclusion !== "success";
-    let jobs = null;
-    if (statusNeedsJobSteps) {
-      try { jobs = await fetchJson(`https://api.github.com/repos/blogco/blogmoi/actions/runs/${encodeURIComponent(run.id)}/jobs?per_page=100`); }
-      catch { /* The run status is still usable; completed runs without deploy-step evidence become unknown. */ }
-    }
+    const history = getHistoryRuns(workflowRuns);
+    const runsNeedingJobs = [
+      ...(run.status === "in_progress" || run.status === "completed" && run.conclusion !== "success" ? [run] : []),
+      ...history.failed.slice(0, 1)
+    ];
+    const uniqueRunsNeedingJobs = [...new Map(runsNeedingJobs.map((candidate) => [String(candidate.id), candidate])).values()];
+    const jobResults = await Promise.all(uniqueRunsNeedingJobs.map(async (candidate) => {
+      try {
+        const jobs = await fetchJson(`https://api.github.com/repos/blogco/blogmoi/actions/runs/${encodeURIComponent(candidate.id)}/jobs?per_page=100`);
+        return [String(candidate.id), jobs];
+      } catch {
+        return [String(candidate.id), null];
+      }
+    }));
+    const jobsByRunId = Object.fromEntries(jobResults);
 
-    const snapshot = { run, jobs, savedAt: Date.now() };
+    const snapshot = {
+      run,
+      jobs: jobsByRunId[String(run.id)] || null,
+      history: {
+        successful: history.successful,
+        failed: history.failed.map((failedRun, index) => ({
+          run: failedRun,
+          jobs: index === 0 ? jobsByRunId[String(failedRun.id)] || null : null,
+          reasonIsLatest: index === 0
+        }))
+      },
+      savedAt: Date.now()
+    };
     writeCache(snapshot);
     return snapshot;
   }
 
+  function createHistoryItem(entry, isFailure) {
+    const run = isFailure ? entry.run : entry;
+    const item = document.createElement("li");
+    item.className = "deploy-status__history-item";
+
+    const meta = document.createElement("div");
+    meta.className = "deploy-status__history-meta";
+    const shaLink = document.createElement("a");
+    shaLink.className = "deploy-status__history-sha";
+    shaLink.href = `https://github.com/blogco/blogmoi/commit/${run.head_sha}`;
+    shaLink.target = "_blank";
+    shaLink.rel = "noopener noreferrer";
+    shaLink.textContent = run.head_sha.slice(0, 7);
+    shaLink.title = `Mở commit ${run.head_sha}`;
+    meta.append(shaLink);
+
+    const time = document.createElement("time");
+    time.className = "deploy-status__history-time";
+    time.textContent = formatHistoryDate(run.updated_at || run.created_at);
+    if (run.updated_at || run.created_at) time.dateTime = run.updated_at || run.created_at;
+    meta.append(time);
+    item.append(meta);
+
+    const message = typeof run.head_commit?.message === "string" && run.head_commit.message.trim()
+      ? run.head_commit.message.split(/\r?\n/, 1)[0]
+      : run.display_title || "Không có commit message";
+    const title = document.createElement("p");
+    title.className = "deploy-status__history-message";
+    title.textContent = message;
+    item.append(title);
+
+    if (isFailure) {
+      const reason = document.createElement("p");
+      reason.className = "deploy-status__history-reason";
+      reason.textContent = entry.reasonIsLatest
+        ? `Bước lỗi gần nhất: ${getFailureReason(entry.jobs)}`
+        : "Mở log workflow để xem nguyên nhân của lần chạy này.";
+      item.append(reason);
+
+      const runLink = document.createElement("a");
+      runLink.className = "deploy-status__history-run-link";
+      runLink.href = `https://github.com/blogco/blogmoi/actions/runs/${encodeURIComponent(run.id)}`;
+      runLink.target = "_blank";
+      runLink.rel = "noopener noreferrer";
+      runLink.textContent = "Mở log workflow ↗";
+      item.append(runLink);
+    }
+
+    return item;
+  }
+
+  function getFailureReason(jobsResponse) {
+    const jobs = jobsResponse?.jobs;
+    if (!Array.isArray(jobs)) return "Không lấy được chi tiết bước lỗi; mở log workflow để xem.";
+
+    const failedItems = [];
+    for (const job of jobs) {
+      if (job.conclusion !== "failure") continue;
+      const failedSteps = Array.isArray(job.steps) ? job.steps.filter((step) => step.conclusion === "failure") : [];
+      if (failedSteps.length) {
+        for (const step of failedSteps) {
+          failedItems.push({
+            jobName: job.name || "Job không tên",
+            stepName: step.name || "Bước không tên",
+            completedAt: Date.parse(step.completed_at || job.completed_at || "") || 0
+          });
+        }
+      } else {
+        failedItems.push({
+          jobName: job.name || "Job không tên",
+          stepName: "Job thất bại",
+          completedAt: Date.parse(job.completed_at || "") || 0
+        });
+      }
+    }
+
+    failedItems.sort((left, right) => right.completedAt - left.completedAt);
+    const latest = failedItems[0];
+    return latest ? `${latest.jobName} → ${latest.stepName}` : "Workflow kết thúc với trạng thái failure; mở log để xem chi tiết.";
+  }
+
+  function renderHistory(snapshot) {
+    const successful = snapshot.history?.successful || [];
+    const failed = snapshot.history?.failed || [];
+    setText(successCount, `${successful.length}/${successLimit}`);
+    setText(failedCount, `${failed.length}/${failureLimit}`);
+    setText(historyNote, `Đã tải ${successful.length} commit thành công và ${failed.length} commit thất bại từ tối đa 100 lần chạy trên main. Chi tiết lỗi đầy đủ nằm trong log workflow.`);
+    historyLink.href = actionsUrl;
+
+    successList.replaceChildren();
+    if (!successful.length) {
+      const empty = document.createElement("li");
+      empty.className = "deploy-status__history-empty";
+      empty.textContent = "Chưa có commit triển khai thành công trong dữ liệu gần đây.";
+      successList.append(empty);
+    } else {
+      for (const run of successful) successList.append(createHistoryItem(run, false));
+    }
+
+    failedList.replaceChildren();
+    if (!failed.length) {
+      const empty = document.createElement("li");
+      empty.className = "deploy-status__history-empty";
+      empty.textContent = "Không tìm thấy commit triển khai thất bại gần đây.";
+      failedList.append(empty);
+    } else {
+      for (const entry of failed) failedList.append(createHistoryItem(entry, true));
+    }
+  }
+
   function renderSnapshot(snapshot) {
     const { run } = snapshot;
+    renderHistory(snapshot);
     const steps = runSteps(snapshot);
     const buildStep = steps.find((step) => step.name === "Build Eleventy site");
     const deployStep = steps.find((step) => step.name === "Deploy to Pages");
@@ -245,6 +417,15 @@
     setText(runStatus, "unknown");
     setText(copyFeedback, "");
     setText(dataNote, " · Chưa thể xác nhận dữ liệu GitHub Actions");
+    setText(successCount, `—/${successLimit}`);
+    setText(failedCount, `—/${failureLimit}`);
+    setText(historyNote, "Chưa thể tải lịch sử commit từ GitHub Actions.");
+    for (const list of [successList, failedList]) {
+      const item = document.createElement("li");
+      item.className = "deploy-status__history-empty";
+      item.textContent = "Chưa thể tải lịch sử từ GitHub Actions.";
+      list.replaceChildren(item);
+    }
   }
 
   async function copySha() {

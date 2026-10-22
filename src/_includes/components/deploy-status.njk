@@ -73,6 +73,41 @@
       </div>
     </div>
 
+    <section class="deploy-status__history" aria-labelledby="deploy-history-heading">
+      <header class="deploy-status__history-header">
+        <div>
+          <p class="deploy-status__history-eyebrow">LỊCH SỬ WORKFLOW</p>
+          <h3 id="deploy-history-heading">Các commit gần đây</h3>
+        </div>
+        <a class="deploy-status__history-link" data-history-link href="https://github.com/blogco/blogmoi/actions" target="_blank" rel="noopener noreferrer">
+          Mở GitHub Actions <span aria-hidden="true">↗</span>
+        </a>
+      </header>
+
+      <div class="deploy-status__history-grid">
+        <section class="deploy-status__history-group" aria-labelledby="deploy-success-heading">
+          <header class="deploy-status__history-group-header">
+            <h4 id="deploy-success-heading">Triển khai thành công</h4>
+            <span class="deploy-status__history-count" data-success-count>0/10</span>
+          </header>
+          <ul class="deploy-status__history-list" data-success-list>
+            <li class="deploy-status__history-empty">Đang tải lịch sử commit…</li>
+          </ul>
+        </section>
+
+        <section class="deploy-status__history-group deploy-status__history-group--failed" aria-labelledby="deploy-failed-heading">
+          <header class="deploy-status__history-group-header">
+            <h4 id="deploy-failed-heading">Triển khai thất bại</h4>
+            <span class="deploy-status__history-count" data-failed-count>0/5</span>
+          </header>
+          <ul class="deploy-status__history-list" data-failed-list>
+            <li class="deploy-status__history-empty">Đang tải lịch sử commit…</li>
+          </ul>
+        </section>
+      </div>
+      <p class="deploy-status__history-note" data-history-note role="status" aria-live="polite">Dữ liệu lấy từ các lần chạy gần nhất của workflow trên nhánh main.</p>
+    </section>
+
     <p class="deploy-status__footer">Powered by <strong>Eleventy</strong> + <strong>GitHub Actions</strong><span class="deploy-status__footer-note" data-data-note></span></p>
   </div>
 </section>
