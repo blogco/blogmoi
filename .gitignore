@@ -1,0 +1,9 @@
+/public/
+/resources/_gen/
+.hugo_build.lock
+.DS_Store
+__pycache__/
+.env
+.dev.vars
+node_modules/
+*.log

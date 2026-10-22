@@ -1,0 +1,73 @@
+baseURL = "https://blogco.github.io/blogmoi/"
+title = "Blogmoi"
+theme = []
+defaultContentLanguage = "vi"
+defaultContentLanguageInSubdir = false
+timeZone = "Asia/Ho_Chi_Minh"
+enableRobotsTXT = true
+enableGitInfo = false
+
+[frontmatter]
+date = ["date", "publishDate", ":filename"]
+lastmod = ["lastmod", ":git", "date", "publishDate", ":filename"]
+
+[permalinks]
+posts = "/:slug/"
+
+[taxonomies]
+category = "categories"
+tag = "tags"
+
+[services]
+  [services.rss]
+    limit = 20
+
+[sitemap]
+changefreq = "weekly"
+priority = 0.5
+filename = "sitemap.xml"
+
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+[outputFormats.JSON]
+mediaType = "application/json"
+baseName = "search-index"
+isPlainText = true
+notAlternative = true
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = false
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+
+[params]
+description = "Blogmoi — góc nhìn rõ ràng về công nghệ, kinh doanh và những thay đổi quanh ta."
+author = "Blogmoi"
+defaultImage = "images/blogmoi-mark.svg"
+
+[languages]
+  [languages.vi]
+    label = "Tiếng Việt"
+    locale = "vi-VN"
+    weight = 1
+    contentDir = "content"
+    [languages.vi.params]
+      locale = "vi_VN"
+  [languages.en]
+    label = "English"
+    locale = "en"
+    weight = 2
+    contentDir = "content/en"
+    [languages.en.params]
+      locale = "en_US"
+  [languages.ko]
+    label = "한국어"
+    locale = "ko-KR"
+    weight = 3
+    contentDir = "content/ko"
+    [languages.ko.params]
+      locale = "ko_KR"

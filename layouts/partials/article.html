@@ -1,0 +1,17 @@
+<article class="article">
+  <header class="article-header">
+    {{ with .Params.categories }}<a class="eyebrow" href="{{ (index $.Site.Taxonomies.categories (index . 0)).Page.RelPermalink }}">{{ index . 0 }}</a>{{ end }}
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p class="article-deck">{{ . }}</p>{{ end }}
+    <div class="article-byline"><span>{{ .Params.author | default .Site.Params.author }}</span><span>·</span><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date | time.Format "2 January 2006" }}</time><span>·</span><span>{{ .ReadingTime }} phút đọc</span></div>
+    {{ with .Params.cover_url }}<figure class="article-cover"><img src="{{ . | safeURL }}" alt="{{ $.Params.cover_alt | default $.Title }}">{{ with $.Params.cover_caption }}<figcaption>{{ . }}</figcaption>{{ end }}</figure>{{ end }}
+  </header>
+  <div class="article-layout">
+    <aside class="article-toc"><p class="eyebrow">Trong bài viết</p>{{ .TableOfContents }}</aside>
+    <div class="prose article-content">{{ .Content }}
+      {{ with .Params.faq }}<section class="article-extra"><h2>Hỏi &amp; đáp</h2>{{ range . }}<h3>{{ .question }}</h3><p>{{ .answer }}</p>{{ end }}</section>{{ end }}
+      {{ with .Params.sources }}<section class="article-extra"><h2>Nguồn và bản quyền</h2><ul>{{ range . }}<li><a href="{{ .url | safeURL }}" rel="noopener noreferrer">{{ .title }}</a>{{ with .publisher }} · {{ . }}{{ end }}</li>{{ end }}</ul></section>{{ end }}
+      {{ with .Params.related }}<section class="article-extra"><h2>Đọc thêm</h2><ul>{{ range . }}<li><a href="{{ .url | safeURL }}">{{ .title }}</a></li>{{ end }}</ul></section>{{ end }}
+    </div>
+  </div>
+</article>

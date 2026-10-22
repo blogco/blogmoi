@@ -1,0 +1,1 @@
+{{ define "main" }}{{ if eq .Section "posts" }}{{ partial "article.html" . }}{{ else }}<article class="prose page-copy"><p class="eyebrow">Blogmoi</p><h1>{{ .Title }}</h1>{{ .Content }}</article>{{ end }}{{ end }}

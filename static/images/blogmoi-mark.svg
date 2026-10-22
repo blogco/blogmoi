@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#172638"/>
+  <circle cx="900" cy="300" r="260" fill="#087f8c"/>
+  <circle cx="900" cy="300" r="185" fill="#ddf5ec"/>
+  <path d="M0 500 400 200l260 225 190-155 350 360H0z" fill="#20384c"/>
+  <text x="80" y="300" fill="#fafaf7" font-family="Arial,sans-serif" font-size="115" font-weight="700">blogmoi</text>
+  <text x="88" y="370" fill="#b5e6d9" font-family="Arial,sans-serif" font-size="29" letter-spacing="5">CLARITY · CONTEXT · CHANGE</text>
+</svg>

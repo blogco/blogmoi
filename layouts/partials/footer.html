@@ -1,0 +1,10 @@
+<footer class="site-footer">
+  <div class="footer-main">
+    <a class="brand brand--footer" href="{{ .Site.Home.RelPermalink }}"><span class="brand-mark" aria-hidden="true">b.</span><span class="brand-name">blogmoi</span></a>
+    <p>Góc nhìn rõ ràng về công nghệ, kinh doanh và những thay đổi quanh ta.</p>
+  </div>
+  <nav aria-label="Liên kết cuối trang">
+    <a href="{{ "about/" | relURL }}">Về chúng tôi</a><a href="{{ "contact/" | relURL }}">Liên hệ</a><a href="{{ "index.xml" | relURL }}">RSS</a>
+  </nav>
+  <small>© {{ now.Year }} Blogmoi. Nội dung thuộc về tác giả và nguồn được ghi nhận trong từng bài viết.</small>
+</footer>

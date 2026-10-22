@@ -1,0 +1,51 @@
+name: Deploy Hugo site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Start deployment timer
+        run: date +%s > /tmp/blogmoi-deploy-start
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 0.163.1
+          extended: true
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Build site
+        run: |
+          build_start=$(date +%s%N)
+          hugo --gc --minify
+          build_end=$(date +%s%N)
+          build_ms=$(( (build_end - build_start) / 1000000 ))
+          echo "Hugo build: $build_ms ms" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Report total duration
+        if: always()
+        run: |
+          total_start=$(cat /tmp/blogmoi-deploy-start)
+          total_seconds=$(( $(date +%s) - total_start ))
+          echo "Workflow total after checkout: $total_seconds seconds" >> "$GITHUB_STEP_SUMMARY"
