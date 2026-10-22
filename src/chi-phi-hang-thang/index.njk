@@ -90,9 +90,12 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <p class="expense-index">02 / BÁO CÁO & GÓC NHÌN</p>
         <h2 id="dashboard-title">Tổng quan chi phí</h2>
       </div>
-      <div class="month-control">
-        <label class="expense-label" for="dashboard-month">Tháng báo cáo</label>
-        <input id="dashboard-month" type="month" aria-label="Chọn tháng báo cáo">
+      <div class="dashboard-actions">
+        <button class="button button--secondary print-report" id="print-report" type="button">In / Xuất PDF</button>
+        <div class="month-control">
+          <label class="expense-label" for="dashboard-month">Tháng báo cáo</label>
+          <input id="dashboard-month" type="month" aria-label="Chọn tháng báo cáo">
+        </div>
       </div>
     </div>
 
@@ -231,6 +234,42 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <p class="chart-empty" id="merchant-empty" hidden>Chưa có dữ liệu quán / thương hiệu cho tháng này.</p>
       </section>
     </div>
+
+    <section class="chart-panel icon-playground" aria-labelledby="icon-playground-title">
+      <div class="chart-heading icon-playground__heading">
+        <div>
+          <p class="chart-kicker">SPENDING CHARACTERS</p>
+          <h3 id="icon-playground-title">Những món đã góp mặt</h3>
+          <p class="icon-playground__intro" id="bubble-mode-caption">Tỷ trọng theo số lần mua trong tháng đang chọn.</p>
+        </div>
+        <div class="bubble-mode" role="group" aria-label="Cách tính tỷ trọng icon">
+          <button class="button button--secondary is-active" type="button" data-bubble-mode="count" aria-pressed="true">Theo số lần mua</button>
+          <button class="button button--secondary" type="button" data-bubble-mode="amount" aria-pressed="false">Theo tổng số tiền</button>
+        </div>
+      </div>
+      <div class="bubble-chart" id="food-bubbles" role="list" aria-label="Tỷ trọng các nhóm món"></div>
+      <p class="chart-empty" id="bubble-empty" hidden>Chưa có giao dịch trong tháng này. Các nhóm món sẽ xuất hiện khi có dữ liệu.</p>
+      <p class="bubble-tooltip" id="bubble-tooltip" role="status" aria-live="polite" hidden></p>
+      <div class="bubble-ranking">
+        <div class="chart-heading"><div><p class="chart-kicker">SO SÁNH CHI TIẾT</p><h4>Top 5 nhóm món</h4></div></div>
+        <div class="table-scroll">
+          <table>
+            <caption id="bubble-ranking-caption">Xếp hạng theo số lần mua trong tháng đang chọn</caption>
+            <thead><tr><th scope="col">Hạng</th><th scope="col">Nhóm món</th><th scope="col">Số lần</th><th scope="col">Tổng tiền</th><th scope="col">Tỷ lệ</th></tr></thead>
+            <tbody id="bubble-ranking-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="insights-panel health-insights-panel" aria-labelledby="health-insights-title">
+      <div class="expense-section-heading">
+        <div><p class="expense-index">GÓC NHÌN SỨC KHỎE · RULE-BASED OFFLINE</p><h3 id="health-insights-title">Góc nhìn sức khỏe</h3></div>
+        <span class="insights-badge">Phân tích trên thiết bị</span>
+      </div>
+      <div class="insight-list health-insight-list" id="health-insight-list" aria-live="polite"></div>
+      <p class="health-note">Nhận xét chỉ dựa trên tên món, khẩu vị, danh mục và tần suất giao dịch đã ghi. Không suy đoán calories, lượng đường, caffeine hay chẩn đoán sức khỏe; chi tiêu không đại diện cho toàn bộ khẩu phần ăn.</p>
+    </section>
 
     <section class="insights-panel" aria-labelledby="insights-title">
       <div class="expense-section-heading">

@@ -358,6 +358,86 @@ export function aggregateMonth(transactions, month) {
   };
 }
 
+export function aggregateFoodGroups(transactions, month, mode = "count") {
+  const metric = mode === "amount" ? "amount" : "count";
+  const groups = new Map();
+  for (const transaction of transactions) {
+    if (monthKey(transaction.date) !== month) continue;
+    const iconId = Object.hasOwn(FOOD_ICONS, transaction.iconId) ? transaction.iconId : "other";
+    const group = groups.get(iconId) || { iconId, label: FOOD_ICONS[iconId].label, count: 0, amount: 0 };
+    group.count += 1;
+    group.amount += transaction.amount;
+    groups.set(iconId, group);
+  }
+  const total = [...groups.values()].reduce((sum, group) => sum + group[metric], 0);
+  const items = [...groups.values()].map(group => ({
+    ...group,
+    value: group[metric],
+    share: total > 0 ? group[metric] / total : 0,
+  })).sort((a, b) => b.value - a.value || b.count - a.count || a.label.localeCompare(b.label, "vi"));
+  return { month, mode: metric, total, items };
+}
+
+export function getBubbleSize(share, min = 112, max = 204) {
+  const boundedShare = Math.max(0, Math.min(1, Number(share) || 0));
+  return Math.round(min + Math.sqrt(boundedShare) * (max - min));
+}
+
+export function buildHealthInsights(transactions, month) {
+  const records = transactions.filter(transaction => monthKey(transaction.date) === month);
+  if (!records.length) {
+    return [{ type: "unknown", title: "Chưa có dữ liệu", text: "Chưa có giao dịch trong tháng này để nhận xét về tên món, khẩu vị hoặc tần suất." }];
+  }
+
+  const insights = [];
+  const notes = records.map(transaction => ({
+    transaction,
+    text: `${transaction.itemName} ${transaction.taste || ""} ${transaction.notes || ""}`.toLocaleLowerCase("vi-VN"),
+    iconId: Object.hasOwn(FOOD_ICONS, transaction.iconId) ? transaction.iconId : resolveFoodIcon(transaction.itemName),
+  }));
+  const drinksWithoutSugarDetails = notes.filter(({ transaction, text }) => transaction.category === "Đồ uống"
+    && !/không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt|nhiều\s+đường|thêm\s+đường/iu.test(text)).length;
+  const unknownInsight = { type: "unknown", title: "Chưa thể đánh giá toàn bộ khẩu phần", text: `Có ${records.length} giao dịch trong tháng; ${drinksWithoutSugarDetails} giao dịch thuộc danh mục đồ uống chưa ghi mức đường. Sổ chi tiêu không phản ánh mọi món đã ăn và không cho biết công thức hoặc khẩu phần, nên chưa thể đánh giá tổng lượng đường, dầu mỡ hay caffeine.` };
+  const lowerSugar = notes.filter(({ text }) => /không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt/iu.test(text));
+  if (lowerSugar.length) {
+    insights.push({ type: "positive", title: "Đã ghi nhận lựa chọn ít / không đường", text: `${lowerSugar.length} giao dịch có ghi khẩu vị không đường, ít đường hoặc ít ngọt. Đây là thông tin theo ghi chép của bạn; công thức thực tế có thể khác.` });
+  }
+
+  const explicitlySweet = notes.filter(({ text }) => /nhiều\s+đường|thêm\s+đường|đầy\s+đường|full\s+đường/iu.test(text));
+  const sweetDrinkNames = notes.filter(({ transaction, iconId, text }) => {
+    const namedDrink = iconId === "milk-tea" || /nước\s+ngọt|soft\s*drink|soda|siro|syrup/iu.test(`${transaction.itemName} ${text}`);
+    return namedDrink && !/không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt/iu.test(text);
+  });
+  if (explicitlySweet.length || sweetDrinkNames.length) {
+    const count = new Set([...explicitlySweet, ...sweetDrinkNames].map(record => record.transaction.id)).size;
+    insights.push({ type: "consider", title: "Đồ uống có thể ngọt", text: `${count} giao dịch được ghi rõ nhiều đường hoặc có tên nhóm thường được pha ngọt như trà sữa / nước ngọt. Nếu phù hợp, bạn có thể chọn ít đường hơn; ghi chép không cho biết lượng đường thực tế.` });
+  }
+
+  const dessert = notes.filter(({ transaction, iconId }) => iconId === "cake" || /bánh ngọt|bánh kem|chè\b|kem\b|dessert|donut|croissant/iu.test(transaction.itemName));
+  if (dessert.length) insights.push({ type: "consider", title: "Bánh ngọt / món tráng miệng", text: `Bạn đã ghi nhận ${dessert.length} giao dịch thuộc nhóm bánh ngọt hoặc món tráng miệng theo tên món. Có thể cân nhắc tần suất và khẩu phần; dữ liệu chi tiêu không cho biết thành phần dinh dưỡng.` });
+
+  const fried = notes.filter(({ transaction, iconId }) => iconId === "fried" || /chiên|rán|fried|fries/iu.test(`${transaction.itemName} ${transaction.notes}`));
+  if (fried.length) insights.push({ type: "consider", title: "Món được mô tả là chiên", text: `${fried.length} giao dịch có tên món hoặc icon thuộc nhóm chiên. Nếu phù hợp, bạn có thể luân phiên với món luộc / hấp; ghi chép không cho biết lượng dầu hay chất béo.` });
+
+  const caffeine = notes.filter(({ transaction, iconId }) => iconId === "coffee" || iconId === "matcha" || /cà\s*phê|coffee|cafe|espresso|americano|matcha|trà\s+xanh|green\s+tea/iu.test(transaction.itemName));
+  if (caffeine.length) insights.push({ type: "consider", title: "Đồ uống có thể chứa caffeine", text: `${caffeine.length} giao dịch có tên cà phê, matcha hoặc trà xanh. Hàm lượng và việc dùng loại khử caffeine không thể xác định từ ghi chép; cân nhắc thời điểm uống nếu điều đó phù hợp với bạn.` });
+
+  const countsByIcon = new Map();
+  for (const { iconId } of notes) countsByIcon.set(iconId, (countsByIcon.get(iconId) || 0) + 1);
+  for (const [iconId, count] of [...countsByIcon].filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3)) {
+    insights.push({ type: "consider", title: `Lặp lại: ${FOOD_ICONS[iconId].label}`, text: `Nhóm ${FOOD_ICONS[iconId].label.toLocaleLowerCase("vi-VN")} xuất hiện ${count} lần trong tháng. Bạn có thể dùng tần suất này để cân nhắc sự đa dạng món; số giao dịch không thể hiện toàn bộ khẩu phần.` });
+  }
+
+  if (!insights.some(item => item.type === "positive" || item.type === "consider")) {
+    insights.push({ type: "unknown", title: "Thông tin còn hạn chế", text: "Tên món và ghi chú tháng này chưa cho biết rõ về đường, dầu mỡ hoặc caffeine. Chưa đủ dữ liệu để nhận xét; bạn có thể ghi thêm khẩu vị nếu muốn." });
+  }
+  return [...insights.filter(item => item.type !== "unknown").slice(0, 7), unknownInsight];
+}
+
+function formatPercent(value) {
+  return `${(value * 100).toFixed(1).replace(".", ",")}%`;
+}
+
 function shiftMonth(month, amount) {
   const [year, monthNumber] = month.split("-").map(Number);
   const shifted = new Date(year, monthNumber - 1 + amount, 1);
@@ -882,6 +962,80 @@ function renderInsights(transactions, summary, comparison) {
   }
 }
 
+function renderHealthInsights(transactions, month) {
+  const container = document.querySelector("#health-insight-list");
+  container.replaceChildren();
+  for (const record of buildHealthInsights(transactions, month)) {
+    const card = makeElement("article", `insight-card health-insight-card health-insight-card--${record.type}`);
+    card.append(makeElement("p", "insight-card__type", record.type === "positive" ? "Positive · Có thể có lợi" : record.type === "consider" ? "Consider · Đáng cân nhắc" : "Unknown · Chưa đủ dữ liệu"));
+    card.append(makeElement("h4", "health-insight-card__title", record.title));
+    card.append(makeElement("p", "", record.text));
+    container.append(card);
+  }
+}
+
+function renderFoodPlayground(transactions, month) {
+  const bubbleList = document.querySelector("#food-bubbles");
+  const empty = document.querySelector("#bubble-empty");
+  const tooltip = document.querySelector("#bubble-tooltip");
+  const rankingRows = document.querySelector("#bubble-ranking-rows");
+  const selectedMode = document.querySelector('[data-bubble-mode][aria-pressed="true"]')?.dataset.bubbleMode || "count";
+  const groups = aggregateFoodGroups(transactions, month, selectedMode);
+  const metricName = selectedMode === "amount" ? "tổng số tiền" : "số lần mua";
+  document.querySelector("#bubble-mode-caption").textContent = `Tỷ trọng theo ${metricName} trong ${monthLabel(month).toLocaleLowerCase("vi-VN")}.`;
+  document.querySelector("#bubble-ranking-caption").textContent = `Xếp hạng theo ${metricName} trong tháng đang chọn`;
+  bubbleList.replaceChildren();
+  rankingRows.replaceChildren();
+  tooltip.hidden = true;
+  empty.hidden = Boolean(groups.items.length);
+  if (!groups.items.length) {
+    const row = makeElement("tr");
+    const cell = makeElement("td", "bubble-ranking-empty", "Chưa có dữ liệu cho tháng này.");
+    cell.colSpan = 5;
+    row.append(cell);
+    rankingRows.append(row);
+    return;
+  }
+
+  const spriteUrl = document.querySelector("#expense-app").dataset.iconSprite || "/icons/food-drink.svg";
+  const tooltipCopy = group => `${group.label}: ${group.count} lần mua, tổng ${formatVnd(group.amount)}. Tỷ lệ ${group.value} / ${groups.total} = ${formatPercent(group.share)}.`;
+  groups.items.forEach((group, index) => {
+    const item = makeElement("div", "food-bubble-item");
+    item.setAttribute("role", "listitem");
+    const bubble = makeElement("button", `food-bubble${index === 0 ? " food-bubble--featured" : ""}`);
+    bubble.type = "button";
+    bubble.style.setProperty("--bubble-size", `${getBubbleSize(group.share)}px`);
+    bubble.style.setProperty("--bubble-pastel", FOOD_ICONS[group.iconId].background);
+    bubble.setAttribute("aria-label", tooltipCopy(group));
+    bubble.title = tooltipCopy(group);
+    bubble.append(createFoodIcon(group.iconId, spriteUrl));
+    bubble.append(makeElement("span", "food-bubble__name", group.label));
+    bubble.append(makeElement("span", "food-bubble__share", formatPercent(group.share)));
+    const show = () => { tooltip.textContent = tooltipCopy(group); tooltip.hidden = false; };
+    const hide = () => { if (document.activeElement !== bubble) tooltip.hidden = true; };
+    bubble.addEventListener("pointerenter", show);
+    bubble.addEventListener("pointerleave", hide);
+    bubble.addEventListener("focus", show);
+    bubble.addEventListener("blur", () => { tooltip.hidden = true; });
+    bubble.addEventListener("click", () => {
+      const wasOpen = bubble.dataset.pinned === "true";
+      for (const active of bubbleList.querySelectorAll(".food-bubble[data-pinned='true']")) active.dataset.pinned = "false";
+      if (wasOpen) tooltip.hidden = true;
+      else { bubble.dataset.pinned = "true"; show(); }
+    });
+    item.append(bubble);
+    bubbleList.append(item);
+  });
+
+  for (const [index, group] of groups.items.slice(0, 5).entries()) {
+    const row = makeElement("tr");
+    for (const value of [String(index + 1), group.label, formatNumber(group.count), formatVnd(group.amount), `${group.value} / ${groups.total} · ${formatPercent(group.share)}`]) {
+      row.append(makeElement("td", "", value));
+    }
+    rankingRows.append(row);
+  }
+}
+
 function renderKpis(summary, comparison, selectedMonth, now) {
   document.querySelector("#kpi-total").textContent = formatVnd(summary.total);
   document.querySelector("#kpi-count").textContent = formatNumber(summary.count);
@@ -983,6 +1137,8 @@ function renderDashboard(transactions) {
   drawCategoryChart(summary);
   drawMerchantBars(summary);
   renderInsights(transactions, summary, comparison);
+  renderFoodPlayground(transactions, month);
+  renderHealthInsights(transactions, month);
 }
 
 function setFieldReview(review = {}) {
@@ -1409,6 +1565,23 @@ async function startExpenseTracker() {
     document.querySelector(selector).addEventListener(selector.includes("search") ? "input" : "change", () => renderTransactions(transactions, spriteUrl));
   }
   document.querySelector("#dashboard-month").addEventListener("change", () => renderDashboard(transactions));
+  for (const button of document.querySelectorAll("[data-bubble-mode]")) {
+    button.addEventListener("click", () => {
+      for (const option of document.querySelectorAll("[data-bubble-mode]")) {
+        const active = option === button;
+        option.setAttribute("aria-pressed", String(active));
+        option.classList.toggle("is-active", active);
+      }
+      renderFoodPlayground(transactions, document.querySelector("#dashboard-month").value);
+    });
+  }
+  document.querySelector("#print-report").addEventListener("click", () => {
+    const previousTitle = document.title;
+    const month = document.querySelector("#dashboard-month").value || localDateValue(new Date()).slice(0, 7);
+    document.title = `blogmoi-chi-phi-${month}`;
+    window.addEventListener("afterprint", () => { document.title = previousTitle; }, { once: true });
+    window.print();
+  });
 
   document.querySelector("#export-json").addEventListener("click", () => {
     const payload = { version: 1, exportedAt: new Date().toISOString(), transactions };

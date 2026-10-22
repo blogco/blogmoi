@@ -1,12 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
+  FOOD_ICONS,
+  aggregateFoodGroups,
   aggregateMonth,
+  buildHealthInsights,
   formatVnd,
+  getBubbleSize,
   getMonthlyComparison,
   parseCsv,
   parseExpenseText,
   prepareImportRows,
+  resolveFoodIcon,
   serializeCsv,
   validateTransaction,
 } from "../static/js/expense-tracker.js";
@@ -67,6 +73,8 @@ test("requires valid and complete fields before a transaction can be stored", ()
   const valid = validateTransaction(transaction(), { now: fixedNow, makeId: () => "generated" });
   assert.equal(valid.amount, 50_000);
   assert.equal(valid.category, "Đồ uống");
+  assert.equal(valid.iconId, "matcha");
+  assert.equal(valid.iconManuallySet, false);
 });
 
 test("aggregates totals, transaction counts, active-day averages and merchant totals", () => {
@@ -102,12 +110,14 @@ test("compares the same elapsed days and handles a missing or zero previous mont
 });
 
 test("exports and restores CSV with commas, quotes, and line breaks", () => {
-  const rows = [transaction({ merchant: "Quán, \"An\"", notes: "ngồi tầng 2\ngần cửa sổ" })];
+  const rows = [transaction({ merchant: "Quán, \"An\"", notes: "ngồi tầng 2\ngần cửa sổ", iconId: "fried", iconManuallySet: true })];
   const csv = serializeCsv(rows);
   const restored = parseCsv(csv);
   assert.equal(restored[0].merchant, rows[0].merchant);
   assert.equal(restored[0].notes, rows[0].notes);
   assert.equal(Number(restored[0].amount), rows[0].amount);
+  assert.equal(restored[0].iconId, rows[0].iconId);
+  assert.equal(restored[0].iconManuallySet, "true");
 });
 
 test("validates imported rows and skips duplicates by ID or transaction details", () => {
@@ -121,4 +131,58 @@ test("validates imported rows and skips duplicates by ID or transaction details"
   assert.equal(result.imported.length, 1);
   assert.equal(result.imported[0].itemName, "Bánh mì");
   assert.deepEqual(result.skipped, { duplicate: 2, invalid: 1 });
+});
+
+test("groups food icons by monthly purchase count and amount with exact ratios", () => {
+  const rows = [
+    transaction({ id: "coffee-1", itemName: "Cà phê sữa", iconId: "coffee", amount: 30_000 }),
+    transaction({ id: "coffee-2", itemName: "Americano", iconId: "coffee", amount: 70_000 }),
+    transaction({ id: "cake-1", itemName: "Cheesecake", iconId: "cake", amount: 150_000 }),
+    transaction({ id: "next-month", itemName: "Trà sữa", iconId: "milk-tea", amount: 500_000, date: "2026-11-01" }),
+  ];
+  const byCount = aggregateFoodGroups(rows, "2026-10", "count");
+  assert.equal(byCount.total, 3);
+  assert.deepEqual(byCount.items.map(({ iconId, count, amount, share }) => [iconId, count, amount, share]), [
+    ["coffee", 2, 100_000, 2 / 3],
+    ["cake", 1, 150_000, 1 / 3],
+  ]);
+  const byAmount = aggregateFoodGroups(rows, "2026-10", "amount");
+  assert.equal(byAmount.total, 250_000);
+  assert.deepEqual(byAmount.items.map(({ iconId, value, share }) => [iconId, value, share]), [
+    ["cake", 150_000, 0.6],
+    ["coffee", 100_000, 0.4],
+  ]);
+});
+
+test("food icon aggregation handles no rows, one group, and invalid IDs with other fallback", () => {
+  assert.deepEqual(aggregateFoodGroups([], "2026-10").items, []);
+  const oneGroup = aggregateFoodGroups([
+    transaction({ iconId: "not-a-food-icon", itemName: "Khoản chưa phân loại" }),
+  ], "2026-10");
+  assert.equal(oneGroup.items.length, 1);
+  assert.equal(oneGroup.items[0].iconId, "other");
+  assert.equal(oneGroup.items[0].share, 1);
+  assert.equal(resolveFoodIcon("Matcha Latte"), "matcha");
+  const sprite = readFileSync(new URL("../static/icons/food-drink.svg", import.meta.url), "utf8");
+  for (const iconId of Object.keys(FOOD_ICONS)) assert.match(sprite, new RegExp(`<symbol id="food-icon-${iconId}"`, "u"));
+  assert.equal(getBubbleSize(0), 112);
+  assert.equal(getBubbleSize(1), 204);
+});
+
+test("health insights use recorded words and label missing food details unknown", () => {
+  const rows = [
+    transaction({ id: "tea-1", itemName: "Trà sữa", iconId: "milk-tea", taste: "Không đường" }),
+    transaction({ id: "tea-2", itemName: "Trà sữa", iconId: "milk-tea", taste: "Không đường" }),
+    transaction({ id: "fried-1", itemName: "Gà rán", iconId: "fried", category: "Đồ ăn", taste: "" }),
+  ];
+  const insights = buildHealthInsights(rows, "2026-10");
+  assert.ok(insights.some(item => item.type === "positive" && item.text.includes("2 giao dịch")));
+  assert.ok(insights.some(item => item.type === "consider" && item.title.includes("chiên")));
+  assert.ok(insights.some(item => item.type === "consider" && item.title.includes("Lặp lại")));
+  assert.ok(!insights.some(item => item.title.includes("Đồ uống có thể ngọt")));
+
+  const unclear = buildHealthInsights([transaction({ itemName: "Món chưa xác định", iconId: "other", taste: "" })], "2026-10");
+  assert.deepEqual(unclear.map(item => item.type), ["unknown"]);
+  assert.match(unclear[0].text, /chưa thể đánh giá tổng lượng/u);
+  assert.deepEqual(buildHealthInsights([], "2026-10").map(item => item.type), ["unknown"]);
 });
