@@ -9,6 +9,7 @@
   {% set ogType = 'article' if type == 'article' else 'website' %}
   {% if type == 'article' %}{% set structuredData = {"@context":"https://schema.org","@type":"BlogPosting","headline":title,"description":description,"datePublished":date | dateIso,"dateModified":lastModified or date | dateIso,"author":{"@type":"Person","name":author or "Blogmoi"},"mainEntityOfPage":canonicalUrl,"publisher":{"@type":"Organization","name":site.title},"inLanguage":lang or "vi"} %}{% endif %}
   {% include "partials/head.njk" %}
+  {% if type == 'article' %}<link rel="stylesheet" href="{{ '/css/article.css' | url }}">{% endif %}
   <title>{{ title }}{% if title != site.title %} · {{ site.title }}{% else %} — Góc nhìn rõ ràng{% endif %}</title>
 </head>
 <body>

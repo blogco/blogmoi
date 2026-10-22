@@ -1,0 +1,12 @@
+<section class="article-panel internal-panel" aria-labelledby="internal-links-title">
+  <div class="article-panel__heading"><span class="article-panel__number">02</span><h2 id="internal-links-title">Bài viết liên quan</h2></div>
+  {% if relatedPosts and relatedPosts.length %}
+    <ul class="internal-links-list">
+      {% for post in relatedPosts %}
+        <li><a href="{{ post.url | url }}"><span>{{ (post.data.categories or ["Góc nhìn"])[0] }}</span><strong>{{ post.data.title }}</strong><time datetime="{{ post.date | dateIso }}">{{ post.date | dateReadable }}</time></a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="component-empty">Không có liên kết nội bộ.</p>
+  {% endif %}
+</section>

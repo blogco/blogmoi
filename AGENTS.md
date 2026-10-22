@@ -12,7 +12,7 @@
 - Keep public article URLs stable at `/<slug>/`. Use lowercase kebab-case source filenames and explicit `slug` front matter when a legacy URL requires it.
 - Preserve existing content, media, metadata, and URLs during migrations. Do not delete valuable published content.
 - Do not invent articles, translations, citations, author identities, contacts, or claims. English and Korean content can be added under `src/en/` and `src/ko/` with explicit language metadata; do not create placeholder translations.
-- Article metadata should include title, description, date, language, author, categories, tags, cover image, and SEO fields when supplied.
+- Article metadata may also provide `keyPoints` (3–5 editor-reviewed items), `faq` (3–5 question/answer objects), `originalAuthor`, `sourcePublisher`, `sourceUrl`, `sourcePublicationDate`, `copyrightHolder`, `editorialNote`, and `copyrightNotice`. Render supplied facts only; never imply AI generation or invent sources, answers, or authorship.
 - Future CMS integration should write validated article bundles and media into the source tree, then trigger the existing GitHub Actions deployment. Do not implement CMS code during Phase 1.
 
 ## Design and accessibility

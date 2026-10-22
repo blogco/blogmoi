@@ -1,0 +1,11 @@
+<section class="keypoints" aria-labelledby="keypoints-title">
+  <div class="keypoints__heading">
+    <span class="keypoints__icon" aria-hidden="true">i</span>
+    <div><p class="eyebrow">Tóm lược biên tập</p><h2 id="keypoints-title">Điểm chính</h2></div>
+  </div>
+  {% if keyPoints and keyPoints.length %}
+    <ol>{% for point in keyPoints.slice(0, 5) %}<li>{{ point }}</li>{% endfor %}</ol>
+  {% else %}
+    <p class="component-empty">Điểm chính sẽ xuất hiện khi được biên tập từ nội dung bài viết.</p>
+  {% endif %}
+</section>

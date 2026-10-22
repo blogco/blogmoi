@@ -42,6 +42,14 @@ export default function (eleventyConfig) {
     return SITE_ORIGIN + PATH_PREFIX + String(path).replace(/^\/+/, "");
   });
   eleventyConfig.addFilter("slugify", slugify);
+  eleventyConfig.addFilter("safeExternalUrl", (value = "") => {
+    try {
+      const url = new URL(String(value));
+      return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+    } catch {
+      return "";
+    }
+  });
   eleventyConfig.addFilter("padStart", (value, length = 2, fill = "0") => String(value).padStart(Number(length), String(fill)));
   eleventyConfig.addFilter("relatedPosts", (posts, currentUrl, categories = []) => posts
     .filter((post) => post.url !== currentUrl && (post.data.categories || []).some((category) => categories.includes(category)))
@@ -60,8 +68,9 @@ export default function (eleventyConfig) {
     const headings = [...String(html || "").matchAll(/<h([23])\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
     if (!headings.length) return "";
     const rows = headings.map(([, level, id, label]) => {
-      const text = label.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-      return `<li class="toc-level-${level}"><a href="#${id}">${text}</a></li>`;
+      const text = label.replace(/<[^>]*>/g, "");
+      const safeId = id.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      return `<li class="toc-level-${level}"><a href="#${safeId}">${text}</a></li>`;
     }).join("");
     return `<nav class="toc" aria-label="Mục lục"><p class="eyebrow">Trong bài viết</p><ol>${rows}</ol></nav>`;
   });

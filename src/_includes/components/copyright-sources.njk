@@ -1,0 +1,16 @@
+<section class="article-panel source-panel" aria-labelledby="sources-title">
+  <div class="article-panel__heading"><span class="article-panel__number">01</span><h2 id="sources-title">Bản quyền &amp; nguồn</h2></div>
+  {% set safeSourceUrl = sourceUrl | safeExternalUrl %}
+  <dl class="source-details">
+    {% if originalAuthor %}<div><dt>Tác giả gốc</dt><dd>{{ originalAuthor }}</dd></div>{% endif %}
+    {% if sourcePublisher %}<div><dt>Đơn vị xuất bản</dt><dd>{{ sourcePublisher }}</dd></div>{% endif %}
+    {% if safeSourceUrl %}<div><dt>Nguồn</dt><dd><a href="{{ safeSourceUrl }}" rel="noopener noreferrer">{{ safeSourceUrl }}</a></dd></div>{% endif %}
+    {% if sourcePublicationDate %}<div><dt>Ngày xuất bản nguồn</dt><dd><time datetime="{{ sourcePublicationDate | dateIso }}">{{ sourcePublicationDate | dateReadable }}</time></dd></div>{% endif %}
+    {% if copyrightHolder %}<div><dt>Bản quyền</dt><dd>{{ copyrightHolder }}</dd></div>{% endif %}
+  </dl>
+  {% if editorialNote %}<p class="source-note">{{ editorialNote }}</p>{% endif %}
+  {% if copyrightNotice %}<p class="source-note">{{ copyrightNotice }}</p>{% endif %}
+  {% if not originalAuthor and not sourcePublisher and not safeSourceUrl and not sourcePublicationDate and not copyrightHolder and not editorialNote and not copyrightNotice %}
+    <p class="component-empty">Thông tin nguồn và bản quyền chưa được cung cấp cho bài viết này.</p>
+  {% endif %}
+</section>

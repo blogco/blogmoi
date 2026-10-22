@@ -1,0 +1,41 @@
+<nav class="article-breadcrumbs" aria-label="Đường dẫn">
+  <ol>
+    <li><a href="{{ '/' | url }}">Trang chủ</a></li>
+    {% for category in (categories or []) %}
+      {% if loop.index <= 2 %}
+        <li><a href="{{ ('/categories/' + (category | slugify) + '/') | url }}">{{ category }}</a></li>
+      {% endif %}
+    {% endfor %}
+    <li aria-current="page">{{ title }}</li>
+  </ol>
+</nav>
+
+<header class="article-hero">
+  <div class="article-hero__copy">
+    {% if categories and categories.length %}
+      <a class="article-kicker" href="{{ ('/categories/' + (categories[0] | slugify) + '/') | url }}">{{ categories[0] }}</a>
+    {% endif %}
+    <h1>{{ title }}</h1>
+    {% if description %}<p class="article-deck">{{ description }}</p>{% endif %}
+    <div class="article-byline" aria-label="Thông tin bài viết">
+      <time datetime="{{ date | dateIso }}">{{ date | dateReadable }}</time>
+      <span class="byline-separator" aria-hidden="true"></span>
+      <span>{{ author or "Blogmoi" }}</span>
+      {% if categories and categories.length %}
+        <span class="byline-separator" aria-hidden="true"></span>
+        <a href="{{ ('/categories/' + (categories[0] | slugify) + '/') | url }}">{{ categories[0] }}</a>
+      {% endif %}
+      <span class="byline-separator" aria-hidden="true"></span>
+      <span>{{ content | readingTime }} phút đọc</span>
+    </div>
+  </div>
+
+  {% if cover %}
+    <figure class="article-hero__media">
+      <img src="{{ cover | url }}" alt="{{ coverAlt or '' }}" fetchpriority="high" width="1440" height="810">
+      {% if coverCaption %}<figcaption>{{ coverCaption }}</figcaption>{% endif %}
+    </figure>
+  {% else %}
+    <div class="article-hero__media article-hero__media--empty" aria-hidden="true"><span>Blogmoi</span></div>
+  {% endif %}
+</header>

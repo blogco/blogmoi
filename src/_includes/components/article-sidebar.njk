@@ -1,0 +1,18 @@
+<aside class="article-sidebar" aria-label="Thông tin bài viết">
+  {% if articleToc %}
+    <section class="article-sidebar__section" aria-labelledby="article-toc-title">
+      <h2 id="article-toc-title">Mục lục bài viết</h2>
+      {{ articleToc | safe }}
+    </section>
+  {% endif %}
+
+  {% if (categories and categories.length) or (tags and tags.length) %}
+    <section class="article-sidebar__section" aria-labelledby="article-topics-title">
+      <h2 id="article-topics-title">Chủ đề liên quan</h2>
+      <ul class="topic-pills">
+        {% for category in (categories or []) %}<li><a href="{{ ('/categories/' + (category | slugify) + '/') | url }}">{{ category }}</a></li>{% endfor %}
+        {% for tag in (tags or []) %}{% if tag != "posts" %}<li><a href="{{ ('/tags/' + (tag | slugify) + '/') | url }}">{{ tag }}</a></li>{% endif %}{% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+</aside>
