@@ -105,12 +105,13 @@ html[data-theme="dark"] .kpi-card--comparison .kpi-value[data-trend="down"] { co
 .cloud-sync-intro { max-width: 700px; margin: 7px 0 0; color: var(--muted); font-size: .84rem; line-height: 1.55; }
 .cloud-sync-status { display: inline-flex; flex: 0 0 auto; align-items: center; min-height: 32px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--wash); color: var(--muted); font-size: .75rem; font-weight: 800; }
 .cloud-sync-status::before { width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: currentColor; content: ""; }
-.cloud-sync-status[data-state="synced"] { border-color: color-mix(in srgb, var(--teal), var(--line) 60%); background: color-mix(in srgb, var(--mint), var(--surface) 50%); color: var(--teal); }
+.cloud-sync-status[data-state="synced"],
+.cloud-sync-status[data-state="connected"] { border-color: color-mix(in srgb, var(--teal), var(--line) 60%); background: color-mix(in srgb, var(--mint), var(--surface) 50%); color: var(--teal); }
 .cloud-sync-status[data-state="syncing"] { color: var(--blue); }
-.cloud-sync-status[data-state="waiting"] { color: #9a6818; }
+.cloud-sync-status[data-state="offline"] { color: #9a6818; }
 .cloud-sync-status[data-state="conflict"],
 .cloud-sync-status[data-state="error"] { color: #a13329; }
-html[data-theme="dark"] .cloud-sync-status[data-state="waiting"] { color: #ffd487; }
+html[data-theme="dark"] .cloud-sync-status[data-state="offline"] { color: #ffd487; }
 html[data-theme="dark"] .cloud-sync-status[data-state="conflict"],
 html[data-theme="dark"] .cloud-sync-status[data-state="error"] { color: #ff9b8e; }
 .cloud-sync-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
@@ -125,8 +126,10 @@ html[data-theme="dark"] .cloud-sync-status[data-state="error"] { color: #ff9b8e;
 .cloud-setup-help summary { width: fit-content; color: var(--teal); font-weight: 800; cursor: pointer; }
 .cloud-setup-help ol { margin: 10px 0; padding-left: 21px; }
 .cloud-setup-help p { margin: 8px 0 0; }
-.cloud-setup-help strong { color: var(--ink); }
-.cloud-security-note { margin: 12px 0 0; color: var(--muted); font-size: .73rem; line-height: 1.55; }
+.cloud-setup-help strong,
+.cloud-security-note strong { color: var(--ink); }
+.cloud-security-note { margin: 12px 0 0; padding: 12px 14px; border-left: 3px solid #cf6a35; border-radius: 0 8px 8px 0; background: color-mix(in srgb, #fff0d6, var(--surface) 68%); color: var(--ink); font-size: .76rem; line-height: 1.6; }
+html[data-theme="dark"] .cloud-security-note { background: color-mix(in srgb, #473415, var(--surface) 72%); }
 .cloud-sync-message { min-height: 1.5em; margin: 9px 0 0; color: var(--muted); font-size: .78rem; }
 .cloud-migration,
 .cloud-conflicts { margin-top: 11px; padding: 15px; border: 1px solid color-mix(in srgb, var(--teal), var(--line) 55%); border-radius: 10px; background: color-mix(in srgb, var(--mint), var(--surface) 78%); }

@@ -1,8 +1,11 @@
 const API_BASE = "https://api.github.com";
 const API_VERSION = "2022-11-28";
-export const EXPENSE_CLOUD_PATH = "data/expenses.json";
+export const EXPENSE_CLOUD_PATH = "data/expenses/transactions.json";
 export const EXPENSE_CLOUD_SCHEMA_VERSION = 1;
+export const EXPENSE_REPOSITORY = Object.freeze({ owner: "blogco", repository: "blogmoi", branch: "main" });
 const MAX_WRITE_ATTEMPTS = 3;
+const MAX_TRANSIENT_RETRIES = 3;
+const RETRY_DELAYS_MS = [250, 1_000, 2_500];
 
 const emptyDocument = () => ({ schemaVersion: EXPENSE_CLOUD_SCHEMA_VERSION, transactions: [], tombstones: [] });
 
@@ -10,11 +13,11 @@ export class ExpenseSyncError extends Error {
   constructor(code, status = 0) {
     const messages = {
       empty_token: "Nhập Fine-grained Personal Access Token để kết nối.",
-      invalid_repository: "Hãy nhập chủ sở hữu và tên repository hợp lệ.",
+      invalid_repository: "Expense Sync chỉ kết nối blogco/blogmoi trên nhánh main.",
+      private_repository: "blogco/blogmoi phải là repository public để Expense Sync ghi dữ liệu công khai.",
       unauthorized: "Token không hợp lệ, đã hết hạn hoặc bị thu hồi. Dữ liệu cục bộ vẫn được giữ.",
       forbidden: "Token cần quyền Contents: Read and write trong repository đã chọn.",
-      not_found: "Không tìm thấy repository hoặc token không được cấp quyền truy cập. Hãy tạo repository private riêng rồi thử lại.",
-      public_repository: "Blogmoi chỉ đồng bộ với repository private.",
+      not_found: "Không tìm thấy repository blogco/blogmoi hoặc tệp dữ liệu chi phí.",
       network: "Không kết nối được GitHub. Dữ liệu cục bộ vẫn được giữ; hãy thử lại khi có mạng.",
       invalid_document: "Tệp chi phí trên GitHub không đúng schema hoặc có dữ liệu không hợp lệ.",
       unsupported_schema: "Phiên bản dữ liệu trên GitHub chưa được hỗ trợ.",
@@ -203,11 +206,17 @@ function repositoryApiPath(owner, repository, path = "") {
   return path ? `${root}/${path}` : root;
 }
 
+function isRetryableSyncError(error) {
+  return error instanceof ExpenseSyncError
+    && (error.code === "network" || error.status === 408 || error.status === 429 || error.status >= 500);
+}
+
 export class GitHubExpenseSync {
-  constructor({ fetchImpl = globalThis.fetch, validateTransaction, filePath = EXPENSE_CLOUD_PATH } = {}) {
+  constructor({ fetchImpl = globalThis.fetch, validateTransaction, filePath = EXPENSE_CLOUD_PATH, waitImpl } = {}) {
     this.fetchImpl = fetchImpl;
     this.validateTransaction = validateTransaction;
     this.filePath = filePath;
+    this.waitImpl = waitImpl || (milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)));
     this.token = "";
     this.repository = null;
   }
@@ -260,22 +269,26 @@ export class GitHubExpenseSync {
     }
   }
 
-  async connect(tokenInput, ownerInput, repositoryInput) {
+  async connect(tokenInput, ownerInput = EXPENSE_REPOSITORY.owner, repositoryInput = EXPENSE_REPOSITORY.repository) {
     this.disconnect();
     const token = String(tokenInput || "").trim();
     const owner = String(ownerInput || "").trim();
     const repository = String(repositoryInput || "").trim();
     if (!token) throw new ExpenseSyncError("empty_token");
-    if (!/^[A-Za-z0-9-]{1,39}$/u.test(owner) || !/^[A-Za-z0-9_.-]{1,100}$/u.test(repository) || repository === "." || repository === "..") {
+    if (owner.toLocaleLowerCase("en-US") !== EXPENSE_REPOSITORY.owner || repository.toLocaleLowerCase("en-US") !== EXPENSE_REPOSITORY.repository) {
       throw new ExpenseSyncError("invalid_repository");
     }
     const user = await this.request("/user", { token });
     const info = await this.request(repositoryApiPath(owner, repository), { token });
-    if (info.private !== true) throw new ExpenseSyncError("public_repository");
+    if (typeof info.full_name === "string" && info.full_name.toLocaleLowerCase("en-US") !== `${EXPENSE_REPOSITORY.owner}/${EXPENSE_REPOSITORY.repository}`) {
+      throw new ExpenseSyncError("invalid_repository");
+    }
+    if (info.private !== false) throw new ExpenseSyncError("private_repository");
+    if (info.permissions?.push === false) throw new ExpenseSyncError("forbidden", 403);
     const config = {
-      owner: info.owner?.login || owner,
-      repository: info.name || repository,
-      branch: typeof info.default_branch === "string" ? info.default_branch : "",
+      owner: EXPENSE_REPOSITORY.owner,
+      repository: EXPENSE_REPOSITORY.repository,
+      branch: EXPENSE_REPOSITORY.branch,
       path: this.filePath,
     };
     await this.readDocumentWith(token, config);
@@ -314,31 +327,48 @@ export class GitHubExpenseSync {
     if (!this.connected) throw new ExpenseSyncError("empty_token");
     const localDocument = normalizeExpenseDocument(local, this.validateTransaction);
     const baseDocument = normalizeExpenseDocument(base || emptyDocument(), this.validateTransaction);
-    let remoteFile = null;
-    for (let attempt = 1; attempt <= MAX_WRITE_ATTEMPTS; attempt += 1) {
-      remoteFile ||= await this.readDocument();
-      const hasBaselineData = baseDocument.transactions.length > 0 || baseDocument.tombstones.length > 0;
-      const remoteDocument = !remoteFile.exists && hasBaselineData ? baseDocument : remoteFile.document;
-      const merged = mergeExpenseStates({ base: baseDocument, local: localDocument, remote: remoteDocument, resolutions }, this.validateTransaction);
-      if (merged.conflicts.length) return { status: "conflict", conflicts: merged.conflicts, document: remoteFile.document, sha: remoteFile.sha };
-      if (remoteFile.exists && JSON.stringify(merged.document) === JSON.stringify(remoteFile.document)) {
-        return { status: "synced", document: merged.document, sha: remoteFile.sha, wrote: false };
-      }
-      const payload = {
-        message: "Sync Blogmoi personal expenses",
-        content: encodeBase64Utf8(`${JSON.stringify(merged.document, null, 2)}\n`),
-        ...(remoteFile.sha ? { sha: remoteFile.sha } : {}),
-        ...(this.repository.branch ? { branch: this.repository.branch } : {}),
-      };
+    let writeAttempts = 0;
+    let transientRetries = 0;
+    let uncertainWrite = false;
+    while (writeAttempts < MAX_WRITE_ATTEMPTS) {
+      let remoteFile;
       try {
+        remoteFile = await this.readDocument();
+        const hasBaselineData = baseDocument.transactions.length > 0 || baseDocument.tombstones.length > 0;
+        const remoteDocument = !remoteFile.exists && hasBaselineData ? baseDocument : remoteFile.document;
+        const merged = mergeExpenseStates({ base: baseDocument, local: localDocument, remote: remoteDocument, resolutions }, this.validateTransaction);
+        if (merged.conflicts.length) return { status: "conflict", conflicts: merged.conflicts, document: remoteFile.document, sha: remoteFile.sha };
+        if (!remoteFile.exists && !merged.document.transactions.length && !merged.document.tombstones.length) {
+          return { status: "synced", document: merged.document, sha: null, wrote: false };
+        }
+        if (remoteFile.exists && JSON.stringify(merged.document) === JSON.stringify(remoteFile.document)) {
+          return { status: "synced", document: merged.document, sha: remoteFile.sha, wrote: uncertainWrite };
+        }
+        const payload = {
+          message: "data(expenses): sync transactions",
+          content: encodeBase64Utf8(`${JSON.stringify(merged.document, null, 2)}\n`),
+          ...(remoteFile.sha ? { sha: remoteFile.sha } : {}),
+          ...(this.repository.branch ? { branch: this.repository.branch } : {}),
+        };
+        writeAttempts += 1;
         const saved = await this.request(this.contentsPath(), { method: "PUT", body: payload });
         return { status: "synced", document: merged.document, sha: saved.content?.sha || null, wrote: true };
       } catch (error) {
-        if (!(error instanceof ExpenseSyncError) || ![409, 422].includes(error.status)) throw error;
-        if (attempt === MAX_WRITE_ATTEMPTS) throw new ExpenseSyncError("conflict_retry", error.status);
-        const latest = await this.readDocument();
-        if (latest.sha === remoteFile.sha) throw error;
-        remoteFile = latest;
+        if (error instanceof ExpenseSyncError && [409, 422].includes(error.status)) {
+          let latest;
+          try {
+            latest = await this.readDocument();
+          } catch (readError) {
+            if (!isRetryableSyncError(readError) || transientRetries >= MAX_TRANSIENT_RETRIES) throw readError;
+            await this.waitImpl(RETRY_DELAYS_MS[transientRetries++]);
+            continue;
+          }
+          if (latest.sha === remoteFile?.sha) throw error;
+          continue;
+        }
+        if (!isRetryableSyncError(error) || transientRetries >= MAX_TRANSIENT_RETRIES || writeAttempts >= MAX_WRITE_ATTEMPTS) throw error;
+        if (writeAttempts > 0) uncertainWrite = true;
+        await this.waitImpl(RETRY_DELAYS_MS[transientRetries++]);
       }
     }
     throw new ExpenseSyncError("conflict_retry");

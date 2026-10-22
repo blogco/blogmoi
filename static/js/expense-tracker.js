@@ -1,4 +1,6 @@
 import {
+  EXPENSE_CLOUD_PATH,
+  EXPENSE_REPOSITORY,
   GitHubExpenseSync,
   countUnsyncedExpenseChanges,
   expenseStateFingerprint,
@@ -1231,6 +1233,12 @@ async function startExpenseTracker() {
     cloudStatus.textContent = message;
   };
 
+  const sameCloudRepository = repository => Boolean(repository
+    && repository.owner?.toLocaleLowerCase("en-US") === EXPENSE_REPOSITORY.owner
+    && repository.repository?.toLocaleLowerCase("en-US") === EXPENSE_REPOSITORY.repository
+    && repository.branch === EXPENSE_REPOSITORY.branch
+    && repository.path === EXPENSE_CLOUD_PATH);
+
   const formatSyncTimestamp = value => {
     if (!value || !Number.isFinite(Date.parse(value))) return "Chưa có";
     return new Intl.DateTimeFormat("vi-VN", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
@@ -1239,11 +1247,10 @@ async function startExpenseTracker() {
   const updateCloudMeta = async () => {
     syncMeta = await readSyncMeta(database);
     const local = await captureLocalExpenseState(database);
-    const pending = countUnsyncedExpenseChanges(local.document, syncMeta.base, validateTransaction);
-    document.querySelector("#cloud-repository-label").textContent = syncMeta.repository
-      ? `${syncMeta.repository.owner}/${syncMeta.repository.repository}`
-      : "Chưa chọn";
-    document.querySelector("#cloud-last-sync").textContent = formatSyncTimestamp(syncMeta.lastSyncedAt);
+    const matchesTarget = sameCloudRepository(syncMeta.repository);
+    const pending = countUnsyncedExpenseChanges(local.document, matchesTarget ? syncMeta.base : null, validateTransaction);
+    document.querySelector("#cloud-repository-label").textContent = `${EXPENSE_REPOSITORY.owner}/${EXPENSE_REPOSITORY.repository} · ${EXPENSE_REPOSITORY.branch}`;
+    document.querySelector("#cloud-last-sync").textContent = formatSyncTimestamp(matchesTarget ? syncMeta.lastSyncedAt : null);
     document.querySelector("#cloud-pending-count").textContent = `${formatNumber(pending)} giao dịch`;
     return { local, pending };
   };
@@ -1295,7 +1302,7 @@ async function startExpenseTracker() {
     }
     cloudConflicts.hidden = false;
     cloudMigration.hidden = true;
-    updateCloudStatus("conflict", `Xung đột · ${conflicts.length} giao dịch cần lựa chọn`);
+    updateCloudStatus("error", `Error · ${conflicts.length} xung đột cần lựa chọn`);
     document.querySelector("#cloud-resolve").disabled = true;
   };
 
@@ -1305,13 +1312,13 @@ async function startExpenseTracker() {
     cloudMigration.hidden = false;
     cloudConflicts.hidden = true;
     pendingSyncBase = null;
-    updateCloudStatus("waiting", "Đã kết nối · chờ xác nhận gộp dữ liệu");
+    updateCloudStatus("connected", "Connected · chờ xác nhận gộp dữ liệu");
   };
 
   const runCloudSync = async (baseOverride, resolutions = {}) => {
     if (!githubSync.connected) return;
     if (navigator.onLine === false) {
-      updateCloudStatus("waiting", "Chờ mạng");
+      updateCloudStatus("offline", "Offline · chờ có mạng");
       cloudMessage.textContent = "Không có kết nối mạng. Dữ liệu cục bộ vẫn được giữ.";
       return;
     }
@@ -1319,10 +1326,12 @@ async function startExpenseTracker() {
     syncInProgress = true;
     clearTimeout(syncTimer);
     cloudMessage.textContent = "";
-    updateCloudStatus("syncing", "Đang đồng bộ");
+    updateCloudStatus("syncing", "Syncing · đang đồng bộ");
     try {
       const snapshot = await captureLocalExpenseState(database);
-      const base = baseOverride === undefined ? snapshot.meta.base : baseOverride;
+      const base = baseOverride === undefined
+        ? (sameCloudRepository(snapshot.meta.repository) ? snapshot.meta.base : null)
+        : baseOverride;
       const result = await githubSync.sync({ local: snapshot.document, base, resolutions });
       if (result.status === "conflict") {
         pendingSyncBase = base ?? null;
@@ -1333,12 +1342,12 @@ async function startExpenseTracker() {
       await persistAndRender();
       const { pending } = await updateCloudMeta();
       clearCloudPrompts();
-      updateCloudStatus(pending ? "waiting" : "synced", pending ? `Đã đồng bộ bản chụp · ${formatNumber(pending)} thay đổi đang chờ` : "Đã đồng bộ");
+      updateCloudStatus(pending ? "connected" : "synced", pending ? `Connected · ${formatNumber(pending)} thay đổi đang chờ` : "Synced");
       cloudMessage.textContent = result.wrote ? "GitHub đã xác nhận lưu dữ liệu." : "Dữ liệu đã khớp với GitHub; không tạo commit mới.";
       if (pending) syncAgainRequested = true;
     } catch (error) {
-      if (error.code === "network" || navigator.onLine === false) updateCloudStatus("waiting", "Chờ mạng");
-      else updateCloudStatus("error", "Lỗi đồng bộ");
+      if (error.code === "network" || navigator.onLine === false) updateCloudStatus("offline", "Offline · chờ có mạng");
+      else updateCloudStatus("error", "Error · đồng bộ thất bại");
       cloudMessage.textContent = error.message || "Không thể đồng bộ. Dữ liệu cục bộ vẫn được giữ.";
       if (!githubSync.connected) setCloudConnected(false);
     } finally {
@@ -1351,18 +1360,18 @@ async function startExpenseTracker() {
   };
 
   function scheduleCloudSync() {
-    if (!githubSync.connected) return;
     updateCloudMeta().catch(() => {});
+    if (!githubSync.connected) return;
     if (!cloudConflicts.hidden) {
-      updateCloudStatus("conflict", `Xung đột · ${currentConflicts.length} giao dịch cần lựa chọn`);
+      updateCloudStatus("error", `Error · ${currentConflicts.length} xung đột cần lựa chọn`);
       return;
     }
     if (syncInProgress) { syncAgainRequested = true; return; }
     if (navigator.onLine === false) {
-      updateCloudStatus("waiting", "Chờ mạng");
+      updateCloudStatus("offline", "Offline · thay đổi đang chờ");
       return;
     }
-    updateCloudStatus("waiting", "Chờ đồng bộ");
+    updateCloudStatus("connected", "Connected · đang chờ đồng bộ");
     clearTimeout(syncTimer);
     syncTimer = window.setTimeout(() => runCloudSync(undefined), 850);
   }
@@ -1385,10 +1394,6 @@ async function startExpenseTracker() {
     parseStatus.removeAttribute("data-tone");
   };
 
-  if (syncMeta.repository) {
-    document.querySelector("#cloud-owner").value = syncMeta.repository.owner;
-    document.querySelector("#cloud-repository").value = syncMeta.repository.repository;
-  }
   await updateCloudMeta();
 
   cloudForm.addEventListener("submit", async event => {
@@ -1400,16 +1405,13 @@ async function startExpenseTracker() {
     connectButton.disabled = true;
     cloudMessage.textContent = "";
     clearCloudPrompts();
-    updateCloudStatus("syncing", "Đang xác thực GitHub");
+    updateCloudStatus("syncing", "Syncing · đang xác thực GitHub");
     try {
-      const connection = await githubSync.connect(token, document.querySelector("#cloud-owner").value, document.querySelector("#cloud-repository").value);
+      const connection = await githubSync.connect(token);
       setCloudConnected(true, connection.username);
-      cloudMessage.textContent = "Đã xác thực token và xác nhận repository đang ở chế độ private.";
+      cloudMessage.textContent = "Đã xác thực PAT cho blogco/blogmoi@main. Dữ liệu đồng bộ là công khai.";
       const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
-      const sameRepository = snapshot.meta.repository
-        && snapshot.meta.repository.owner.toLocaleLowerCase("en-US") === connection.repository.owner.toLocaleLowerCase("en-US")
-        && snapshot.meta.repository.repository.toLocaleLowerCase("en-US") === connection.repository.repository.toLocaleLowerCase("en-US")
-        && snapshot.meta.repository.path === connection.repository.path;
+      const sameRepository = sameCloudRepository(snapshot.meta.repository);
       if (sameRepository && snapshot.meta.base) {
         await runCloudSync(snapshot.meta.base);
       } else {
@@ -1419,7 +1421,7 @@ async function startExpenseTracker() {
     } catch (error) {
       githubSync.disconnect();
       setCloudConnected(false);
-      updateCloudStatus(error.code === "network" ? "waiting" : "error", error.code === "network" ? "Chờ mạng" : "Lỗi kết nối");
+      updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Offline · dữ liệu được giữ" : "Error · kết nối thất bại");
       cloudMessage.textContent = error.message || "Không thể kết nối GitHub.";
     } finally {
       connectButton.disabled = false;
@@ -1435,13 +1437,13 @@ async function startExpenseTracker() {
   document.querySelector("#cloud-sync-now").addEventListener("click", async () => {
     clearCloudPrompts();
     const metadata = await readSyncMeta(database);
-    if (metadata.base) runCloudSync(metadata.base);
+    if (sameCloudRepository(metadata.repository) && metadata.base) runCloudSync(metadata.base);
     else {
       try {
         const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
         showMigrationPreview(snapshot.document, remote.document);
       } catch (error) {
-        updateCloudStatus(error.code === "network" ? "waiting" : "error", error.code === "network" ? "Chờ mạng" : "Lỗi đồng bộ");
+        updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Offline · dữ liệu được giữ" : "Error · đồng bộ thất bại");
         cloudMessage.textContent = error.message || "Không thể đọc dữ liệu trên GitHub.";
       }
     }
@@ -1482,7 +1484,7 @@ async function startExpenseTracker() {
     if (githubSync.connected) scheduleCloudSync();
   });
   window.addEventListener("offline", () => {
-    if (githubSync.connected) updateCloudStatus("waiting", "Chờ mạng");
+    if (githubSync.connected) updateCloudStatus("offline", "Offline · thay đổi đang chờ");
   });
   window.addEventListener("pagehide", () => {
     clearTimeout(syncTimer);

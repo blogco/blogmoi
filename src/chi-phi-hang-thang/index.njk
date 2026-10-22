@@ -8,7 +8,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
   <div class="expense-hero__heading">
     <div>
       <h1 id="expense-title">Chi phí <span>hàng tháng</span></h1>
-      <p>Ghi nhanh bằng lời, xem rõ từng khoản. Dữ liệu được lưu trên thiết bị và có thể đồng bộ qua repository GitHub riêng.</p>
+      <p>Ghi nhanh bằng lời, xem rõ từng khoản. Dữ liệu lưu trên thiết bị và có thể đồng bộ qua GitHub.</p>
     </div>
     <a class="expense-hero__jump" href="#expense-dashboard">Xem báo cáo <span aria-hidden="true">↓</span></a>
   </div>
@@ -102,31 +102,23 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
     <section class="cloud-sync-panel" aria-labelledby="cloud-sync-title">
       <div class="cloud-sync-heading">
         <div>
-          <p class="expense-index">ĐỒNG BỘ RIÊNG TƯ</p>
-          <h3 id="cloud-sync-title">GitHub Cloud Sync</h3>
-          <p class="cloud-sync-intro">Dùng một repository private riêng để mở cùng dữ liệu trên nhiều thiết bị. IndexedDB vẫn là bản cache cục bộ.</p>
+          <p class="expense-index">ĐỒNG BỘ GITHUB</p>
+          <h3 id="cloud-sync-title">Expense Cloud Sync</h3>
+          <p class="cloud-sync-intro">Đồng bộ trực tiếp với <code>blogco/blogmoi@main</code> tại <code>data/expenses/transactions.json</code>. IndexedDB vẫn giữ dữ liệu cục bộ và hàng chờ khi offline.</p>
         </div>
         <span class="cloud-sync-status" id="cloud-sync-status" data-state="disconnected" role="status" aria-live="polite">Chưa kết nối</span>
       </div>
 
       <div class="cloud-sync-meta" aria-live="polite">
-        <p>Repository <strong id="cloud-repository-label">Chưa chọn</strong></p>
+        <p>Repository <strong id="cloud-repository-label">blogco/blogmoi · main</strong></p>
         <p>Đồng bộ thành công cuối <strong id="cloud-last-sync">Chưa có</strong></p>
         <p>Chờ đồng bộ <strong id="cloud-pending-count">0 giao dịch</strong></p>
       </div>
 
       <form class="cloud-connect-form" id="cloud-connect-form">
         <div class="cloud-connect-fields">
-          <div class="expense-field">
-            <label class="expense-label" for="cloud-owner">Chủ sở hữu GitHub</label>
-            <input id="cloud-owner" type="text" maxlength="39" value="blogco" autocomplete="username" required>
-          </div>
-          <div class="expense-field">
-            <label class="expense-label" for="cloud-repository">Repository private</label>
-            <input id="cloud-repository" type="text" maxlength="100" value="blogmoi-expenses-private" autocomplete="off" required>
-          </div>
           <div class="expense-field cloud-token-field">
-            <label class="expense-label" for="cloud-token">Fine-grained Personal Access Token</label>
+            <label class="expense-label" for="cloud-token">GitHub Personal Access Token</label>
             <input id="cloud-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required>
           </div>
         </div>
@@ -140,16 +132,15 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
       </div>
 
       <details class="cloud-setup-help">
-        <summary>Cách tạo repository private và token</summary>
+        <summary>Cách tạo token</summary>
         <ol>
-          <li>Tạo repository mới, ví dụ <code>blogmoi-expenses-private</code>, chọn chế độ <strong>Private</strong> và khởi tạo README.</li>
-          <li>Tạo Fine-grained PAT, chọn đúng chủ sở hữu và chỉ cấp quyền vào repository dữ liệu này.</li>
-          <li>Trong Repository permissions, đặt <strong>Contents: Read and write</strong>, sau đó dán token vào biểu mẫu kết nối.</li>
+          <li>Tạo Fine-grained Personal Access Token và chọn repository <strong>blogco/blogmoi</strong>.</li>
+          <li>Trong Repository permissions, đặt <strong>Contents: Read and write</strong>, sau đó dán token để kết nối.</li>
+          <li>GitHub xác nhận quyền ghi khi có thay đổi thật. Kết nối dữ liệu trống không tạo commit thử.</li>
         </ol>
-        <p>Nếu repository chưa tồn tại hoặc token không có quyền, trang sẽ giữ dữ liệu cục bộ và hướng dẫn thử lại. Trang không tự tạo repository và không chuyển dữ liệu sang repository public.</p>
       </details>
 
-      <p class="cloud-security-note">Token chỉ tồn tại trong bộ nhớ của tab này và bị xóa khi ngắt kết nối hoặc tải lại trang. Repository private không phải mã hóa đầu cuối: người có quyền truy cập repository có thể đọc dữ liệu. Token có thể hết hạn hoặc bị thu hồi.</p>
+      <p class="cloud-security-note"><strong>Cảnh báo công khai:</strong> repository này là public. Mọi giao dịch được đồng bộ có thể được xem và tải bởi bất kỳ ai trên GitHub; các phiên bản cũ còn trong lịch sử commit sau khi xóa khỏi file hiện tại. Không lưu thông tin nhạy cảm vào giao dịch. PAT chỉ tồn tại trong bộ nhớ tab hiện tại; không được lưu vào trình duyệt lâu dài, URL, log hoặc repository.</p>
       <p class="cloud-sync-message" id="cloud-sync-message" role="status" aria-live="polite"></p>
 
       <section class="cloud-migration" id="cloud-migration" aria-labelledby="cloud-migration-title" hidden>
@@ -290,7 +281,7 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
           <button class="button button--secondary" id="export-csv" type="button">Xuất CSV</button>
         </div>
       </div>
-      <div class="privacy-note" role="note"><strong>Dữ liệu riêng tư:</strong> giao dịch luôn có bản cache trong IndexedDB và có thể đồng bộ lên repository GitHub private mà bạn chọn. Nếu không kết nối, dữ liệu chờ đồng bộ trên thiết bị này. Hãy xuất bản sao lưu định kỳ; dữ liệu cục bộ có thể mất nếu xóa dữ liệu trình duyệt.</div>
+      <div class="privacy-note" role="note"><strong>Quyền riêng tư:</strong> giao dịch nằm trong IndexedDB của trình duyệt. Khi kết nối GitHub, bản sao tại <code>blogco/blogmoi/data/expenses/transactions.json</code> là dữ liệu công khai. Dữ liệu cục bộ vẫn được giữ khi token lỗi hoặc mất mạng; hãy xuất bản sao lưu định kỳ.</div>
       <div class="transaction-filters" aria-label="Tìm kiếm và lọc giao dịch">
         <div class="expense-field filter-search"><label class="expense-label" for="transaction-search">Tìm giao dịch</label><input id="transaction-search" type="search" placeholder="Tìm quán, món, ghi chú…"></div>
         <div class="expense-field"><label class="expense-label" for="transaction-month">Tháng</label><select id="transaction-month"><option value="all">Tất cả tháng</option></select></div>

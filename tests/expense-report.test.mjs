@@ -5,6 +5,8 @@ import { readFileSync } from "node:fs";
 const page = readFileSync(new URL("../src/chi-phi-hang-thang/index.njk", import.meta.url), "utf8");
 const css = readFileSync(new URL("../static/css/expense-tracker.css", import.meta.url), "utf8");
 const script = readFileSync(new URL("../static/js/expense-tracker.js", import.meta.url), "utf8");
+const syncScript = readFileSync(new URL("../static/js/expense-cloud-sync.js", import.meta.url), "utf8");
+const workflow = readFileSync(new URL("../.github/workflows/deploy.yml", import.meta.url), "utf8");
 
 test("report contains the icon playground, health insights, ranking, and PDF action", () => {
   assert.match(page, /id="print-report"[^>]*>In \/ Xuất PDF/u);
@@ -30,4 +32,15 @@ test("print stylesheet scopes output to section 02 and keeps charts and report r
   assert.match(script, /window\.print\(\)/u);
   assert.match(script, /blogmoi-chi-phi-\$\{month\}/u);
   assert.match(script, /applySyncedDocument[\s\S]*?await persistAndRender\(\)/u);
+});
+
+test("cloud sync targets public main and skips Pages builds for data-only commits", () => {
+  assert.match(page, /blogco\/blogmoi@main/u);
+  assert.match(page, /Mọi giao dịch được đồng bộ có thể được xem và tải bởi bất kỳ ai/u);
+  assert.match(page, /Contents: Read and write/u);
+  assert.doesNotMatch(page, /blogmoi-expenses-private|repository private/u);
+  assert.match(syncScript, /data\/expenses\/transactions\.json/u);
+  assert.match(syncScript, /branch: "main"/u);
+  assert.match(syncScript, /data\(expenses\): sync transactions/u);
+  assert.match(workflow, /paths-ignore:[\s\S]*data\/expenses\/transactions\.json/u);
 });

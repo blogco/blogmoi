@@ -8,6 +8,7 @@ on:
     paths-ignore:
       - data/dictionary/pending.json
       - src/_data/dictionary-data.json
+      - data/expenses/transactions.json
   workflow_dispatch:
     inputs:
       dictionary_payload:
