@@ -1,76 +1,30 @@
 <section class="deploy-status" data-deploy-status data-state="loading" aria-labelledby="deploy-status-heading">
   <div class="deploy-status__shell">
-    <header class="deploy-status__header">
-      <div class="deploy-status__identity">
-        <span class="deploy-status__brand-mark" aria-hidden="true">b.</span>
-        <div>
-          <p class="deploy-status__eyebrow">BLOGMOI <span aria-hidden="true">/</span> DEPLOY STATUS</p>
-          <p class="deploy-status__workflow" data-workflow-name>Deploy Eleventy site to GitHub Pages</p>
-        </div>
-      </div>
-      <a class="deploy-status__button deploy-status__button--quiet" data-actions-link href="https://github.com/blogco/blogmoi/actions" target="_blank" rel="noopener noreferrer">
-        GitHub Actions <span aria-hidden="true">↗</span>
+    <h2 class="deploy-status__sr-only" id="deploy-status-heading">Blogmoi deploy status</h2>
+    <pre class="deploy-status__report" data-report role="status" aria-live="polite" aria-atomic="true">+--------------------------------------------------------------+
+| BLOGMOI DEPLOY STATUS                                        |
++--------------------------------------------------------------+
+| FEATURE     LOADING                                          |
+| COMMIT      -------                                          |
+| BRANCH      ---                                              |
+| BUILD       NOT RUN                                          |
+| TESTS       NOT RUN                                          |
+| PUSH        NOT RUN                                          |
+| DEPLOY      PENDING                                          |
+| PRODUCTION  NOT VERIFIED                                     |
++--------------------------------------------------------------+
+| RESULT      PARTIAL                                          |
++--------------------------------------------------------------+</pre>
+
+    <div class="deploy-status__actions">
+      <a class="deploy-status__button deploy-status__button--primary" data-run-link href="https://github.com/blogco/blogmoi/actions" target="_blank" rel="noopener noreferrer">
+        Xem workflow <span aria-hidden="true">↗</span>
       </a>
-    </header>
-
-    <div class="deploy-status__content">
-      <div class="deploy-status__visual" aria-hidden="true">
-        <div class="deploy-status__visual-orbit deploy-status__visual-orbit--outer"></div>
-        <div class="deploy-status__visual-orbit deploy-status__visual-orbit--inner"></div>
-        <div class="deploy-status__visual-core"><span>11</span><i>ty</i></div>
-        <div class="deploy-status__visual-tag deploy-status__visual-tag--build"><span></span> ELEVENTY BUILD</div>
-        <div class="deploy-status__visual-tag deploy-status__visual-tag--pages"><span></span> GITHUB PAGES</div>
-        <div class="deploy-status__visual-caption">STATIC SITE<br><strong>LIVE PIPELINE</strong></div>
-      </div>
-
-      <div class="deploy-status__panel">
-        <div class="deploy-status__state" data-status-area role="status" aria-live="polite" aria-atomic="true">
-          <span class="deploy-status__indicator" aria-hidden="true"></span>
-          <div class="deploy-status__state-copy">
-            <p class="deploy-status__state-kicker">GITHUB PAGES · <span data-run-number>ĐANG KẾT NỐI</span> · <span data-run-status>—</span></p>
-            <h2 id="deploy-status-heading" data-status-title>ĐANG TẢI TRẠNG THÁI</h2>
-            <p class="deploy-status__summary" data-status-summary>Đang kiểm tra lần triển khai mới nhất từ GitHub Actions.</p>
-            <p class="deploy-status__stage" data-status-stage hidden></p>
-          </div>
-        </div>
-
-        <dl class="deploy-status__details">
-          <div class="deploy-status__detail deploy-status__detail--commit">
-            <dt>COMMIT</dt>
-            <dd class="deploy-status__commit-row">
-              <a class="deploy-status__value deploy-status__value--mono" data-commit-link hidden target="_blank" rel="noopener noreferrer"><span data-commit-sha>—</span><span class="deploy-status__external" aria-hidden="true">↗</span></a>
-              <code class="deploy-status__value deploy-status__value--mono" data-commit-placeholder>—</code>
-              <button class="deploy-status__copy" type="button" data-copy-sha disabled>Copy SHA</button>
-            </dd>
-          </div>
-          <div class="deploy-status__detail">
-            <dt data-duration-label>THỜI LƯỢNG</dt>
-            <dd class="deploy-status__value" data-duration>—</dd>
-          </div>
-          <div class="deploy-status__detail deploy-status__detail--message">
-            <dt>COMMIT MESSAGE</dt>
-            <dd class="deploy-status__value deploy-status__message" data-commit-message>—</dd>
-          </div>
-          <div class="deploy-status__detail">
-            <dt>BRANCH</dt>
-            <dd class="deploy-status__value" data-branch>—</dd>
-          </div>
-          <div class="deploy-status__detail">
-            <dt data-updated-label>THỜI GIAN CẬP NHẬT</dt>
-            <dd class="deploy-status__value deploy-status__time" data-updated>—</dd>
-          </div>
-        </dl>
-
-        <div class="deploy-status__actions">
-          <a class="deploy-status__button deploy-status__button--primary" data-run-link href="https://github.com/blogco/blogmoi/actions" target="_blank" rel="noopener noreferrer">
-            Xem workflow <span aria-hidden="true">↗</span>
-          </a>
-          <a class="deploy-status__button deploy-status__button--quiet" data-commit-action hidden target="_blank" rel="noopener noreferrer">
-            Xem commit <span aria-hidden="true">↗</span>
-          </a>
-          <span class="deploy-status__copy-feedback" data-copy-feedback aria-live="polite"></span>
-        </div>
-      </div>
+      <a class="deploy-status__button deploy-status__button--quiet" data-commit-action hidden target="_blank" rel="noopener noreferrer">
+        Xem commit <span aria-hidden="true">↗</span>
+      </a>
+      <button class="deploy-status__button deploy-status__button--quiet" data-copy-sha type="button" disabled>Copy SHA</button>
+      <span class="deploy-status__copy-feedback" data-copy-feedback aria-live="polite"></span>
     </div>
 
     <section class="deploy-status__history" aria-labelledby="deploy-history-heading">
@@ -108,6 +62,6 @@
       <p class="deploy-status__history-note" data-history-note role="status" aria-live="polite">Dữ liệu lấy từ các lần chạy gần nhất của workflow trên nhánh main.</p>
     </section>
 
-    <p class="deploy-status__footer">Powered by <strong>Eleventy</strong> + <strong>GitHub Actions</strong><span class="deploy-status__footer-note" data-data-note></span></p>
+    <p class="deploy-status__footer">Dữ liệu lấy từ GitHub Actions<span class="deploy-status__footer-note" data-data-note></span></p>
   </div>
 </section>
