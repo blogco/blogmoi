@@ -29,7 +29,7 @@
         "chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy"
       ],
       "priority": "high",
-      "status": "proposed",
+      "status": "published",
       "match": {
         "allTerms": [
           "benchmark",
@@ -37,7 +37,8 @@
           "hugo",
           "astro"
         ]
-      }
+      },
+      "publishedArticleSlug": "benchmark-eleventy-hugo-astro-cung-bo-noi-dung"
     },
     {
       "id": "hugo-to-eleventy-migration-checklist",
