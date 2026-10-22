@@ -1,0 +1,30 @@
+{% if type == 'article' %}
+  <div class="reading-progress" data-reading-progress hidden role="progressbar" aria-label="Tiến độ đọc bài viết" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <span class="reading-progress__fill" data-reading-progress-fill></span>
+  </div>
+{% endif %}
+
+<nav class="reading-dock" data-reading-dock data-page-type="{{ 'article' if type == 'article' else 'page' }}" aria-label="Điều hướng đọc nhanh" hidden>
+  <button class="reading-dock__button" type="button" data-reading-top aria-label="Về đầu trang" title="Về đầu trang" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m18 15-6-6-6 6"/></svg>
+    <span class="reading-dock__tooltip" aria-hidden="true">Về đầu trang</span>
+  </button>
+  <button class="reading-dock__button" type="button" data-reading-toc aria-label="Mở mục lục bài viết" title="Mở mục lục bài viết" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <span class="reading-dock__tooltip" aria-hidden="true">Mở mục lục bài viết</span>
+  </button>
+  <button class="reading-dock__button" type="button" data-reading-bottom aria-label="Đến cuối trang" title="Đến cuối trang" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
+    <span class="reading-dock__tooltip" aria-hidden="true">Đến cuối trang</span>
+  </button>
+</nav>
+
+<dialog class="reading-toc-dialog" data-reading-toc-dialog aria-labelledby="reading-toc-title">
+  <div class="reading-toc-dialog__header">
+    <h2 id="reading-toc-title">Mục lục bài viết</h2>
+    <button class="reading-toc-dialog__close" type="button" data-reading-toc-close aria-label="Đóng mục lục" title="Đóng mục lục">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m18 6-12 12M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="reading-toc-dialog__content" data-reading-toc-slot></div>
+</dialog>

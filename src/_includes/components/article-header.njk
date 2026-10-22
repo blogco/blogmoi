@@ -15,7 +15,7 @@
     {% if categories and categories.length %}
       <a class="article-kicker" href="{{ ('/categories/' + (categories[0] | slugify) + '/') | url }}">{{ categories[0] }}</a>
     {% endif %}
-    <h1>{{ title }}</h1>
+    <h1 tabindex="-1">{{ title }}</h1>
     {% if description %}<p class="article-deck">{{ description }}</p>{% endif %}
     <div class="article-byline" aria-label="Thông tin bài viết">
       <time datetime="{{ date | dateIso }}">{{ date | dateReadable }}</time>

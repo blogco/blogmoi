@@ -8,7 +8,7 @@ layout: layouts/base.njk
   {% set relatedPosts = collections.posts | relatedPosts(page.url, categories or []) %}
   {% set topicDiscovery = collections.posts | topicSuggestions(page.url, relatedPosts) %}
   <div class="article-layout">
-    <div class="article-main" id="article-content">
+    <div class="article-main" id="article-content" data-reading-area>
       {% include "components/ai-keypoints.njk" %}
       {% include "components/article-content.njk" %}
     </div>
