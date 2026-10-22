@@ -1,6 +1,7 @@
 import {
   EXPENSE_CLOUD_PATH,
   EXPENSE_REPOSITORY,
+  ExpenseSyncError,
   GitHubExpenseSync,
   countUnsyncedExpenseChanges,
   expenseStateFingerprint,
@@ -1499,7 +1500,7 @@ async function startExpenseTracker() {
     }
     cloudConflicts.hidden = false;
     cloudMigration.hidden = true;
-    updateCloudStatus("error", `Error · ${conflicts.length} xung đột cần lựa chọn`);
+    updateCloudStatus("error", `Xung đột · ${conflicts.length} giao dịch cần chọn`);
     document.querySelector("#cloud-resolve").disabled = true;
   };
 
@@ -1509,13 +1510,13 @@ async function startExpenseTracker() {
     cloudMigration.hidden = false;
     cloudConflicts.hidden = true;
     pendingSyncBase = null;
-    updateCloudStatus("connected", "Connected · chờ xác nhận gộp dữ liệu");
+    updateCloudStatus("connected", "Đã kết nối · chờ xác nhận gộp dữ liệu");
   };
 
   const runCloudSync = async (baseOverride, resolutions = {}) => {
     if (!githubSync.connected) return;
     if (navigator.onLine === false) {
-      updateCloudStatus("offline", "Offline · chờ có mạng");
+      updateCloudStatus("offline", "Mất mạng · chờ kết nối");
       cloudMessage.textContent = "Không có kết nối mạng. Dữ liệu cục bộ vẫn được giữ.";
       return;
     }
@@ -1523,7 +1524,7 @@ async function startExpenseTracker() {
     syncInProgress = true;
     clearTimeout(syncTimer);
     cloudMessage.textContent = "";
-    updateCloudStatus("syncing", "Syncing · đang đồng bộ");
+    updateCloudStatus("syncing", "Đang đồng bộ");
     try {
       const snapshot = await captureLocalExpenseState(database);
       const base = baseOverride === undefined
@@ -1539,13 +1540,27 @@ async function startExpenseTracker() {
       await persistAndRender();
       const { pending } = await updateCloudMeta();
       clearCloudPrompts();
-      updateCloudStatus(pending ? "connected" : "synced", pending ? `Connected · ${formatNumber(pending)} thay đổi đang chờ` : "Synced");
-      cloudMessage.textContent = result.wrote ? "GitHub đã xác nhận lưu dữ liệu." : "Dữ liệu đã khớp với GitHub; không tạo commit mới.";
+      updateCloudStatus(
+        pending || !result.wrote ? "connected" : "synced",
+        pending ? `Đã kết nối · còn ${formatNumber(pending)} thay đổi` : result.wrote ? "Đã đồng bộ" : "Đã kết nối · không có thay đổi",
+      );
+      cloudMessage.textContent = result.wrote
+        ? "GitHub đã xác nhận ghi data/expenses/transactions.json lên blogco/blogmoi@main với commit data(expenses): sync transactions."
+        : "Không có thay đổi cần ghi; dữ liệu GitHub hiện khớp với thiết bị.";
       if (pending) syncAgainRequested = true;
     } catch (error) {
-      if (error.code === "network" || navigator.onLine === false) updateCloudStatus("offline", "Offline · chờ có mạng");
-      else updateCloudStatus("error", "Error · đồng bộ thất bại");
-      cloudMessage.textContent = error.message || "Không thể đồng bộ. Dữ liệu cục bộ vẫn được giữ.";
+      const states = {
+        unauthorized: "Token không hợp lệ",
+        forbidden: "Thiếu quyền",
+        rate_limited: "GitHub giới hạn API",
+        not_found: "Không truy cập được repository/tệp",
+        version_conflict: "Xung đột phiên bản",
+        conflict_retry: "Xung đột phiên bản",
+        payload_invalid: "GitHub từ chối nội dung",
+      };
+      if (error.code === "network" || navigator.onLine === false) updateCloudStatus("offline", "Mất mạng · chờ kết nối");
+      else updateCloudStatus("error", states[error.code] || "Đồng bộ thất bại");
+      cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đồng bộ. Dữ liệu cục bộ vẫn được giữ.";
       if (!githubSync.connected) setCloudConnected(false);
     } finally {
       syncInProgress = false;
@@ -1560,15 +1575,15 @@ async function startExpenseTracker() {
     updateCloudMeta().catch(() => {});
     if (!githubSync.connected) return;
     if (!cloudConflicts.hidden) {
-      updateCloudStatus("error", `Error · ${currentConflicts.length} xung đột cần lựa chọn`);
+      updateCloudStatus("error", `Xung đột · ${currentConflicts.length} giao dịch cần chọn`);
       return;
     }
     if (syncInProgress) { syncAgainRequested = true; return; }
     if (navigator.onLine === false) {
-      updateCloudStatus("offline", "Offline · thay đổi đang chờ");
+      updateCloudStatus("offline", "Mất mạng · thay đổi đang chờ");
       return;
     }
-    updateCloudStatus("connected", "Connected · đang chờ đồng bộ");
+    updateCloudStatus("connected", "Đã kết nối · chờ đồng bộ");
     clearTimeout(syncTimer);
     syncTimer = window.setTimeout(() => runCloudSync(undefined), 850);
   }
@@ -1596,17 +1611,20 @@ async function startExpenseTracker() {
   cloudForm.addEventListener("submit", async event => {
     event.preventDefault();
     const tokenInput = document.querySelector("#cloud-token");
-    const token = tokenInput.value;
+    const token = tokenInput.value.trim();
     tokenInput.value = "";
     const connectButton = document.querySelector("#cloud-connect");
     connectButton.disabled = true;
     cloudMessage.textContent = "";
     clearCloudPrompts();
-    updateCloudStatus("syncing", "Syncing · đang xác thực GitHub");
+    updateCloudStatus("syncing", "Đang xác thực GitHub");
     try {
       const connection = await githubSync.connect(token);
       setCloudConnected(true, connection.username);
-      cloudMessage.textContent = "Đã xác thực PAT cho blogco/blogmoi@main. Dữ liệu đồng bộ là công khai.";
+      const writeNote = connection.repositoryPushAccess
+        ? "API xác nhận tài khoản có quyền push; quyền Contents: write của PAT sẽ được GitHub xác nhận khi đồng bộ thật."
+        : "Chưa thể xác minh quyền Contents: write của PAT trước khi ghi; GitHub sẽ xác nhận quyền này khi đồng bộ thật.";
+      cloudMessage.textContent = `Token hợp lệ; đã truy cập blogco/blogmoi@main và kiểm tra tệp dữ liệu. ${writeNote} Dữ liệu đồng bộ là công khai.`;
       const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
       const sameRepository = sameCloudRepository(snapshot.meta.repository);
       if (sameRepository && snapshot.meta.base) {
@@ -1618,8 +1636,9 @@ async function startExpenseTracker() {
     } catch (error) {
       githubSync.disconnect();
       setCloudConnected(false);
-      updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Offline · dữ liệu được giữ" : "Error · kết nối thất bại");
-      cloudMessage.textContent = error.message || "Không thể kết nối GitHub.";
+      const states = { unauthorized: "Token không hợp lệ", forbidden: "Thiếu quyền", rate_limited: "GitHub giới hạn API", not_found: "Không truy cập được repository/tệp" };
+      updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Mất mạng · dữ liệu được giữ" : states[error.code] || "Kết nối thất bại");
+      cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể kết nối GitHub. Dữ liệu cục bộ vẫn được giữ.";
     } finally {
       connectButton.disabled = false;
     }
@@ -1640,8 +1659,8 @@ async function startExpenseTracker() {
         const [snapshot, remote] = await Promise.all([captureLocalExpenseState(database), githubSync.readDocument()]);
         showMigrationPreview(snapshot.document, remote.document);
       } catch (error) {
-        updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Offline · dữ liệu được giữ" : "Error · đồng bộ thất bại");
-        cloudMessage.textContent = error.message || "Không thể đọc dữ liệu trên GitHub.";
+        updateCloudStatus(error.code === "network" ? "offline" : "error", error.code === "network" ? "Mất mạng · dữ liệu được giữ" : "Không thể đọc repository/tệp");
+        cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đọc dữ liệu trên GitHub. Dữ liệu cục bộ vẫn được giữ.";
       }
     }
   });

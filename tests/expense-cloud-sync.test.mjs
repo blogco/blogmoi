@@ -32,16 +32,17 @@ const jsonResponse = (body, status = 200) => new Response(JSON.stringify(body), 
 const base64Json = value => Buffer.from(JSON.stringify(value)).toString("base64");
 const contentPath = `/repos/blogco/blogmoi/contents/${EXPENSE_CLOUD_PATH}`;
 
-function makeGitHub({ isPrivate = false, pushAccess = true, initialDocument = null, onPut = null } = {}) {
+function makeGitHub({ isPrivate = false, pushAccess = true, initialDocument = null, onPut = null, repositoryStatus = 200, validTokens = ["test-token"] } = {}) {
   const state = { file: initialDocument ? { document: initialDocument, sha: "sha-1" } : null, commits: [], authHeaders: [] };
   const fetchImpl = async (urlValue, options = {}) => {
     const url = new URL(urlValue);
     state.authHeaders.push(options.headers?.Authorization || "");
     if (url.pathname === "/user") {
-      if (options.headers?.Authorization !== "Bearer test-token") return jsonResponse({ message: "Bad credentials" }, 401);
+      if (!validTokens.some(token => options.headers?.Authorization === `Bearer ${token}`)) return jsonResponse({ message: "Bad credentials" }, 401);
       return jsonResponse({ login: "tester" });
     }
     if (url.pathname === "/repos/blogco/blogmoi") {
+      if (repositoryStatus !== 200) return jsonResponse({ message: "Not Found" }, repositoryStatus);
       return jsonResponse({ private: isPrivate, full_name: "blogco/blogmoi", owner: { login: "blogco" }, name: "blogmoi", default_branch: "main", permissions: { push: pushAccess } });
     }
     if (url.pathname === contentPath) {
@@ -70,22 +71,52 @@ function makeGitHub({ isPrivate = false, pushAccess = true, initialDocument = nu
 const client = fetchImpl => new GitHubExpenseSync({ fetchImpl, validateTransaction, waitImpl: async () => {} });
 const connect = instance => instance.connect("test-token");
 
-test("authenticates PAT and connects only to public blogco/blogmoi on main", async () => {
+test("accepts classic and fine-grained PATs without prefix checks and trims whitespace", async () => {
   assert.equal(EXPENSE_CLOUD_PATH, "data/expenses/transactions.json");
-  const api = makeGitHub();
+  const tokens = ["ghp_classic_mock", "github_pat_fine_grained_mock"];
+  const api = makeGitHub({ validTokens: tokens });
   const sync = client(api.fetchImpl);
-  const result = await connect(sync);
+  const result = await sync.connect(`  ${tokens[0]} \n`);
   assert.equal(result.username, "tester");
   assert.deepEqual(result.repository, { owner: "blogco", repository: "blogmoi", branch: "main", path: EXPENSE_CLOUD_PATH });
+  assert.equal(result.repositoryPushAccess, true);
+  assert.equal(result.contentsWriteVerified, false);
   assert.equal(sync.connected, true);
-  assert.ok(api.state.authHeaders.every(header => header === "Bearer test-token"));
-  await assert.rejects(sync.connect("test-token", "blogco", "other-repo"), error => error.code === "invalid_repository");
+  assert.ok(api.state.authHeaders.every(header => header === `Bearer ${tokens[0]}`));
+  const fineGrained = client(api.fetchImpl);
+  assert.equal((await fineGrained.connect(tokens[1])).username, "tester");
+  await assert.rejects(sync.connect(` ${tokens[0]} `, "blogco", "other-repo"), error => error.code === "invalid_repository");
   const privateRepo = client(makeGitHub({ isPrivate: true }).fetchImpl);
   await assert.rejects(connect(privateRepo), error => error.code === "private_repository");
   const noPushAccess = client(makeGitHub({ pushAccess: false }).fetchImpl);
   await assert.rejects(connect(noPushAccess), error => error.code === "forbidden");
   sync.disconnect();
   assert.equal(sync.connected, false);
+});
+
+test("reports repository 404 separately while treating the data file 404 as an empty file", async () => {
+  const missingRepository = client(makeGitHub({ repositoryStatus: 404 }).fetchImpl);
+  await assert.rejects(missingRepository.connect("test-token"), error => error.code === "not_found" && error.status === 404);
+
+  const api = makeGitHub();
+  const sync = client(api.fetchImpl);
+  await connect(sync);
+  const local = doc([record("file-created")]);
+  const saved = await sync.sync({ local, base: doc() });
+  assert.equal(saved.wrote, true);
+  assert.deepEqual(api.state.file.document, local);
+  assert.equal(api.state.commits.length, 1);
+});
+
+test("distinguishes a rate-limited 403 from a repository permission 403", async () => {
+  const noPushAccess = client(makeGitHub({ pushAccess: false }).fetchImpl);
+  await assert.rejects(connect(noPushAccess), error => error.code === "forbidden" && error.status === 403);
+
+  const rateLimited = client(async () => new Response(JSON.stringify({ message: "API rate limit exceeded" }), {
+    status: 403,
+    headers: { "Content-Type": "application/json", "X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1900000000" },
+  }));
+  await assert.rejects(rateLimited.connect("test-token"), error => error.code === "rate_limited" && error.status === 403);
 });
 
 test("rejects invalid tokens without exposing response bodies", async () => {
@@ -103,6 +134,47 @@ test("keeps local data intact when GitHub denies Contents write access", async (
   assert.deepEqual(local, before);
   assert.equal(api.state.file, null);
   assert.equal(api.state.commits.length, 0);
+});
+
+test("reports invalid write payloads as 422 and keeps local data", async () => {
+  let writes = 0;
+  const api = makeGitHub({ onPut: () => {
+    writes += 1;
+    return jsonResponse({ message: "Invalid request" }, 422);
+  } });
+  const sync = client(api.fetchImpl);
+  await connect(sync);
+  const local = doc([record("payload-denied")]);
+  await assert.rejects(sync.sync({ local, base: doc() }), error => error.code === "payload_invalid" && error.status === 422);
+  assert.equal(writes, 1);
+  assert.equal(api.state.commits.length, 0);
+  assert.equal(local.transactions.length, 1);
+});
+
+test("development diagnostics log API metadata without exposing PATs", async () => {
+  const token = "ghp_mock_secret_value";
+  const sync = new GitHubExpenseSync({
+    development: true,
+    fetchImpl: async () => new Response(JSON.stringify({ message: `Bad credentials ${token}` }), {
+      status: 401,
+      headers: { "Content-Type": "application/json", "X-RateLimit-Remaining": "42" },
+    }),
+  });
+  const entries = [];
+  const originalDebug = console.debug;
+  console.debug = (...args) => entries.push(args);
+  try {
+    await assert.rejects(sync.connect(token), error => error.code === "unauthorized");
+  } finally {
+    console.debug = originalDebug;
+  }
+  const output = JSON.stringify(entries);
+  assert.match(output, /https:\/\/api\.github\.com\/user/u);
+  assert.match(output, /authentication/u);
+  assert.match(output, /401/u);
+  assert.match(output, /remaining/u);
+  assert.doesNotMatch(output, new RegExp(token));
+  assert.doesNotMatch(output, /Authorization/u);
 });
 
 test("writes only changed data to main with the dedicated commit message", async () => {

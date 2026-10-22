@@ -12,16 +12,19 @@ const emptyDocument = () => ({ schemaVersion: EXPENSE_CLOUD_SCHEMA_VERSION, tran
 export class ExpenseSyncError extends Error {
   constructor(code, status = 0) {
     const messages = {
-      empty_token: "Nhập Fine-grained Personal Access Token để kết nối.",
+      empty_token: "Nhập GitHub Personal Access Token để kết nối.",
       invalid_repository: "Expense Sync chỉ kết nối blogco/blogmoi trên nhánh main.",
       private_repository: "blogco/blogmoi phải là repository public để Expense Sync ghi dữ liệu công khai.",
       unauthorized: "Token không hợp lệ, đã hết hạn hoặc bị thu hồi. Dữ liệu cục bộ vẫn được giữ.",
-      forbidden: "Token cần quyền Contents: Read and write trong repository đã chọn.",
-      not_found: "Không tìm thấy repository blogco/blogmoi hoặc tệp dữ liệu chi phí.",
-      network: "Không kết nối được GitHub. Dữ liệu cục bộ vẫn được giữ; hãy thử lại khi có mạng.",
+      forbidden: "Tài khoản hoặc token không đủ quyền truy cập/ghi repository. Fine-grained PAT cần Contents: Read and write; classic PAT cần public_repo hoặc repo. Dữ liệu cục bộ vẫn được giữ.",
+      rate_limited: "GitHub đang giới hạn API hoặc đã hết hạn mức. Hãy chờ rồi thử lại; dữ liệu cục bộ vẫn được giữ.",
+      not_found: "Không tìm thấy repository hoặc tệp chi phí, hoặc token không có quyền truy cập. Dữ liệu cục bộ vẫn được giữ.",
+      network: "Không thể kết nối GitHub API (mạng hoặc CORS). Dữ liệu cục bộ vẫn được giữ; hãy kiểm tra kết nối rồi thử lại.",
       invalid_document: "Tệp chi phí trên GitHub không đúng schema hoặc có dữ liệu không hợp lệ.",
       unsupported_schema: "Phiên bản dữ liệu trên GitHub chưa được hỗ trợ.",
+      version_conflict: "Phiên bản tệp trên GitHub đã thay đổi và chưa thể gộp an toàn. Dữ liệu cục bộ vẫn được giữ; hãy đồng bộ lại.",
       conflict_retry: "Repository thay đổi liên tục. Dữ liệu cục bộ vẫn được giữ; hãy đồng bộ lại.",
+      payload_invalid: "GitHub từ chối nội dung cập nhật (HTTP 422). Dữ liệu cục bộ vẫn được giữ.",
       api_error: `GitHub API trả về lỗi${status ? ` HTTP ${status}` : ""}. Dữ liệu cục bộ vẫn được giữ.`,
     };
     super(messages[code] || messages.api_error);
@@ -206,17 +209,47 @@ function repositoryApiPath(owner, repository, path = "") {
   return path ? `${root}/${path}` : root;
 }
 
+function isDevelopmentEnvironment() {
+  const hostname = globalThis.location?.hostname || "";
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname.endsWith(".localhost");
+}
+
+function sanitizeGithubMessage(message, token) {
+  let safe = String(message || "").slice(0, 500);
+  if (token) safe = safe.split(token).join("[redacted]");
+  return safe
+    .replace(/\b(?:github_pat_[A-Za-z0-9_]+|gh[pousr]_[A-Za-z0-9_]+)\b/giu, "[redacted PAT]")
+    .replace(/\bBearer\s+\S+/giu, "Bearer [redacted]")
+    .replace(/\b(authorization|token)\s*[:=]\s*[^\s,;]+/giu, "$1=[redacted]");
+}
+
+function getRateLimitMetadata(headers) {
+  const names = [
+    ["limit", "x-ratelimit-limit"],
+    ["remaining", "x-ratelimit-remaining"],
+    ["reset", "x-ratelimit-reset"],
+    ["used", "x-ratelimit-used"],
+    ["resource", "x-ratelimit-resource"],
+    ["retryAfter", "retry-after"],
+  ];
+  return Object.fromEntries(names.flatMap(([key, header]) => {
+    const value = headers.get(header);
+    return value === null ? [] : [[key, value]];
+  }));
+}
+
 function isRetryableSyncError(error) {
   return error instanceof ExpenseSyncError
-    && (error.code === "network" || error.status === 408 || error.status === 429 || error.status >= 500);
+    && (error.code === "network" || error.code === "rate_limited" || error.status === 408 || error.status === 429 || error.status >= 500);
 }
 
 export class GitHubExpenseSync {
-  constructor({ fetchImpl = globalThis.fetch, validateTransaction, filePath = EXPENSE_CLOUD_PATH, waitImpl } = {}) {
+  constructor({ fetchImpl = globalThis.fetch, validateTransaction, filePath = EXPENSE_CLOUD_PATH, waitImpl, development = isDevelopmentEnvironment() } = {}) {
     this.fetchImpl = fetchImpl;
     this.validateTransaction = validateTransaction;
     this.filePath = filePath;
     this.waitImpl = waitImpl || (milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)));
+    this.development = development;
     this.token = "";
     this.repository = null;
   }
@@ -230,11 +263,13 @@ export class GitHubExpenseSync {
     this.repository = null;
   }
 
-  async request(path, { token = this.token, method = "GET", body, allowNotFound = false } = {}) {
+  async request(path, { token = this.token, method = "GET", body, allowNotFound = false, phase } = {}) {
     if (!token) throw new ExpenseSyncError("empty_token");
+    const requestPhase = phase || (method === "PUT" ? "write" : path === "/user" ? "authentication" : path.includes("/contents/") ? "read" : "repository");
+    const endpoint = `${API_BASE}${path}`;
     let response;
     try {
-      response = await this.fetchImpl(`${API_BASE}${path}`, {
+      response = await this.fetchImpl(endpoint, {
         method,
         headers: {
           Accept: "application/vnd.github+json",
@@ -250,16 +285,49 @@ export class GitHubExpenseSync {
         signal: AbortSignal.timeout(20_000),
       });
     } catch {
+      if (this.development) {
+        globalThis.console?.debug?.("[expense-sync] GitHub API", {
+          endpoint,
+          phase: requestPhase,
+          status: null,
+          message: "Network/CORS failure",
+          rateLimit: {},
+        });
+      }
       throw new ExpenseSyncError("network");
     }
 
+    let githubMessage = "";
+    if (!response.ok) {
+      try {
+        const errorBody = await response.clone().json();
+        if (typeof errorBody?.message === "string") githubMessage = errorBody.message;
+      } catch {
+        // Keep non-JSON response bodies out of logs and user-facing errors.
+      }
+    }
+    if (this.development) {
+      globalThis.console?.debug?.("[expense-sync] GitHub API", {
+        endpoint,
+        phase: requestPhase,
+        status: response.status,
+        message: sanitizeGithubMessage(githubMessage, token),
+        rateLimit: getRateLimitMetadata(response.headers),
+      });
+    }
+
+    const rateLimited = response.status === 429
+      || (response.status === 403 && (response.headers.get("x-ratelimit-remaining") === "0" || /rate limit|abuse detection/iu.test(githubMessage)));
     if (response.status === 401) {
       if (token === this.token) this.disconnect();
       throw new ExpenseSyncError("unauthorized", 401);
     }
     if (response.status === 404 && allowNotFound) return null;
+    if (rateLimited) throw new ExpenseSyncError("rate_limited", response.status);
     if (response.status === 403) throw new ExpenseSyncError("forbidden", 403);
     if (response.status === 404) throw new ExpenseSyncError("not_found", 404);
+    if (response.status === 409) throw new ExpenseSyncError("version_conflict", 409);
+    if (response.status === 422) throw new ExpenseSyncError("payload_invalid", 422);
     if (!response.ok) throw new ExpenseSyncError("api_error", response.status);
     if (response.status === 204) return null;
     try {
@@ -278,8 +346,8 @@ export class GitHubExpenseSync {
     if (owner.toLocaleLowerCase("en-US") !== EXPENSE_REPOSITORY.owner || repository.toLocaleLowerCase("en-US") !== EXPENSE_REPOSITORY.repository) {
       throw new ExpenseSyncError("invalid_repository");
     }
-    const user = await this.request("/user", { token });
-    const info = await this.request(repositoryApiPath(owner, repository), { token });
+    const user = await this.request("/user", { token, phase: "authentication" });
+    const info = await this.request(repositoryApiPath(owner, repository), { token, phase: "repository" });
     if (typeof info.full_name === "string" && info.full_name.toLocaleLowerCase("en-US") !== `${EXPENSE_REPOSITORY.owner}/${EXPENSE_REPOSITORY.repository}`) {
       throw new ExpenseSyncError("invalid_repository");
     }
@@ -294,7 +362,12 @@ export class GitHubExpenseSync {
     await this.readDocumentWith(token, config);
     this.token = token;
     this.repository = config;
-    return { username: typeof user.login === "string" ? user.login : owner, repository: config };
+    return {
+      username: typeof user.login === "string" ? user.login : owner,
+      repository: config,
+      repositoryPushAccess: info.permissions?.push === true,
+      contentsWriteVerified: false,
+    };
   }
 
   contentsPath(config = this.repository) {
@@ -304,7 +377,7 @@ export class GitHubExpenseSync {
   }
 
   async readDocumentWith(token, config) {
-    const contents = await this.request(this.contentsPath(config), { token, allowNotFound: true });
+    const contents = await this.request(this.contentsPath(config), { token, allowNotFound: true, phase: "read" });
     if (!contents) return { document: emptyDocument(), sha: null, exists: false };
     if (contents.type !== "file" || contents.encoding !== "base64" || typeof contents.content !== "string" || typeof contents.sha !== "string") {
       throw new ExpenseSyncError("invalid_document");
@@ -351,10 +424,10 @@ export class GitHubExpenseSync {
           ...(this.repository.branch ? { branch: this.repository.branch } : {}),
         };
         writeAttempts += 1;
-        const saved = await this.request(this.contentsPath(), { method: "PUT", body: payload });
+        const saved = await this.request(this.contentsPath(), { method: "PUT", body: payload, phase: "write" });
         return { status: "synced", document: merged.document, sha: saved.content?.sha || null, wrote: true };
       } catch (error) {
-        if (error instanceof ExpenseSyncError && [409, 422].includes(error.status)) {
+        if (error instanceof ExpenseSyncError && error.status === 409) {
           let latest;
           try {
             latest = await this.readDocument();
@@ -371,6 +444,6 @@ export class GitHubExpenseSync {
         await this.waitImpl(RETRY_DELAYS_MS[transientRetries++]);
       }
     }
-    throw new ExpenseSyncError("conflict_retry");
+    throw new ExpenseSyncError("version_conflict", 409);
   }
 }
