@@ -217,6 +217,66 @@ test("uses the official GitHub REST URLs, CORS mode, and supported request heade
   assert.equal(new URL(calls[4].url).searchParams.get("ref"), "main");
 });
 
+test("preserves the Window.fetch receiver for default and injected transports, including retries", async () => {
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  const calls = [];
+  let currentApi;
+  const windowMock = {
+    fetch(url, options = {}) {
+      if (this !== windowMock) throw new TypeError("Failed to execute 'fetch' on 'Window': Illegal invocation");
+      calls.push({ url: String(url), method: options.method || "GET" });
+      return currentApi.fetchImpl(url, options);
+    },
+  };
+  Object.defineProperty(globalThis, "window", { configurable: true, value: windowMock });
+  try {
+    for (const injected of [false, true]) {
+      let putAttempts = 0;
+      currentApi = makeGitHub({ onPut: () => {
+        putAttempts += 1;
+        return putAttempts === 1 ? jsonResponse({ message: "temporarily unavailable" }, 503) : null;
+      } });
+      const before = calls.length;
+      const sync = new GitHubExpenseSync({
+        ...(injected ? { fetchImpl: windowMock.fetch } : {}),
+        validateTransaction,
+        waitImpl: async () => {},
+      });
+      await connect(sync);
+      const local = doc([record(`window-fetch-${injected}`)]);
+      const result = await sync.sync({ local, base: doc() });
+      assert.equal(result.wrote, true);
+      assert.equal(putAttempts, 2);
+      assert.equal(currentApi.state.commits.length, 1);
+      const requestCalls = calls.slice(before);
+      assert.deepEqual(requestCalls.map(({ url, method }) => [new URL(url).pathname, method]), [
+        ["/user", "GET"],
+        ["/repos/blogco/blogmoi", "GET"],
+        [contentPath, "GET"],
+        [contentPath, "GET"],
+        [contentPath, "PUT"],
+        [contentPath, "GET"],
+        [contentPath, "PUT"],
+      ]);
+    }
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, "window", previousWindow);
+    else delete globalThis.window;
+  }
+});
+
+test("reports Illegal invocation separately from network and CORS failures", async () => {
+  const sync = client(() => {
+    throw new TypeError("Failed to execute 'fetch' on 'Window': Illegal invocation");
+  });
+  await assert.rejects(sync.connect("test-token"), error => error.code === "fetch_invocation"
+    && error.status === 0
+    && error.diagnostics.phase === "authentication"
+    && error.diagnostics.endpoint === "https://api.github.com/user"
+    && error.diagnostics.status === null
+    && error.diagnostics.error.includes("Illegal invocation"));
+});
+
 test("surfaces sanitized fetch diagnostics without logging PAT or Authorization header", async () => {
   const token = "unit-test-private-secret-value";
   const entries = [];

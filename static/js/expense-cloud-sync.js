@@ -22,6 +22,7 @@ export class ExpenseSyncError extends Error {
         ? "Không tìm thấy repository blogco/blogmoi hoặc token không có quyền truy cập. Dữ liệu cục bộ vẫn được giữ."
         : "Không tìm thấy repository, nhánh main hoặc đường dẫn dữ liệu; kiểm tra quyền Contents của token. Dữ liệu cục bộ vẫn được giữ.",
       network: "Không nhận được phản hồi từ GitHub API. Kiểm tra mạng, CORS, CSP hoặc tiện ích trình duyệt; dữ liệu cục bộ vẫn được giữ.",
+      fetch_invocation: "Trình duyệt không thể gọi fetch do lỗi liên kết hàm. Hãy tải lại trang; dữ liệu cục bộ vẫn được giữ.",
       timeout: "GitHub API không phản hồi trong thời hạn chờ. Dữ liệu cục bộ vẫn được giữ; hãy thử lại.",
       invalid_document: "Tệp chi phí trên GitHub không đúng schema hoặc có dữ liệu không hợp lệ.",
       unsupported_schema: "Phiên bản dữ liệu trên GitHub chưa được hỗ trợ.",
@@ -241,6 +242,20 @@ function sanitizeGithubMessage(message, token) {
     .slice(0, 240);
 }
 
+function makeSafeFetch(fetchImpl) {
+  const owner = globalThis.window ?? globalThis;
+  if (typeof fetchImpl === "function") {
+    return (...args) => Reflect.apply(fetchImpl, owner, args);
+  }
+  return (...args) => owner.fetch(...args);
+}
+
+function isFetchInvocationError(cause) {
+  const message = String(cause?.message || "");
+  return cause?.name === "TypeError"
+    && /illegal invocation|called on an object that does not implement|(?:window\.)?fetch is not a function/iu.test(message);
+}
+
 function getRateLimitMetadata(headers) {
   const names = [
     ["limit", "x-ratelimit-limit"],
@@ -262,8 +277,8 @@ function isRetryableSyncError(error) {
 }
 
 export class GitHubExpenseSync {
-  constructor({ fetchImpl = globalThis.fetch, validateTransaction, filePath = EXPENSE_CLOUD_PATH, waitImpl, timeoutMs = 20_000, development = isDevelopmentEnvironment() } = {}) {
-    this.fetchImpl = fetchImpl;
+  constructor({ fetchImpl, validateTransaction, filePath = EXPENSE_CLOUD_PATH, waitImpl, timeoutMs = 20_000, development = isDevelopmentEnvironment() } = {}) {
+    this.safeFetch = makeSafeFetch(fetchImpl);
     this.validateTransaction = validateTransaction;
     this.filePath = filePath;
     this.waitImpl = waitImpl || (milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)));
@@ -294,7 +309,7 @@ export class GitHubExpenseSync {
       controller.abort();
     }, this.timeoutMs) : null;
     try {
-      response = await this.fetchImpl(endpoint, {
+      response = await this.safeFetch(endpoint, {
         mode: "cors",
         method,
         headers: {
@@ -312,7 +327,7 @@ export class GitHubExpenseSync {
     } catch (cause) {
       const causeText = `${cause?.name || "Error"}: ${cause?.message || "Request failed"}`;
       const diagnosticError = sanitizeGithubMessage(causeText, token);
-      const errorCode = timedOut ? "timeout" : "network";
+      const errorCode = timedOut ? "timeout" : isFetchInvocationError(cause) ? "fetch_invocation" : "network";
       if (this.development) {
         globalThis.console?.debug?.("[expense-sync] GitHub API", {
           endpoint,

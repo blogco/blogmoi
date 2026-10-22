@@ -1553,6 +1553,7 @@ async function startExpenseTracker() {
         unauthorized: "Token không hợp lệ",
         forbidden: "Thiếu quyền",
         rate_limited: "GitHub giới hạn API",
+        fetch_invocation: "Lỗi gọi fetch trong trình duyệt",
         not_found: "Không truy cập được repository/tệp",
         version_conflict: "Xung đột phiên bản",
         conflict_retry: "Xung đột phiên bản",
@@ -1637,7 +1638,7 @@ async function startExpenseTracker() {
     } catch (error) {
       githubSync.disconnect();
       setCloudConnected(false);
-      const states = { unauthorized: "Token không hợp lệ", forbidden: "Thiếu quyền", rate_limited: "GitHub giới hạn API", not_found: "Không truy cập được repository/tệp" };
+      const states = { unauthorized: "Token không hợp lệ", forbidden: "Thiếu quyền", rate_limited: "GitHub giới hạn API", fetch_invocation: "Lỗi gọi fetch trong trình duyệt", not_found: "Không truy cập được repository/tệp" };
       const requestFailed = error.code === "network" || error.code === "timeout";
       updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", states[error.code] || (requestFailed ? "GitHub API không phản hồi" : "Kết nối thất bại"));
       cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể kết nối GitHub. Dữ liệu cục bộ vẫn được giữ.";
@@ -1662,7 +1663,10 @@ async function startExpenseTracker() {
         showMigrationPreview(snapshot.document, remote.document);
       } catch (error) {
         const requestFailed = error.code === "network" || error.code === "timeout";
-        updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", requestFailed ? "GitHub API không phản hồi" : "Không thể đọc repository/tệp");
+        const statusMessage = error.code === "fetch_invocation"
+          ? "Lỗi gọi fetch trong trình duyệt"
+          : requestFailed ? "GitHub API không phản hồi" : "Không thể đọc repository/tệp";
+        updateCloudStatus(requestFailed && navigator.onLine === false ? "offline" : "error", statusMessage);
         cloudMessage.textContent = error instanceof ExpenseSyncError ? error.message : "Không thể đọc dữ liệu trên GitHub. Dữ liệu cục bộ vẫn được giữ.";
       }
     }
