@@ -1,0 +1,9 @@
+---
+layout: layouts/base.njk
+title: Benchmark blog
+description: Danh sách bài viết của bộ benchmark.
+permalink: /index.html
+---
+<h1>Benchmark blog</h1>
+<nav><a href="/categories/">Danh mục</a> · <a href="/tags/">Thẻ</a></nav>
+<ul>{% for post in collections.posts %}<li><a href="{{ post.url }}">{{ post.data.title }}</a></li>{% endfor %}</ul>

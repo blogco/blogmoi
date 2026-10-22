@@ -1,0 +1,10 @@
+---
+layout: layouts/base.njk
+---
+<article data-benchmark-article="{{ slug }}">
+  <h1>{{ title }}</h1>
+  <p><time datetime="{{ date }}">{{ date }}</time></p>
+  <ul aria-label="Danh mục">{% for item in categories %}<li><a href="/categories/{{ item | slugify }}/">{{ item }}</a></li>{% endfor %}</ul>
+  <ul aria-label="Thẻ">{% for item in tags %}<li><a href="/tags/{{ item | slugify }}/">{{ item }}</a></li>{% endfor %}</ul>
+  <div class="article-content">{{ content | safe }}</div>
+</article>

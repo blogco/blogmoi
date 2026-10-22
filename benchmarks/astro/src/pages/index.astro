@@ -1,0 +1,11 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../components/Layout.astro";
+
+const posts = (await getCollection("posts")).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Layout title="Benchmark blog" description="Danh sách bài viết của bộ benchmark." canonical="https://benchmark.invalid/">
+  <h1>Benchmark blog</h1>
+  <nav><a href="/categories/">Danh mục</a> · <a href="/tags/">Thẻ</a></nav>
+  <ul>{posts.map((post) => <li><a href={`/${post.data.slug}/`}>{post.data.title}</a></li>)}</ul>
+</Layout>

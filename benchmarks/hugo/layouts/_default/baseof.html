@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{- $title := .Title -}}
+  {{- $description := .Description | default "Danh sách nội dung của bộ benchmark static site generator." -}}
+  <title>{{ $title }} | Benchmark blog</title>
+  <meta name="description" content="{{ $description }}">
+  <link rel="canonical" href="{{ .Permalink }}">
+  <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+  <meta property="og:title" content="{{ $title }}">
+  <meta property="og:description" content="{{ $description }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+</head>
+<body>
+  <header><a href="/">Benchmark blog</a></header>
+  <main>{{ block "main" . }}{{ end }}</main>
+</body>
+</html>

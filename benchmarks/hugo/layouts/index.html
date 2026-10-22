@@ -1,0 +1,5 @@
+{{ define "main" }}
+<h1>Benchmark blog</h1>
+<nav><a href="/categories/">Danh mục</a> · <a href="/tags/">Thẻ</a></nav>
+<ul>{{ range .Site.RegularPages.ByDate.Reverse }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}</ul>
+{{ end }}

@@ -1,0 +1,11 @@
+{
+  "name": "blogmoi-benchmark-eleventy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "eleventy"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "3.1.7"
+  }
+}

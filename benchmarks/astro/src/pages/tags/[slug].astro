@@ -1,0 +1,16 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../components/Layout.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts");
+  const groups = new Map();
+  for (const post of posts) for (const name of post.data.tags) groups.set(name, [...(groups.get(name) || []), post]);
+  return [...groups].map(([name, groupedPosts]) => ({ params: { slug: name.toLowerCase() }, props: { name, groupedPosts } }));
+}
+const { name, groupedPosts } = Astro.props;
+---
+<Layout title={`Thẻ: ${name}`} description={`Các bài viết có thẻ ${name}.`} canonical={`https://benchmark.invalid/tags/${Astro.params.slug}/`}>
+  <h1>{name}</h1>
+  <ul>{groupedPosts.map((post) => <li><a href={`/${post.data.slug}/`}>{post.data.title}</a></li>)}</ul>
+</Layout>

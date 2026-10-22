@@ -1,0 +1,13 @@
+---
+layout: layouts/base.njk
+pagination:
+  data: collections.categories
+  size: 1
+  alias: group
+permalink: /categories/{{ group.slug }}/index.html
+eleventyComputed:
+  title: "{{ group.name }}"
+  description: "Các bài viết thuộc danh mục {{ group.name }}."
+---
+<h1>{{ group.name }}</h1>
+<ul>{% for post in group.posts %}<li><a href="{{ post.url }}">{{ post.data.title }}</a></li>{% endfor %}</ul>

@@ -1,0 +1,20 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "../components/Layout.astro";
+
+export async function getStaticPaths() {
+  return (await getCollection("posts")).map((post) => ({ params: { slug: post.data.slug }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+<Layout title={post.data.title} description={post.data.description} canonical={`https://benchmark.invalid/${post.data.slug}/`} type="article">
+  <article data-benchmark-article={post.data.slug}>
+    <h1>{post.data.title}</h1>
+    <p><time datetime={post.data.date.toISOString().slice(0, 10)}>{post.data.date.toISOString().slice(0, 10)}</time></p>
+    <ul aria-label="Danh mục">{post.data.categories.map((item) => <li><a href={`/categories/${item.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-")}/`}>{item}</a></li>)}</ul>
+    <ul aria-label="Thẻ">{post.data.tags.map((item) => <li><a href={`/tags/${item.toLowerCase()}/`}>{item}</a></li>)}</ul>
+    <div class="article-content"><Content /></div>
+  </article>
+</Layout>

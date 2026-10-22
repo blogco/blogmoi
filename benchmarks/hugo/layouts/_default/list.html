@@ -1,0 +1,12 @@
+{{ define "main" }}
+{{ if eq .Kind "taxonomy" }}
+  <h1>{{ title .Data.Plural }}</h1>
+  <ul>{{ range .Data.Terms.Alphabetical }}<li><a href="{{ .Page.RelPermalink }}">{{ .Page.LinkTitle }}</a> <span>({{ .Count }})</span></li>{{ end }}</ul>
+{{ else if eq .Kind "term" }}
+  <h1>{{ .Title }}</h1>
+  <ul>{{ range .Pages }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}</ul>
+{{ else }}
+  <h1>{{ .Title }}</h1>
+  <ul>{{ range .Pages }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}</ul>
+{{ end }}
+{{ end }}

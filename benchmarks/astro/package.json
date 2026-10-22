@@ -1,0 +1,11 @@
+{
+  "name": "blogmoi-benchmark-astro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build"
+  },
+  "devDependencies": {
+    "astro": "7.4.2"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "benchmarkDateUtc": "2026-10-22T17:36:41.793Z",
+  "os": "Darwin 23.6.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "cpuModel": "Apple M2",
+  "logicalCpuCount": 8,
+  "ramBytes": 17179869184,
+  "ramGiB": 16,
+  "nodeVersion": "v24.22.1",
+  "npmVersion": "11.19.1",
+  "packageManager": "npm",
+  "gitCommit": "b62597dca2fb89a1142264821e332e27c1101deb",
+  "frameworkVersions": {
+    "eleventy": "3.1.7",
+    "hugo": "v0.168.0",
+    "astro": "7.4.2"
+  },
+  "memoryMeasurement": "macOS /usr/bin/time -l, maximum resident set size for the direct build process",
+  "timer": "process.hrtime.bigint() (monotonic nanosecond clock)",
+  "measuredRuns": 5,
+  "warmupBuilds": 1,
+  "executionPolicy": "Serial; framework order randomized with a fixed scheduler seed within each sample round.",
+  "cachePolicy": "Cold removes output and framework disk cache; warm preserves output and cache. Dependencies remain installed.",
+  "outputPolicy": "Only generated HTML is emitted; total output bytes therefore equal HTML bytes.",
+  "incrementalRebuild": "Not measured: the three frameworks expose different watch/dev-server semantics, and no shared, directly comparable output signal was established."
+}

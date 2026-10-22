@@ -1,0 +1,8 @@
+---
+layout: layouts/base.njk
+title: Thẻ
+description: Danh sách thẻ.
+permalink: /tags/index.html
+---
+<h1>Thẻ</h1>
+<ul>{% for group in collections.tags %}<li><a href="/tags/{{ group.slug }}/">{{ group.name }}</a> <span>({{ group.posts.length }})</span></li>{% endfor %}</ul>

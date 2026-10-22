@@ -1,0 +1,12 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../components/Layout.astro";
+
+const posts = await getCollection("posts");
+const groups = new Map();
+for (const post of posts) for (const name of post.data.tags) groups.set(name, (groups.get(name) || 0) + 1);
+---
+<Layout title="Thẻ" description="Danh sách thẻ." canonical="https://benchmark.invalid/tags/">
+  <h1>Thẻ</h1>
+  <ul>{[...groups].sort(([a], [b]) => a.localeCompare(b)).map(([name, count]) => <li><a href={`/tags/${name.toLowerCase()}/`}>{name}</a> <span>({count})</span></li>)}</ul>
+</Layout>

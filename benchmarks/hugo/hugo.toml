@@ -1,0 +1,17 @@
+baseURL = "https://benchmark.invalid/"
+title = "Benchmark blog"
+languageCode = "vi-VN"
+defaultContentLanguage = "vi"
+disableKinds = ["RSS", "sitemap", "robotsTXT", "404"]
+enableRobotsTXT = false
+removePathAccents = true
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[permalinks]
+  posts = "/:slug/"
+
+[markup.goldmark.renderer]
+  unsafe = false

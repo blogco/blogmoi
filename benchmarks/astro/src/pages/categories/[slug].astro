@@ -1,0 +1,17 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "../../components/Layout.astro";
+
+export async function getStaticPaths() {
+  const toSlug = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-");
+  const posts = await getCollection("posts");
+  const groups = new Map();
+  for (const post of posts) for (const name of post.data.categories) groups.set(name, [...(groups.get(name) || []), post]);
+  return [...groups].map(([name, groupedPosts]) => ({ params: { slug: toSlug(name) }, props: { name, groupedPosts } }));
+}
+const { name, groupedPosts } = Astro.props;
+---
+<Layout title={name} description={`Các bài viết thuộc danh mục ${name}.`} canonical={`https://benchmark.invalid/categories/${Astro.params.slug}/`}>
+  <h1>{name}</h1>
+  <ul>{groupedPosts.map((post) => <li><a href={`/${post.data.slug}/`}>{post.data.title}</a></li>)}</ul>
+</Layout>

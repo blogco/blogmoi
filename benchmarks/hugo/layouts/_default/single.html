@@ -1,0 +1,9 @@
+{{ define "main" }}
+<article data-benchmark-article="{{ .Params.slug }}">
+  <h1>{{ .Title }}</h1>
+  <p><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time></p>
+  <ul aria-label="Danh mục">{{ range .GetTerms "categories" }}<li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>{{ end }}</ul>
+  <ul aria-label="Thẻ">{{ range .GetTerms "tags" }}<li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>{{ end }}</ul>
+  <div class="article-content">{{ .Content }}</div>
+</article>
+{{ end }}

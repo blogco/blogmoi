@@ -1,0 +1,454 @@
+{
+  "schemaVersion": 1,
+  "source": "raw.json",
+  "generatedAt": "2026-10-22T17:37:48.637Z",
+  "environment": {
+    "benchmarkDateUtc": "2026-10-22T17:36:41.793Z",
+    "os": "Darwin 23.6.0",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "cpuModel": "Apple M2",
+    "logicalCpuCount": 8,
+    "ramBytes": 17179869184,
+    "ramGiB": 16,
+    "nodeVersion": "v24.22.1",
+    "npmVersion": "11.19.1",
+    "packageManager": "npm",
+    "gitCommit": "b62597dca2fb89a1142264821e332e27c1101deb",
+    "frameworkVersions": {
+      "eleventy": "3.1.7",
+      "hugo": "v0.168.0",
+      "astro": "7.4.2"
+    },
+    "memoryMeasurement": "macOS /usr/bin/time -l, maximum resident set size for the direct build process",
+    "timer": "process.hrtime.bigint() (monotonic nanosecond clock)",
+    "measuredRuns": 5,
+    "warmupBuilds": 1,
+    "executionPolicy": "Serial; framework order randomized with a fixed scheduler seed within each sample round.",
+    "cachePolicy": "Cold removes output and framework disk cache; warm preserves output and cache. Dependencies remain installed.",
+    "outputPolicy": "Only generated HTML is emitted; total output bytes therefore equal HTML bytes.",
+    "incrementalRebuild": "Not measured: the three frameworks expose different watch/dev-server semantics, and no shared, directly comparable output signal was established."
+  },
+  "frameworkVersions": {
+    "eleventy": "3.1.7",
+    "hugo": "v0.168.0",
+    "astro": "7.4.2"
+  },
+  "statistics": "Sample standard deviation (n-1); coefficient of variation = sample standard deviation / mean.",
+  "results": [
+    {
+      "framework": "astro",
+      "datasetSize": 50,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 886.12,
+        "mean": 889.1852000000001,
+        "min": 881.122,
+        "max": 899.368,
+        "sampleStandardDeviation": 8.794121314833015,
+        "coefficientOfVariationPercent": 0.9890089617813044
+      },
+      "peakMemoryMiB": {
+        "median": 423.094,
+        "mean": 424.4688,
+        "min": 422,
+        "max": 427.891
+      },
+      "generatedFiles": 62,
+      "outputBytes": 249625,
+      "htmlBytes": 249625
+    },
+    {
+      "framework": "eleventy",
+      "datasetSize": 50,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 220.658,
+        "mean": 222.0118,
+        "min": 218.718,
+        "max": 229.365,
+        "sampleStandardDeviation": 4.277055903305456,
+        "coefficientOfVariationPercent": 1.926499358730237
+      },
+      "peakMemoryMiB": {
+        "median": 120.125,
+        "mean": 120.3252,
+        "min": 118.516,
+        "max": 122.813
+      },
+      "generatedFiles": 62,
+      "outputBytes": 220930,
+      "htmlBytes": 220930
+    },
+    {
+      "framework": "hugo",
+      "datasetSize": 50,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 44.354,
+        "mean": 52.86999999999999,
+        "min": 42.331,
+        "max": 72.235,
+        "sampleStandardDeviation": 13.288695609426833,
+        "coefficientOfVariationPercent": 25.13466164067871
+      },
+      "peakMemoryMiB": {
+        "median": 57.656,
+        "mean": 57.4344,
+        "min": 56.594,
+        "max": 57.797
+      },
+      "generatedFiles": 62,
+      "outputBytes": 262653,
+      "htmlBytes": 262653
+    },
+    {
+      "framework": "astro",
+      "datasetSize": 50,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 750.557,
+        "mean": 752.198,
+        "min": 739.553,
+        "max": 766.165,
+        "sampleStandardDeviation": 9.612614628705337,
+        "coefficientOfVariationPercent": 1.2779367438766571
+      },
+      "peakMemoryMiB": {
+        "median": 365.031,
+        "mean": 364.74359999999996,
+        "min": 362.859,
+        "max": 365.547
+      },
+      "generatedFiles": 62,
+      "outputBytes": 249625,
+      "htmlBytes": 249625
+    },
+    {
+      "framework": "eleventy",
+      "datasetSize": 50,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 214.231,
+        "mean": 214.42419999999998,
+        "min": 213.41,
+        "max": 216.057,
+        "sampleStandardDeviation": 1.052729642405873,
+        "coefficientOfVariationPercent": 0.49095654427339497
+      },
+      "peakMemoryMiB": {
+        "median": 116.469,
+        "mean": 116.322,
+        "min": 112.797,
+        "max": 119.781
+      },
+      "generatedFiles": 62,
+      "outputBytes": 220930,
+      "htmlBytes": 220930
+    },
+    {
+      "framework": "hugo",
+      "datasetSize": 50,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 41.563,
+        "mean": 43.3472,
+        "min": 41.393,
+        "max": 49.909,
+        "sampleStandardDeviation": 3.69508202885944,
+        "coefficientOfVariationPercent": 8.524384571228222
+      },
+      "peakMemoryMiB": {
+        "median": 57.625,
+        "mean": 57.440599999999996,
+        "min": 56.391,
+        "max": 57.844
+      },
+      "generatedFiles": 62,
+      "outputBytes": 262653,
+      "htmlBytes": 262653
+    },
+    {
+      "framework": "astro",
+      "datasetSize": 250,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 1093.602,
+        "mean": 1098.7308,
+        "min": 1082.41,
+        "max": 1131.732,
+        "sampleStandardDeviation": 19.18829385849608,
+        "coefficientOfVariationPercent": 1.7464053850584766
+      },
+      "peakMemoryMiB": {
+        "median": 501.75,
+        "mean": 503.3908,
+        "min": 500.047,
+        "max": 510.563
+      },
+      "generatedFiles": 262,
+      "outputBytes": 1213600,
+      "htmlBytes": 1213600
+    },
+    {
+      "framework": "eleventy",
+      "datasetSize": 250,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 337.145,
+        "mean": 336.99379999999996,
+        "min": 333.734,
+        "max": 339.329,
+        "sampleStandardDeviation": 2.1385101589658255,
+        "coefficientOfVariationPercent": 0.6345844223145428
+      },
+      "peakMemoryMiB": {
+        "median": 137.234,
+        "mean": 137.3968,
+        "min": 136.141,
+        "max": 138.328
+      },
+      "generatedFiles": 262,
+      "outputBytes": 1068105,
+      "htmlBytes": 1068105
+    },
+    {
+      "framework": "hugo",
+      "datasetSize": 250,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 83.595,
+        "mean": 90.14000000000001,
+        "min": 82.891,
+        "max": 116.576,
+        "sampleStandardDeviation": 14.788606864745573,
+        "coefficientOfVariationPercent": 16.406264549307267
+      },
+      "peakMemoryMiB": {
+        "median": 80.297,
+        "mean": 80.26580000000001,
+        "min": 78.203,
+        "max": 82.063
+      },
+      "generatedFiles": 262,
+      "outputBytes": 1274028,
+      "htmlBytes": 1274028
+    },
+    {
+      "framework": "astro",
+      "datasetSize": 250,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 950.313,
+        "mean": 953.4906000000001,
+        "min": 917.342,
+        "max": 1018.94,
+        "sampleStandardDeviation": 39.58616821315246,
+        "coefficientOfVariationPercent": 4.1517103800658814
+      },
+      "peakMemoryMiB": {
+        "median": 445.422,
+        "mean": 445.0344,
+        "min": 441.281,
+        "max": 448.406
+      },
+      "generatedFiles": 262,
+      "outputBytes": 1213600,
+      "htmlBytes": 1213600
+    },
+    {
+      "framework": "eleventy",
+      "datasetSize": 250,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 325.185,
+        "mean": 325.69759999999997,
+        "min": 314.112,
+        "max": 339.568,
+        "sampleStandardDeviation": 9.072621908797906,
+        "coefficientOfVariationPercent": 2.7855967955544982
+      },
+      "peakMemoryMiB": {
+        "median": 137.484,
+        "mean": 137.2718,
+        "min": 136.375,
+        "max": 138.063
+      },
+      "generatedFiles": 262,
+      "outputBytes": 1068105,
+      "htmlBytes": 1068105
+    },
+    {
+      "framework": "hugo",
+      "datasetSize": 250,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 82.385,
+        "mean": 84.80640000000001,
+        "min": 80.161,
+        "max": 92.04,
+        "sampleStandardDeviation": 5.200781700859981,
+        "coefficientOfVariationPercent": 6.1325344559608475
+      },
+      "peakMemoryMiB": {
+        "median": 82.609,
+        "mean": 81.19059999999999,
+        "min": 77.547,
+        "max": 84.703
+      },
+      "generatedFiles": 262,
+      "outputBytes": 1274028,
+      "htmlBytes": 1274028
+    },
+    {
+      "framework": "astro",
+      "datasetSize": 1000,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 1979.004,
+        "mean": 2029.3792,
+        "min": 1810.682,
+        "max": 2347.344,
+        "sampleStandardDeviation": 201.31343724327002,
+        "coefficientOfVariationPercent": 9.919951739096863
+      },
+      "peakMemoryMiB": {
+        "median": 685.641,
+        "mean": 684.5156,
+        "min": 677.484,
+        "max": 689.609
+      },
+      "generatedFiles": 1012,
+      "outputBytes": 4828367,
+      "htmlBytes": 4828367
+    },
+    {
+      "framework": "eleventy",
+      "datasetSize": 1000,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 836.544,
+        "mean": 833.0725999999999,
+        "min": 799.71,
+        "max": 859.785,
+        "sampleStandardDeviation": 21.669849994866116,
+        "coefficientOfVariationPercent": 2.6011958615450945
+      },
+      "peakMemoryMiB": {
+        "median": 275.625,
+        "mean": 275.1,
+        "min": 272.172,
+        "max": 276.203
+      },
+      "generatedFiles": 1012,
+      "outputBytes": 4244872,
+      "htmlBytes": 4244872
+    },
+    {
+      "framework": "hugo",
+      "datasetSize": 1000,
+      "buildType": "cold",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 255.837,
+        "mean": 264.8748,
+        "min": 239.41,
+        "max": 297.735,
+        "sampleStandardDeviation": 26.29739413325968,
+        "coefficientOfVariationPercent": 9.928235578945102
+      },
+      "peakMemoryMiB": {
+        "median": 144.922,
+        "mean": 143.49360000000001,
+        "min": 133.781,
+        "max": 147.922
+      },
+      "generatedFiles": 1012,
+      "outputBytes": 5066545,
+      "htmlBytes": 5066545
+    },
+    {
+      "framework": "astro",
+      "datasetSize": 1000,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 1599.707,
+        "mean": 1587.6428,
+        "min": 1554.5,
+        "max": 1619.303,
+        "sampleStandardDeviation": 31.009050367594334,
+        "coefficientOfVariationPercent": 1.9531503161538812
+      },
+      "peakMemoryMiB": {
+        "median": 609.391,
+        "mean": 610.4906,
+        "min": 602.203,
+        "max": 620.875
+      },
+      "generatedFiles": 1012,
+      "outputBytes": 4828367,
+      "htmlBytes": 4828367
+    },
+    {
+      "framework": "eleventy",
+      "datasetSize": 1000,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 786.368,
+        "mean": 780.2696000000001,
+        "min": 752.777,
+        "max": 816.115,
+        "sampleStandardDeviation": 26.9533936230672,
+        "coefficientOfVariationPercent": 3.4543693132562385
+      },
+      "peakMemoryMiB": {
+        "median": 275.531,
+        "mean": 275.6656,
+        "min": 274.547,
+        "max": 277.75
+      },
+      "generatedFiles": 1012,
+      "outputBytes": 4244872,
+      "htmlBytes": 4244872
+    },
+    {
+      "framework": "hugo",
+      "datasetSize": 1000,
+      "buildType": "warm",
+      "validRuns": 5,
+      "durationMs": {
+        "median": 252.11,
+        "mean": 249.75259999999997,
+        "min": 220.307,
+        "max": 274.995,
+        "sampleStandardDeviation": 19.480822782931945,
+        "coefficientOfVariationPercent": 7.80004804071387
+      },
+      "peakMemoryMiB": {
+        "median": 145.453,
+        "mean": 145.35639999999998,
+        "min": 143.938,
+        "max": 147.563
+      },
+      "generatedFiles": 1012,
+      "outputBytes": 5066545,
+      "htmlBytes": 5066545
+    }
+  ]
+}

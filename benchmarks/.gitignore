@@ -1,0 +1,8 @@
+.work/
+**/node_modules/
+**/dist/
+**/public/
+**/.astro/
+**/.hugo_cache/
+*.log
+**/.hugo_build.lock
