@@ -33,5 +33,24 @@
 - Maintain exactly one Pages deployment workflow in `.github/workflows/`. It builds with Eleventy into `_site/`, uploads `_site/`, and deploys using official GitHub Pages actions.
 - Validate `npm ci`, `npm run build`, output paths, sitemap/feed, search JSON, and `git diff --check` before release. Never claim visual/browser testing that was not performed.
 - Follow one feature, one commit, one push, one deployment, one ASCII report. Keep unrelated changes separate; never force-push.
+- After code work, return exactly one ASCII-only terminal report in this format. Keep lines within 78 columns; wrap long summary or change details on indented continuation lines. Use only verified statuses, write NOT RUN or N/A when applicable, and never invent a SHA, duration, commit time, test result, or deploy state. If any field is FAIL, add exactly one concise ERROR line. Do not add prose after the report.
+
+```text
++----------------------------------------------------------------------------+
+| BLOGMOI CODEX REPORT                                                       |
++----------------------------------------------------------------------------+
+| RESULT    : <SUCCESS / PARTIAL / FAILURE>                                  |
+| SUMMARY   : <what was completed>                                           |
+| CHANGES   : <what changed>                                                 |
+| COMMIT    : <actual SHA or N/A (no commit created)>                        |
+| DURATION  : <elapsed time or N/A (not measured)>                           |
+| COMMIT AT : <YYYY-MM-DD HH:MM:SS GMT+7 or N/A (no commit)>                 |
+| BUILD     : <PASS / FAIL / NOT RUN>                                        |
+| TESTS     : <PASS / FAIL / NOT RUN>                                        |
+| DIFF CHECK: <PASS / FAIL / NOT RUN>                                        |
+| PUSH      : <PASS / FAIL / NOT RUN>                                        |
+| DEPLOY    : <PASS / FAIL / NOT RUN>                                        |
++----------------------------------------------------------------------------+
+```
 - After a successful push, return the ASCII report immediately. Do not watch or poll GitHub Actions or wait for deployment unless the user explicitly asks; mark deployment and production URL as unverified when they were not checked.
 - Verify `origin` is `https://github.com/blogco/blogmoi.git` before pushing. Never modify, commit to, or push to the old `blogco/blogco` repository.

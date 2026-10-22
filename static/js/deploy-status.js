@@ -5,48 +5,57 @@
   if (!root) return;
 
   const actionsUrl = "https://github.com/blogco/blogmoi/actions";
-  const productionUrl = new URL("https://blogco.github.io/blogmoi/");
   const apiUrl = "https://api.github.com/repos/blogco/blogmoi/actions/runs?branch=main&per_page=100";
   const productionWorkflowPath = ".github/workflows/deploy.yml";
-  const cacheKey = "blogmoi-deploy-status-v3";
+  const cacheKey = "blogmoi-deploy-status-v2";
   const cacheDuration = 120_000;
   const successLimit = 10;
   const failureLimit = 5;
-  const report = root.querySelector("[data-report]");
+  const statusTitle = root.querySelector("[data-status-title]");
+  const statusSummary = root.querySelector("[data-status-summary]");
+  const statusStage = root.querySelector("[data-status-stage]");
+  const runNumber = root.querySelector("[data-run-number]");
+  const runStatus = root.querySelector("[data-run-status]");
+  const workflowName = root.querySelector("[data-workflow-name]");
   const runLink = root.querySelector("[data-run-link]");
+  const actionsLink = root.querySelector("[data-actions-link]");
+  const commitLink = root.querySelector("[data-commit-link]");
+  const commitPlaceholder = root.querySelector("[data-commit-placeholder]");
+  const commitSha = root.querySelector("[data-commit-sha]");
   const commitAction = root.querySelector("[data-commit-action]");
+  const commitMessage = root.querySelector("[data-commit-message]");
+  const branch = root.querySelector("[data-branch]");
+  const updated = root.querySelector("[data-updated]");
+  const updatedLabel = root.querySelector("[data-updated-label]");
+  const duration = root.querySelector("[data-duration]");
+  const durationLabel = root.querySelector("[data-duration-label]");
+  const dataNote = root.querySelector("[data-data-note]");
   const copyButton = root.querySelector("[data-copy-sha]");
   const copyFeedback = root.querySelector("[data-copy-feedback]");
-  const dataNote = root.querySelector("[data-data-note]");
   const historyLink = root.querySelector("[data-history-link]");
   const successList = root.querySelector("[data-success-list]");
   const failedList = root.querySelector("[data-failed-list]");
   const successCount = root.querySelector("[data-success-count]");
   const failedCount = root.querySelector("[data-failed-count]");
   const historyNote = root.querySelector("[data-history-note]");
-  let latestSnapshot = null;
-  let productionVerified = false;
 
   function setText(element, value) {
     if (element) element.textContent = value;
   }
 
-  function asciiText(value, fallback, limit = 72) {
-    const result = String(value ?? "")
-      .split(/\r?\n/, 1)[0]
-      .replace(/[Đđ]/g, (letter) => letter === "Đ" ? "D" : "d")
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^\x20-\x7E]/g, "?")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!result) return fallback;
-    return result.length > limit ? `${result.slice(0, limit - 3)}...` : result;
+  function setState(state, title, summary, stage = "") {
+    root.dataset.state = state;
+    setText(statusTitle, title);
+    setText(statusSummary, summary);
+    if (statusStage) {
+      statusStage.textContent = stage;
+      statusStage.hidden = !stage;
+    }
   }
 
   function formatDate(value) {
     const date = new Date(value);
-    if (!Number.isFinite(date.getTime())) return "Unknown time";
+    if (!Number.isFinite(date.getTime())) return "Chưa có dữ liệu";
     return `${new Intl.DateTimeFormat("vi-VN", {
       day: "2-digit",
       month: "2-digit",
@@ -65,6 +74,20 @@
       month: "2-digit",
       year: "numeric"
     }).format(date);
+  }
+
+  function formatDuration(startValue, endValue) {
+    const start = Date.parse(startValue || "");
+    const end = endValue ? Date.parse(endValue) : Date.now();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return "Chưa có dữ liệu";
+    const seconds = Math.floor((end - start) / 1000);
+    if (seconds < 60) return `${seconds} giây`;
+    const minutes = Math.floor(seconds / 60);
+    const remaining = seconds % 60;
+    if (minutes < 60) return remaining ? `${minutes} phút ${remaining} giây` : `${minutes} phút`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes ? `${hours} giờ ${remainingMinutes} phút` : `${hours} giờ`;
   }
 
   function isRepositoryUrl(value, expectedPathPrefix) {
@@ -153,7 +176,7 @@
 
     const history = getHistoryRuns(workflowRuns);
     const runsNeedingJobs = [
-      run,
+      ...(run.status === "in_progress" || run.status === "completed" && run.conclusion !== "success" ? [run] : []),
       ...history.failed.slice(0, 1)
     ];
     const uniqueRunsNeedingJobs = [...new Map(runsNeedingJobs.map((candidate) => [String(candidate.id), candidate])).values()];
@@ -237,7 +260,7 @@
 
   function getFailureReason(jobsResponse) {
     const jobs = jobsResponse?.jobs;
-    if (!Array.isArray(jobs)) return "Workflow failed; open GitHub Actions for details.";
+    if (!Array.isArray(jobs)) return "Không lấy được chi tiết bước lỗi; mở log workflow để xem.";
 
     const failedItems = [];
     for (const job of jobs) {
@@ -246,15 +269,15 @@
       if (failedSteps.length) {
         for (const step of failedSteps) {
           failedItems.push({
-            jobName: job.name || "Unknown job",
-            stepName: step.name || "Unknown step",
+            jobName: job.name || "Job không tên",
+            stepName: step.name || "Bước không tên",
             completedAt: Date.parse(step.completed_at || job.completed_at || "") || 0
           });
         }
       } else {
         failedItems.push({
-          jobName: job.name || "Unknown job",
-          stepName: "Job failed",
+          jobName: job.name || "Job không tên",
+          stepName: "Job thất bại",
           completedAt: Date.parse(job.completed_at || "") || 0
         });
       }
@@ -262,7 +285,7 @@
 
     failedItems.sort((left, right) => right.completedAt - left.completedAt);
     const latest = failedItems[0];
-    return latest ? `${latest.jobName}: ${latest.stepName}` : "Workflow failed; open GitHub Actions for details.";
+    return latest ? `${latest.jobName} → ${latest.stepName}` : "Workflow kết thúc với trạng thái failure; mở log để xem chi tiết.";
   }
 
   function renderHistory(snapshot) {
@@ -294,122 +317,106 @@
     }
   }
 
-  function getStepStatus(step, run) {
-    if (step?.conclusion === "success") return "PASS";
-    if (step?.conclusion === "failure" || step?.conclusion === "cancelled" || step?.conclusion === "timed_out") return "FAIL";
-    if (step?.conclusion === "skipped") return "NOT RUN";
-    if (!step && run.status === "completed" && run.conclusion === "success") return "PASS";
-    return "NOT RUN";
-  }
-
-  function getDeployStatus(deployStep, run) {
-    if (deployStep?.conclusion === "success") return "PASS";
-    if (run.status === "completed" && run.conclusion === "success") return "PASS";
-    if (run.status === "completed") return "FAIL";
-    return "PENDING";
-  }
-
-  function getReportData(snapshot, isProductionVerified) {
-    const { run } = snapshot;
-    const buildStep = stepNamed(snapshot, "Build Eleventy site");
-    const deployStep = stepNamed(snapshot, "Deploy to Pages");
-    const build = getStepStatus(buildStep, run);
-    const tests = "NOT RUN";
-    const push = run.event === "push" ? "PASS" : "NOT RUN";
-    const deploy = getDeployStatus(deployStep, run);
-    const production = isProductionVerified ? "VERIFIED" : "NOT VERIFIED";
-    const failures = [build, push, deploy].filter((status) => status === "FAIL");
-    const result = failures.length
-      ? "FAILED"
-      : deploy === "PASS" && build === "PASS" && production === "VERIFIED" && run.status === "completed" && run.conclusion === "success"
-        ? "SUCCESS"
-        : "PARTIAL";
-    const commit = typeof run.head_sha === "string" && /^[\da-f]{40}$/i.test(run.head_sha) ? run.head_sha : "";
-    const commitMessage = typeof run.head_commit?.message === "string" && run.head_commit.message.trim()
-      ? run.head_commit.message
-      : run.display_title;
-    return {
-      feature: asciiText(commitMessage, "UNKNOWN FEATURE", 48),
-      commit: commit ? commit.slice(0, 7) : "UNKNOWN",
-      branch: asciiText(run.head_branch, "UNKNOWN", 48),
-      build,
-      tests,
-      push,
-      deploy,
-      production,
-      result,
-      error: failures.length ? asciiText(getFailureReason(snapshot.jobs), "Workflow failed", 48) : ""
-    };
-  }
-
-  function renderReport(data) {
-    const contentWidth = 60;
-    const border = `+${"-".repeat(contentWidth + 2)}+`;
-    const row = (value) => `| ${asciiText(value, "", contentWidth).padEnd(contentWidth, " ")} |`;
-    const lines = [
-      border,
-      row("BLOGMOI DEPLOY STATUS"),
-      border,
-      row(`FEATURE     ${data.feature}`),
-      row(`COMMIT      ${data.commit}`),
-      row(`BRANCH      ${data.branch}`),
-      row(`BUILD       ${data.build}`),
-      row(`TESTS       ${data.tests}`),
-      row(`PUSH        ${data.push}`),
-      row(`DEPLOY      ${data.deploy}`),
-      row(`PRODUCTION  ${data.production}`)
-    ];
-    if (data.error) lines.push(row(`ERROR       ${data.error}`));
-    lines.push(border, row(`RESULT      ${data.result}`), border);
-    report.textContent = lines.join("\n");
-    root.dataset.state = data.result.toLowerCase();
-  }
-
   function renderSnapshot(snapshot) {
-    latestSnapshot = snapshot;
-    renderHistory(snapshot);
     const { run } = snapshot;
+    renderHistory(snapshot);
+    const steps = runSteps(snapshot);
+    const buildStep = steps.find((step) => step.name === "Build Eleventy site");
+    const deployStep = steps.find((step) => step.name === "Deploy to Pages");
     const runUrl = isRepositoryUrl(run.html_url, "/blogco/blogmoi/actions/runs/") ? run.html_url : actionsUrl;
     const fullSha = typeof run.head_sha === "string" && /^[\da-f]{40}$/i.test(run.head_sha) ? run.head_sha : "";
+    const commitUrl = fullSha ? `https://github.com/blogco/blogmoi/commit/${fullSha}` : "";
+    const commit = run.head_commit || {};
+    const isActive = ["queued", "requested", "waiting", "pending", "in_progress"].includes(run.status);
+    const isQueued = ["queued", "requested", "waiting", "pending"].includes(run.status);
+    const startTime = isQueued ? run.created_at || run.run_started_at : run.run_started_at || run.created_at;
+    const finishTime = run.status === "completed" ? run.updated_at : "";
+    const runTime = finishTime || startTime;
+
+    setText(workflowName, run.name || "GitHub Actions deployment");
+    setText(runNumber, `RUN #${run.run_number ?? "?"} · ID ${run.id}`);
+    setText(runStatus, `${run.status || "unknown"} · ${run.conclusion || "—"}`);
+    setText(branch, run.head_branch || "Không xác định");
+    setText(updated, formatDate(runTime));
+    setText(duration, formatDuration(startTime, finishTime));
+    setText(updatedLabel, finishTime ? "THỜI ĐIỂM CẬP NHẬT" : isQueued ? "ĐƯỢC TẠO LÚC" : "BẮT ĐẦU LÚC");
+    setText(durationLabel, isQueued ? "ĐÃ CHỜ" : isActive ? "ĐÃ CHẠY" : "THỜI LƯỢNG");
+    setText(commitMessage, typeof commit.message === "string" && commit.message.trim() ? commit.message.split(/\r?\n/, 1)[0] : run.display_title || "Không có commit message");
+    if (dataNote) {
+      const checkedAt = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" }).format(new Date(snapshot.savedAt));
+      const isCached = Date.now() - snapshot.savedAt > 2000;
+      dataNote.textContent = ` · ${isCached ? "Dữ liệu đã kiểm tra" : "GitHub API đã kiểm tra"} lúc ${checkedAt} · giờ địa phương`;
+    }
 
     runLink.href = runUrl;
+    actionsLink.href = actionsUrl;
     if (fullSha) {
-      commitAction.href = `https://github.com/blogco/blogmoi/commit/${fullSha}`;
+      commitLink.href = commitUrl;
+      commitLink.hidden = false;
+      commitPlaceholder.hidden = true;
+      commitAction.href = commitUrl;
       commitAction.hidden = false;
+      setText(commitSha, fullSha.slice(0, 7));
       copyButton.disabled = false;
       copyButton.dataset.sha = fullSha;
     } else {
+      commitLink.hidden = true;
+      commitPlaceholder.hidden = false;
       commitAction.hidden = true;
+      setText(commitSha, "—");
       copyButton.disabled = true;
       delete copyButton.dataset.sha;
     }
 
-    const data = getReportData(snapshot, productionVerified);
-    renderReport(data);
-
-    if (dataNote) {
-      const checkedAt = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", timeZoneName: "short" }).format(new Date(snapshot.savedAt));
-      const isCached = Date.now() - snapshot.savedAt > 2000;
-      dataNote.textContent = ` · ${isCached ? "Cache" : "GitHub API"} ${checkedAt}`;
+    if (run.status === "completed" && run.conclusion === "success") {
+      setState("success", "TRIỂN KHAI THÀNH CÔNG", "GitHub Actions đã hoàn tất bước xuất bản lên GitHub Pages.");
+      return;
     }
+
+    if (deployStep?.conclusion === "success") {
+      setState("success", "TRIỂN KHAI THÀNH CÔNG", "GitHub Pages đã nhận phiên bản này.", "Một bước báo cáo trong workflow kết thúc không thành công sau khi xuất bản.");
+      return;
+    }
+
+    if (isActive) {
+      let summary = "GitHub Actions đang chuẩn bị hoặc xử lý phiên bản này. Bản đang chạy trên website vẫn được giữ cho tới khi xuất bản hoàn tất.";
+      if (run.status === "queued" || run.status === "requested" || run.status === "waiting") {
+        summary = "Workflow đang chờ GitHub Actions bắt đầu; phiên bản hiện tại trên website vẫn đang hoạt động.";
+      } else if (buildStep?.conclusion === "success") {
+        summary = "Bản dựng đã hoàn tất; GitHub Actions đang tiếp tục tới bước xuất bản. Website hiện vẫn dùng phiên bản đang hoạt động.";
+      } else if (deployStep?.status === "in_progress") {
+        summary = "GitHub Pages đang nhận phiên bản mới; trạng thái thành công sẽ được xác nhận khi bước xuất bản hoàn tất.";
+      }
+      setState("running", "ĐANG TRIỂN KHAI", summary);
+      return;
+    }
+
+    if (run.status === "completed" && run.conclusion !== "success") {
+      if (!Array.isArray(snapshot.jobs?.jobs)) {
+        setState("unknown", "CHƯA XÁC ĐỊNH TRẠNG THÁI", "Không thể xác nhận bước xuất bản của lần chạy này.", "GitHub Actions không trả về chi tiết các bước. Mở workflow để xem kết quả mới nhất.");
+        return;
+      }
+      if (buildStep?.conclusion === "failure") {
+        setState("failed", "TRIỂN KHAI THẤT BẠI", "Bản dựng Eleventy gặp lỗi trước khi xuất bản.", "Phiên bản đã xuất bản trước đó tiếp tục được phục vụ.");
+        return;
+      }
+      if (deployStep && deployStep.conclusion !== "success") {
+        setState("failed", "TRIỂN KHAI THẤT BẠI", "Bản dựng không được xuất bản thành công lên GitHub Pages.", "Phiên bản đã xuất bản trước đó tiếp tục được phục vụ.");
+        return;
+      }
+      setState("failed", "TRIỂN KHAI KHÔNG HOÀN TẤT", "Workflow kết thúc mà chưa xác nhận được lần xuất bản thành công.", "Mở chi tiết workflow để xem bước đã dừng.");
+      return;
+    }
+
+    setState("unknown", "CHƯA XÁC ĐỊNH TRẠNG THÁI", "Không thể tải thông tin triển khai mới nhất từ GitHub Actions.");
   }
 
   function setUnknownState() {
-    latestSnapshot = null;
-    renderReport({
-      feature: "UNKNOWN FEATURE",
-      commit: "UNKNOWN",
-      branch: "UNKNOWN",
-      build: "NOT RUN",
-      tests: "NOT RUN",
-      push: "NOT RUN",
-      deploy: "PENDING",
-      production: productionVerified ? "VERIFIED" : "NOT VERIFIED",
-      result: "PARTIAL",
-      error: ""
-    });
+    setState("unknown", "CHƯA XÁC ĐỊNH TRẠNG THÁI", "Không thể tải thông tin triển khai mới nhất từ GitHub Actions.", "Thử lại sau hoặc mở GitHub Actions để xem trạng thái hiện tại.");
+    setText(runNumber, "CHƯA CÓ DỮ LIỆU");
+    setText(runStatus, "unknown");
     setText(copyFeedback, "");
-    setText(dataNote, " · GitHub Actions data unavailable");
+    setText(dataNote, " · Chưa thể xác nhận dữ liệu GitHub Actions");
     setText(successCount, `—/${successLimit}`);
     setText(failedCount, `—/${failureLimit}`);
     setText(historyNote, "Chưa thể tải lịch sử commit từ GitHub Actions.");
@@ -418,26 +425,6 @@
       item.className = "deploy-status__history-empty";
       item.textContent = "Chưa thể tải lịch sử từ GitHub Actions.";
       list.replaceChildren(item);
-    }
-  }
-
-  async function verifyProduction() {
-    if (window.location.origin !== productionUrl.origin || !window.location.pathname.startsWith(productionUrl.pathname)) return false;
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 8000);
-    try {
-      const response = await fetch(productionUrl, {
-        method: "GET",
-        credentials: "omit",
-        cache: "no-store",
-        headers: { Accept: "text/html" },
-        signal: controller.signal
-      });
-      return response.ok && new URL(response.url).origin === productionUrl.origin;
-    } catch {
-      return false;
-    } finally {
-      window.clearTimeout(timeout);
     }
   }
 
@@ -465,22 +452,6 @@
     }
   }
 
-  async function start() {
-    copyButton.addEventListener("click", copySha);
-    const productionPromise = verifyProduction().then((verified) => {
-      productionVerified = verified;
-      if (latestSnapshot) renderSnapshot(latestSnapshot);
-      else setUnknownState();
-    });
-
-    try {
-      const snapshot = await getSnapshot();
-      renderSnapshot(snapshot);
-    } catch {
-      setUnknownState();
-    }
-    await productionPromise;
-  }
-
-  start();
+  copyButton.addEventListener("click", copySha);
+  getSnapshot().then(renderSnapshot).catch(setUnknownState);
 })();
