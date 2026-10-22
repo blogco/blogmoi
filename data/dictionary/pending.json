@@ -508,8 +508,8 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-22T17:40:59.115Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39824468685",
+    "recordedAt": "2026-10-22T17:44:47.397Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39825341428",
     "articlesDiscovered": 4,
     "articlesProcessed": 0,
     "articlesSkippedValidCache": 4,
