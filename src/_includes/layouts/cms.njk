@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Blogmoi CMS</title>
+  <link rel="stylesheet" href="{{ '/css/fonts.css' | url }}">
+  <link rel="stylesheet" href="{{ '/css/site.css' | url }}">
+  <link rel="stylesheet" href="{{ '/css/typography.css' | url }}">
+  <link rel="stylesheet" href="{{ '/css/cms.css' | url }}">
+</head>
+<body class="cms-body">
+  {{ content | safe }}
+  <script src="{{ '/cms/vendor/js-yaml.min.js' | url }}"></script>
+  <script src="{{ '/cms/vendor/markdown-it.min.js' | url }}"></script>
+  <script type="module" src="{{ '/js/cms.js' | url }}"></script>
+</body>
+</html>

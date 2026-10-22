@@ -10,6 +10,7 @@
     "build": "eleventy --pathprefix=/blogmoi/",
     "build:local": "eleventy",
     "clean": "node -e \"import('node:fs').then(({rmSync}) => rmSync('_site', {recursive:true, force:true}))\"",
+    "test:cms": "node --test tests/cms-core.test.mjs tests/cms-proxy.test.mjs",
     "test:dictionary": "node --test tests/dictionary-pipeline.test.mjs",
     "dictionary:extract": "node scripts/extract-dictionary.mjs",
     "dictionary:translate": "node scripts/translate-dictionary.mjs",
@@ -17,6 +18,8 @@
   },
   "devDependencies": {
     "@11ty/eleventy": "3.1.7",
-    "gray-matter": "npm:@11ty/gray-matter@1.0.0"
+    "gray-matter": "npm:@11ty/gray-matter@1.0.0",
+    "js-yaml": "4.3.2",
+    "markdown-it": "14.3.3"
   }
 }

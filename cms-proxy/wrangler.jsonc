@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/config-schema.json",
+  "name": "blogmoi-unsplash-cms-proxy",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-23",
+  "workers_dev": true,
+  "vars": {
+    "CMS_ORIGIN": "https://blogco.github.io"
+  },
+  "secrets": {
+    "required": ["UNSPLASH_ACCESS_KEY"]
+  }
+}

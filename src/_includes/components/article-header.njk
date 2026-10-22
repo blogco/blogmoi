@@ -33,7 +33,11 @@
   {% if cover %}
     <figure class="article-hero__media">
       <img src="{{ cover | url }}" alt="{{ coverAlt or '' }}" fetchpriority="high" width="1440" height="810">
-      {% if coverCaption %}<figcaption>{{ coverCaption }}</figcaption>{% endif %}
+      {% set safePhotographerUrl = coverAttribution.photographerUrl | safeExternalUrl %}
+      {% set safePhotoUrl = coverAttribution.photoUrl | safeExternalUrl %}
+      {% if coverAttribution.photographer and safePhotographerUrl and safePhotoUrl %}
+        <figcaption>Photo by <a href="{{ safePhotographerUrl }}" rel="noopener noreferrer">{{ coverAttribution.photographer }}</a> on <a href="{{ safePhotoUrl }}" rel="noopener noreferrer">Unsplash</a></figcaption>
+      {% elif coverCaption %}<figcaption>{{ coverCaption }}</figcaption>{% endif %}
     </figure>
   {% else %}
     <div class="article-hero__media article-hero__media--empty" aria-hidden="true"><span>Blogmoi</span></div>

@@ -31,6 +31,8 @@ function groupPosts(posts, field) {
 export default function (eleventyConfig) {
   eleventyConfig.addGlobalData("year", new Date().getFullYear());
   eleventyConfig.addPassthroughCopy({ static: "." });
+  eleventyConfig.addPassthroughCopy({ "node_modules/markdown-it/dist/markdown-it.min.js": "cms/vendor/markdown-it.min.js" });
+  eleventyConfig.addPassthroughCopy({ "node_modules/js-yaml/dist/js-yaml.min.js": "cms/vendor/js-yaml.min.js" });
   eleventyConfig.addCollection("posts", (api) => {
     const posts = api.getFilteredByGlob("src/posts/**/*.md")
       .filter((post) => !post.data.draft)
