@@ -4,9 +4,10 @@ layout: layouts/base.njk
 <article class="article-page">
   {% include "components/article-header.njk" %}
 
+  {% set content = content | withoutLegacyTopicPanels %}
   {% set articleToc = content | toc %}
   {% set relatedPosts = collections.posts | relatedPosts(page.url, categories or []) %}
-  {% set topicDiscovery = collections.posts | topicSuggestions(page.url, relatedPosts) %}
+  {% set topicDiscovery = collections.posts | topicSuggestions(page.url, relatedPosts, content) %}
   <div class="article-layout">
     <div class="article-main" id="article-content" data-reading-area>
       {% include "components/ai-keypoints.njk" %}
@@ -14,6 +15,8 @@ layout: layouts/base.njk
     </div>
     {% include "components/article-sidebar.njk" %}
   </div>
+
+  {% include "components/ExploreNextTopics.njk" %}
 
   {% if tags and tags.length %}
     <nav class="article-tags" aria-label="Thẻ bài viết">
@@ -25,6 +28,5 @@ layout: layouts/base.njk
     {% include "components/copyright-sources.njk" %}
     {% include "components/internal-links.njk" %}
     {% include "components/article-faq.njk" %}
-    {% include "components/topic-discovery.njk" %}
   </div>
 </article>

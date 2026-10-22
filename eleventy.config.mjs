@@ -1,4 +1,4 @@
-import { resolveTopicSuggestions, syncEditorialTopicStatuses } from "./lib/editorial-topic-discovery.js";
+import { resolveTopicSuggestions, syncEditorialTopicStatuses, removeLegacyTopicPanels } from "./lib/editorial-topic-discovery.js";
 
 const PATH_PREFIX = "/blogmoi/";
 const SITE_ORIGIN = "https://blogco.github.io";
@@ -28,20 +28,20 @@ function groupPosts(posts, field) {
   return [...groups.values()].sort((a, b) => a.name.localeCompare(b.name, "vi"));
 }
 
-export default function (eleventyConfig) {
+export default function (eleventyConfig, { syncTopicStatuses = true } = {}) {
   eleventyConfig.addGlobalData("year", new Date().getFullYear());
   eleventyConfig.addPassthroughCopy({ static: "." });
   eleventyConfig.addPassthroughCopy({ "node_modules/markdown-it/dist/markdown-it.min.js": "cms/vendor/markdown-it.min.js" });
   eleventyConfig.addPassthroughCopy({ "node_modules/js-yaml/dist/js-yaml.min.js": "cms/vendor/js-yaml.min.js" });
   eleventyConfig.addCollection("posts", (api) => {
-    const posts = api.getFilteredByGlob("src/posts/**/*.md")
+    const posts = api.getAll().filter(post => post.data.type === "article")
       .filter((post) => !post.data.draft)
       .sort((a, b) => new Date(b.data.publishDate || b.date) - new Date(a.data.publishDate || a.date));
-    syncEditorialTopicStatuses(posts);
+    if (syncTopicStatuses) syncEditorialTopicStatuses(posts);
     return posts;
   });
-  eleventyConfig.addCollection("categoryGroups", (api) => groupPosts(api.getFilteredByGlob("src/posts/**/*.md").filter((post) => !post.data.draft), "categories"));
-  eleventyConfig.addCollection("tagGroups", (api) => groupPosts(api.getFilteredByGlob("src/posts/**/*.md").filter((post) => !post.data.draft), "tags"));
+  eleventyConfig.addCollection("categoryGroups", (api) => groupPosts(api.getAll().filter(post => post.data.type === "article").filter((post) => !post.data.draft), "categories"));
+  eleventyConfig.addCollection("tagGroups", (api) => groupPosts(api.getAll().filter(post => post.data.type === "article").filter((post) => !post.data.draft), "tags"));
 
   eleventyConfig.addFilter("absoluteUrl", (path = "/") => {
     if (/^https?:\/\//i.test(String(path))) return String(path);
@@ -60,8 +60,9 @@ export default function (eleventyConfig) {
   eleventyConfig.addFilter("relatedPosts", (posts, currentUrl, categories = []) => posts
     .filter((post) => post.url !== currentUrl && (post.data.categories || []).some((category) => categories.includes(category)))
     .slice(0, 3));
-  eleventyConfig.addFilter("topicSuggestions", (posts, currentUrl, relatedPosts = []) =>
-    resolveTopicSuggestions(posts, currentUrl, relatedPosts));
+  eleventyConfig.addFilter("topicSuggestions", (posts, currentUrl, relatedPosts = [], content = "") =>
+    resolveTopicSuggestions(posts, currentUrl, relatedPosts, content));
+  eleventyConfig.addFilter("withoutLegacyTopicPanels", removeLegacyTopicPanels);
   eleventyConfig.addFilter("featuredPosts", (posts) => posts.filter((post) => post.data.featured));
   eleventyConfig.addFilter("dateReadable", (date, timeZone = "Asia/Ho_Chi_Minh") => {
     const parsed = new Date(date);

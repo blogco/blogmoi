@@ -1,0 +1,14 @@
+<section class="article-panel topic-discovery-panel" data-component="ExploreNextTopics" aria-labelledby="topic-discovery-title">
+  <div class="article-panel__heading"><span class="article-panel__number">04</span><h2 id="topic-discovery-title">Khám phá tiếp chủ đề này</h2></div>
+  <p class="topic-discovery__intro">Những hướng khai thác để phát triển thành bài viết mới.</p>
+  <ul class="topic-discovery__grid">
+    {% for item in topicDiscovery %}
+      <li class="topic-discovery-card">
+        <p class="topic-discovery__label">Ý tưởng bài viết tiếp theo</p>
+        <h3>{{ item.title | escape }}</h3>
+        <p class="topic-discovery__description">{{ item.description | escape }}</p>
+        <p class="topic-discovery__description topic-discovery__rationale"><strong>Vì sao phù hợp:</strong> {{ item.rationale | escape }}</p>
+      </li>
+    {% endfor %}
+  </ul>
+</section>

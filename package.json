@@ -17,7 +17,9 @@
     "dictionary:sync": "node scripts/extract-dictionary.mjs",
     "dictionary:import": "node scripts/import-dictionary-entries.mjs",
     "lint": "eslint static/js",
-    "test:production": "node --test tests/expense-production.test.mjs"
+    "test:production": "node --test tests/expense-production.test.mjs",
+    "postbuild": "node scripts/verify-explore-next-topics.mjs",
+    "test:topics": "node --test tests/topic-discovery*.test.mjs"
   },
   "devDependencies": {
     "@11ty/eleventy": "3.1.7",
