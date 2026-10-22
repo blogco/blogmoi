@@ -1,13 +1,18 @@
-<aside class="article-sidebar" aria-label="Thông tin bài viết">
+<aside class="article-sidebar" aria-label="Mục lục và chủ đề bài viết">
   {% if articleToc %}
-    <section class="article-sidebar__section" aria-labelledby="article-toc-title">
-      <h2 id="article-toc-title">Mục lục bài viết</h2>
-      {{ articleToc | safe }}
+    <section class="article-sidebar__section article-sidebar__section--toc">
+      <details class="article-toc-disclosure" data-responsive-toc open>
+        <summary class="article-toc-disclosure__summary">
+          <span role="heading" aria-level="2">Mục lục bài viết</span>
+          <span class="article-toc-disclosure__icon" aria-hidden="true"></span>
+        </summary>
+        <div class="article-toc-disclosure__content">{{ articleToc | safe }}</div>
+      </details>
     </section>
   {% endif %}
 
   {% if (categories and categories.length) or (tags and tags.length) %}
-    <section class="article-sidebar__section" aria-labelledby="article-topics-title">
+    <section class="article-sidebar__section article-sidebar__section--topics" aria-labelledby="article-topics-title">
       <h2 id="article-topics-title">Chủ đề liên quan</h2>
       <ul class="topic-pills">
         {% for category in (categories or []) %}<li><a href="{{ ('/categories/' + (category | slugify) + '/') | url }}">{{ category }}</a></li>{% endfor %}

@@ -33,4 +33,5 @@
 - Maintain exactly one Pages deployment workflow in `.github/workflows/`. It builds with Eleventy into `_site/`, uploads `_site/`, and deploys using official GitHub Pages actions.
 - Validate `npm ci`, `npm run build`, output paths, sitemap/feed, search JSON, and `git diff --check` before release. Never claim visual/browser testing that was not performed.
 - Follow one feature, one commit, one push, one deployment, one ASCII report. Keep unrelated changes separate; never force-push.
+- After a successful push, return the ASCII report immediately. Do not watch or poll GitHub Actions or wait for deployment unless the user explicitly asks; mark deployment and production URL as unverified when they were not checked.
 - Verify `origin` is `https://github.com/blogco/blogmoi.git` before pushing. Never modify, commit to, or push to the old `blogco/blogco` repository.
