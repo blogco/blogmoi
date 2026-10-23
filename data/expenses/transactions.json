@@ -30,6 +30,20 @@
       "updatedAt": "2026-10-22T18:55:54.956Z"
     },
     {
+      "id": "bd6015a4-bc31-4969-adcb-2c15316d9065",
+      "merchant": "Highlands",
+      "itemName": "Matcha Latte",
+      "amount": 50000,
+      "date": "2026-10-23",
+      "taste": "không đường",
+      "category": "Đồ uống",
+      "iconId": "matcha",
+      "iconManuallySet": false,
+      "notes": "",
+      "createdAt": "2026-10-23T00:50:02.056Z",
+      "updatedAt": "2026-10-23T00:50:02.056Z"
+    },
+    {
       "id": "f2e9098d-2a70-457c-bf65-2a95648f93eb",
       "merchant": "Starbucks",
       "itemName": "Matcha Latte",
