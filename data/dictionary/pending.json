@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-23T01:24:19.430Z",
+  "generatedAt": "2026-10-23T01:30:49.984Z",
   "candidates": [
     {
       "id": "bc207345431c43dfe3dbe842",
@@ -10,11 +10,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "… đó đã hoạt động trên production. Vì vậy, tôi xây dựng một quy ước báo cáo riêng mang tên BLOGMOI CODEX REPORT. Sau mỗi tác vụ lập trình, Codex sẽ hiển thị một bản tóm tắt ngay trong Terminal, theo phong cách ASCII cổ đi…",
-      "articleHash": "82b10a7c267ac3fe6270b09d4a9bd9d39376f061f5616de8cde295ec3c723c34",
+      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.458Z"
+      "updatedAt": "2026-10-23T01:30:49.971Z"
     },
     {
       "id": "66a0f90ccce4e4ece196d805",
@@ -24,11 +24,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "…hử và phiên bản nào thực sự được đưa lên website. Trong quá trình phát triển Blogmoi bằng Codex, tôi nhận ra một vấn đề khá thú vị: đôi khi AI thông báo đã hoàn thành công việc, nhưng tôi vẫn phải tự kiểm …",
-      "articleHash": "82b10a7c267ac3fe6270b09d4a9bd9d39376f061f5616de8cde295ec3c723c34",
+      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.458Z"
+      "updatedAt": "2026-10-23T01:30:49.971Z"
     },
     {
       "id": "caa6dc1f5022e8a698502147",
@@ -38,11 +38,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "…h công việc, nhưng tôi vẫn phải tự kiểm tra xem mã nguồn đã được commit chưa, có push lên GitHub hay chưa và website thực tế đã cập nhật hay chưa. Một tính năng được viết xong không đồng nghĩa với việc tính…",
-      "articleHash": "82b10a7c267ac3fe6270b09d4a9bd9d39376f061f5616de8cde295ec3c723c34",
+      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.459Z"
+      "updatedAt": "2026-10-23T01:30:49.971Z"
     },
     {
       "id": "a0b8ac6a872e9d484eebc0c5",
@@ -52,11 +52,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "…GMOI CODEX REPORT. Sau mỗi tác vụ lập trình, Codex sẽ hiển thị một bản tóm tắt ngay trong Terminal, theo phong cách ASCII cổ điển. 01 / Một bản báo cáo thay cho nhiều câu trả lời dài Thay vì một đoạn giải thí…",
-      "articleHash": "82b10a7c267ac3fe6270b09d4a9bd9d39376f061f5616de8cde295ec3c723c34",
+      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.459Z"
+      "updatedAt": "2026-10-23T01:30:49.971Z"
     },
     {
       "id": "67ddb9ad33a63d33c58ac3e9",
@@ -164,11 +164,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "… muốn Blogmoi hoạt động như một thư viện nội dung có đường nối. Người đọc đang xem bài về Eleventy có thể muốn tìm hiểu thêm về static site generator; người đang đọc về font tiếng Việt có thể muốn biết cách k…",
-      "articleHash": "c67076ffaead8c846728be137cec7cfe95c941fb69f307df48a6220925b954b6",
+      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.467Z"
+      "updatedAt": "2026-10-23T01:30:49.976Z"
     },
     {
       "id": "2c787d85e95d1c49b73c3b46",
@@ -178,11 +178,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "…uất chưa xuất bản, không có URL. Đây có phải AI không? Không. Topic Discovery hiện tại là JavaScript chạy trong Eleventy, dựa trên điều kiện chuỗi và metadata do người viết/biên tập cung cấp. Không có LLM class…",
-      "articleHash": "c67076ffaead8c846728be137cec7cfe95c941fb69f307df48a6220925b954b6",
+      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.467Z"
+      "updatedAt": "2026-10-23T01:30:49.976Z"
     },
     {
       "id": "4af1f359eeb20671c1b26bd3",
@@ -192,11 +192,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "…ện nội dung có đường nối. Người đọc đang xem bài về Eleventy có thể muốn tìm hiểu thêm về static site generator; người đang đọc về font tiếng Việt có thể muốn biết cách kiểm tra subset hoặc đo layout shift. Với tôi, đó là…",
-      "articleHash": "c67076ffaead8c846728be137cec7cfe95c941fb69f307df48a6220925b954b6",
+      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.467Z"
+      "updatedAt": "2026-10-23T01:30:49.976Z"
     },
     {
       "id": "04b9c93e117b825d568e83b2",
@@ -206,11 +206,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "…t taxonomy category lấy từ front matter, một bộ Related Posts theo category, và một luồng Topic Discovery dựa trên backlog do biên tập viên chuẩn bị. Chúng cùng giúp khám phá nội dung, nhưng không dùng chung một thu…",
-      "articleHash": "c67076ffaead8c846728be137cec7cfe95c941fb69f307df48a6220925b954b6",
+      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T00:56:53.467Z"
+      "updatedAt": "2026-10-23T01:30:49.976Z"
     },
     {
       "id": "3f629d12e76e92689ddb6ce2",
@@ -220,11 +220,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…m cân nhắc IPO tại Mỹ sớm nhất vào năm tới, tức năm 2027, với mức định giá có thể lên tới 150 tỷ USD. Đây là khả năng được đề cập trong các thông tin trước đó, không phải mức định giá đã được xác lập qua một đợ…",
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:24:19.414Z"
+      "updatedAt": "2026-10-23T01:30:49.977Z"
     },
     {
       "id": "41ca9b8a0c36ffd534575cd4",
@@ -234,11 +234,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…c đưa ra sau khi đánh giá biến động trên thị trường vốn và diễn biến gần đây của cổ phiếu bán dẫn. Thông tin được The Korea Times đăng trong bài của Kang Seung-woo. SK hynix cho biết hoạt động kinh doanh của…",
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:24:19.414Z"
+      "updatedAt": "2026-10-23T01:30:49.977Z"
     },
     {
       "id": "abb5f91c08d840686185ddea",
@@ -248,11 +248,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…uản lý khi công ty con có thể niêm yết ở nước ngoài trong lúc công ty mẹ vẫn niêm yết tại Hàn Quốc. Theo The Korea Times, giữa những tranh luận quanh khả năng niêm yết này, giới chức tài chính đã cảnh báo phư…",
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:24:19.414Z"
+      "updatedAt": "2026-10-23T01:30:49.977Z"
     },
     {
       "id": "235f5191f368447974a92a0d",
@@ -262,11 +262,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…huyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng. Theo thông báo của SK hynix ngày 23-10, quyết định được đưa ra sa…",
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:24:19.414Z"
+      "updatedAt": "2026-10-23T01:30:49.977Z"
     },
     {
       "id": "36c52206464e06cc8444c7cb",
@@ -276,11 +276,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng. Theo thông …",
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:24:19.414Z"
+      "updatedAt": "2026-10-23T01:30:49.977Z"
     },
     {
       "id": "83fe2133ddfbc1ee89e3e6b1",
@@ -290,11 +290,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO v…",
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:24:19.414Z"
+      "updatedAt": "2026-10-23T01:30:49.977Z"
     },
     {
       "id": "32f4bc569b8c4fe88b2a3971",
@@ -656,7 +656,7 @@
     },
     "posts/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal.md": {
       "extractorVersion": 2,
-      "articleHash": "82b10a7c267ac3fe6270b09d4a9bd9d39376f061f5616de8cde295ec3c723c34",
+      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "candidateIds": [
         "bc207345431c43dfe3dbe842",
@@ -688,7 +688,7 @@
     },
     "posts/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai.md": {
       "extractorVersion": 2,
-      "articleHash": "c67076ffaead8c846728be137cec7cfe95c941fb69f307df48a6220925b954b6",
+      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "candidateIds": [
         "659e87e265b257e0df7cb5c9",
@@ -699,7 +699,7 @@
     },
     "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md": {
       "extractorVersion": 2,
-      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "candidateIds": [
         "3f629d12e76e92689ddb6ce2",
@@ -760,13 +760,13 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-23T01:24:19.430Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39883781366",
+    "recordedAt": "2026-10-23T01:30:49.984Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39884391643",
     "articlesDiscovered": 9,
-    "articlesProcessed": 1,
-    "articlesSkippedValidCache": 8,
+    "articlesProcessed": 3,
+    "articlesSkippedValidCache": 6,
     "candidatesExtracted": 46,
-    "newlyExtracted": 6,
+    "newlyExtracted": 0,
     "awaitingManualTranslation": 46,
     "publishedEntries": 18
   }
