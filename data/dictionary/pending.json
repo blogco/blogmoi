@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-23T01:30:49.984Z",
+  "generatedAt": "2026-10-23T01:58:34.535Z",
   "candidates": [
     {
       "id": "bc207345431c43dfe3dbe842",
@@ -10,11 +10,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "… đó đã hoạt động trên production. Vì vậy, tôi xây dựng một quy ước báo cáo riêng mang tên BLOGMOI CODEX REPORT. Sau mỗi tác vụ lập trình, Codex sẽ hiển thị một bản tóm tắt ngay trong Terminal, theo phong cách ASCII cổ đi…",
-      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
+      "articleHash": "f1539937de478b0631b988714997a8fadd587bba6124ea441e8e2d949c91c187",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.971Z"
+      "updatedAt": "2026-10-23T01:58:34.511Z"
     },
     {
       "id": "66a0f90ccce4e4ece196d805",
@@ -24,11 +24,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "…hử và phiên bản nào thực sự được đưa lên website. Trong quá trình phát triển Blogmoi bằng Codex, tôi nhận ra một vấn đề khá thú vị: đôi khi AI thông báo đã hoàn thành công việc, nhưng tôi vẫn phải tự kiểm …",
-      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
+      "articleHash": "f1539937de478b0631b988714997a8fadd587bba6124ea441e8e2d949c91c187",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.971Z"
+      "updatedAt": "2026-10-23T01:58:34.511Z"
     },
     {
       "id": "caa6dc1f5022e8a698502147",
@@ -38,11 +38,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "…h công việc, nhưng tôi vẫn phải tự kiểm tra xem mã nguồn đã được commit chưa, có push lên GitHub hay chưa và website thực tế đã cập nhật hay chưa. Một tính năng được viết xong không đồng nghĩa với việc tính…",
-      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
+      "articleHash": "f1539937de478b0631b988714997a8fadd587bba6124ea441e8e2d949c91c187",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.971Z"
+      "updatedAt": "2026-10-23T01:58:34.511Z"
     },
     {
       "id": "a0b8ac6a872e9d484eebc0c5",
@@ -52,11 +52,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "sourceContext": "…GMOI CODEX REPORT. Sau mỗi tác vụ lập trình, Codex sẽ hiển thị một bản tóm tắt ngay trong Terminal, theo phong cách ASCII cổ điển. 01 / Một bản báo cáo thay cho nhiều câu trả lời dài Thay vì một đoạn giải thí…",
-      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
+      "articleHash": "f1539937de478b0631b988714997a8fadd587bba6124ea441e8e2d949c91c187",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.971Z"
+      "updatedAt": "2026-10-23T01:58:34.511Z"
     },
     {
       "id": "67ddb9ad33a63d33c58ac3e9",
@@ -66,11 +66,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
       "sourceContext": "… / Web Development - Series: Behind the Build — Hậu trường xây dựng Blogmoi - Tags: Hugo, Eleventy, 11ty, Static Site Generator, GitHub Pages, SEO, Website Migration 1. Vì sao tôi quyết định chuyển từ Hugo sa…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
+      "articleHash": "d0ee671f00431d4f6ae59f318e93dbf800be4f1eb8a4293c83af1366e4a1ef12",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
+      "updatedAt": "2026-10-23T01:58:34.514Z"
     },
     {
       "id": "835229d8e5f03d7a44a23288",
@@ -80,11 +80,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
       "sourceContext": "…g nghệ / Web Development - Series: Behind the Build — Hậu trường xây dựng Blogmoi - Tags: Hugo, Eleventy, 11ty, Static Site Generator, GitHub Pages, SEO, Website Migration 1. Vì sao tôi quyết định chuyển …",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
+      "articleHash": "d0ee671f00431d4f6ae59f318e93dbf800be4f1eb8a4293c83af1366e4a1ef12",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
+      "updatedAt": "2026-10-23T01:58:34.514Z"
     },
     {
       "id": "4ae449d9c584bec04466975f",
@@ -94,11 +94,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
       "sourceContext": "Chuyển đổi Static Site Generator không đơn giản là thay một công cụ build. Đó còn là quá trình bảo toàn cấu trúc nội dung, đường dẫn, SEO và t…",
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
+      "articleHash": "d0ee671f00431d4f6ae59f318e93dbf800be4f1eb8a4293c83af1366e4a1ef12",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:27:04.117Z"
+      "updatedAt": "2026-10-23T01:58:34.515Z"
     },
     {
       "id": "72d7e0785c689ca033fcf115",
@@ -108,11 +108,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
       "sourceContext": "… xác nhận dữ liệu và metadata được rollback cùng nhau. Kết quả tại thời điểm chốt hotfix: 105 bài kiểm thử đạt, lint đạt và production build thành công. Con số 105 là tổng của bộ kiểm thử chạy trong phiên đó, bao gồm cả …",
-      "articleHash": "db5e490745fa6cd48ed4c8031e59c3cfd40f542ce3e152a9e39e066829337ec1",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T23:32:59.704Z"
+      "updatedAt": "2026-10-23T01:58:34.516Z"
     },
     {
       "id": "d79a6553f65e5d84c49becc4",
@@ -122,11 +122,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
       "sourceContext": "…g tháng của Blogmoi từng hiển thị một tổ hợp thông báo rất khó hiểu: đã kết nối tài khoản GitHub, không có giao dịch chờ, có thời điểm đồng bộ thành công gần nhất, nhưng đồng thời lại báo không thể mở kho d…",
-      "articleHash": "db5e490745fa6cd48ed4c8031e59c3cfd40f542ce3e152a9e39e066829337ec1",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T23:32:59.705Z"
+      "updatedAt": "2026-10-23T01:58:34.516Z"
     },
     {
       "id": "69808c67c80c383c175fd1ee",
@@ -136,11 +136,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
       "sourceContext": "…m rộng hơn việc thêm một dòng khai báo. Phải tìm ra vì sao lỗi giao diện bị báo thành lỗi IndexedDB, và vì sao một lần ghi GitHub có thể thành công nhưng cả quy trình vẫn bị trình bày như thất bại. Biến có tồn…",
-      "articleHash": "db5e490745fa6cd48ed4c8031e59c3cfd40f542ce3e152a9e39e066829337ec1",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T23:32:59.705Z"
+      "updatedAt": "2026-10-23T01:58:34.516Z"
     },
     {
       "id": "14c17fe306a175c3c33196ca",
@@ -150,11 +150,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
       "sourceContext": "…g thao tác mở IndexedDB đã thất bại. Đây là phần gây hiểu nhầm đáng kể của sự cố. Một lỗi JavaScript có địa chỉ tương đối rõ đã bị chuyển thành tín hiệu chẩn đoán sai tầng. Bản sửa phân biệt lỗi lưu trữ với lỗi…",
-      "articleHash": "db5e490745fa6cd48ed4c8031e59c3cfd40f542ce3e152a9e39e066829337ec1",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T23:32:59.705Z"
+      "updatedAt": "2026-10-23T01:58:34.516Z"
     },
     {
       "id": "659e87e265b257e0df7cb5c9",
@@ -164,11 +164,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "… muốn Blogmoi hoạt động như một thư viện nội dung có đường nối. Người đọc đang xem bài về Eleventy có thể muốn tìm hiểu thêm về static site generator; người đang đọc về font tiếng Việt có thể muốn biết cách k…",
-      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
+      "articleHash": "9e74087ecc0b3e20f8ef0b044e2cb3958b02e1ac321fadaa6c9070768c2b0804",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.976Z"
+      "updatedAt": "2026-10-23T01:58:34.521Z"
     },
     {
       "id": "2c787d85e95d1c49b73c3b46",
@@ -178,11 +178,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "…uất chưa xuất bản, không có URL. Đây có phải AI không? Không. Topic Discovery hiện tại là JavaScript chạy trong Eleventy, dựa trên điều kiện chuỗi và metadata do người viết/biên tập cung cấp. Không có LLM class…",
-      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
+      "articleHash": "9e74087ecc0b3e20f8ef0b044e2cb3958b02e1ac321fadaa6c9070768c2b0804",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.976Z"
+      "updatedAt": "2026-10-23T01:58:34.521Z"
     },
     {
       "id": "4af1f359eeb20671c1b26bd3",
@@ -192,11 +192,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "…ện nội dung có đường nối. Người đọc đang xem bài về Eleventy có thể muốn tìm hiểu thêm về static site generator; người đang đọc về font tiếng Việt có thể muốn biết cách kiểm tra subset hoặc đo layout shift. Với tôi, đó là…",
-      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
+      "articleHash": "9e74087ecc0b3e20f8ef0b044e2cb3958b02e1ac321fadaa6c9070768c2b0804",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.976Z"
+      "updatedAt": "2026-10-23T01:58:34.521Z"
     },
     {
       "id": "04b9c93e117b825d568e83b2",
@@ -206,11 +206,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "sourceContext": "…t taxonomy category lấy từ front matter, một bộ Related Posts theo category, và một luồng Topic Discovery dựa trên backlog do biên tập viên chuẩn bị. Chúng cùng giúp khám phá nội dung, nhưng không dùng chung một thu…",
-      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
+      "articleHash": "9e74087ecc0b3e20f8ef0b044e2cb3958b02e1ac321fadaa6c9070768c2b0804",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.976Z"
+      "updatedAt": "2026-10-23T01:58:34.521Z"
     },
     {
       "id": "3f629d12e76e92689ddb6ce2",
@@ -220,11 +220,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…m cân nhắc IPO tại Mỹ sớm nhất vào năm tới, tức năm 2027, với mức định giá có thể lên tới 150 tỷ USD. Đây là khả năng được đề cập trong các thông tin trước đó, không phải mức định giá đã được xác lập qua một đợ…",
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.977Z"
+      "updatedAt": "2026-10-23T01:58:34.521Z"
     },
     {
       "id": "41ca9b8a0c36ffd534575cd4",
@@ -234,11 +234,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…c đưa ra sau khi đánh giá biến động trên thị trường vốn và diễn biến gần đây của cổ phiếu bán dẫn. Thông tin được The Korea Times đăng trong bài của Kang Seung-woo. SK hynix cho biết hoạt động kinh doanh của…",
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.977Z"
+      "updatedAt": "2026-10-23T01:58:34.522Z"
     },
     {
       "id": "abb5f91c08d840686185ddea",
@@ -248,11 +248,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…uản lý khi công ty con có thể niêm yết ở nước ngoài trong lúc công ty mẹ vẫn niêm yết tại Hàn Quốc. Theo The Korea Times, giữa những tranh luận quanh khả năng niêm yết này, giới chức tài chính đã cảnh báo phư…",
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.977Z"
+      "updatedAt": "2026-10-23T01:58:34.522Z"
     },
     {
       "id": "235f5191f368447974a92a0d",
@@ -262,11 +262,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "…huyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng. Theo thông báo của SK hynix ngày 23-10, quyết định được đưa ra sa…",
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.977Z"
+      "updatedAt": "2026-10-23T01:58:34.522Z"
     },
     {
       "id": "36c52206464e06cc8444c7cb",
@@ -276,11 +276,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng. Theo thông …",
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.977Z"
+      "updatedAt": "2026-10-23T01:58:34.521Z"
     },
     {
       "id": "83fe2133ddfbc1ee89e3e6b1",
@@ -290,11 +290,11 @@
       "field": "Kinh doanh",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "sourceContext": "Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO v…",
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-23T01:30:49.977Z"
+      "updatedAt": "2026-10-23T01:58:34.522Z"
     },
     {
       "id": "32f4bc569b8c4fe88b2a3971",
@@ -304,11 +304,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…ework. Site nhỏ không có UI phức tạp có thể không cần toàn bộ hệ sinh thái này. Eleventy (11ty): lắp ghép theo cách của dự án Eleventy chạy trên Node.js và cho phép phối hợp nhiều template engine. Dự án c…",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "8a2cb85eb95d934fa55dce5b",
@@ -318,11 +318,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…. Do đó, hãy chọn theo cách site vận hành và phát triển, không chỉ theo công cụ tạo HTML. Astro: nội dung tĩnh, tương tác theo từng đảo Astro hướng đến website nhiều nội dung như blog, marketing và tài liệ…",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "667b07de19bb9ca99e96e3ce",
@@ -332,11 +332,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…nhiều framework. Site nhỏ không có UI phức tạp có thể không cần toàn bộ hệ sinh thái này. Eleventy (11ty): lắp ghép theo cách của dự án Eleventy chạy trên Node.js và cho phép phối hợp nhiều template engine. D…",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "b2f743edda53910dcf751ee6",
@@ -346,11 +346,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…n quan trọng. CMS cũng là lớp riêng: SSG tạo site, CMS hỗ trợ biên tập. Công cụ bổ trợ và Git-based CMS SSG có thể ghép với công cụ khác. Pagefind đọc HTML sau build và tạo chỉ mục tìm kiếm tĩnh; không cần search …",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "b4df5af4c32ecd28ca436e6c",
@@ -360,11 +360,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…moi/. Repo chưa có CMS hay database; cấu trúc này giúp tôi kiểm soát markup và giao diện. Hugo: build nhanh cho site nhiều trang Hugo viết bằng Go, dùng Go templates và được biết đến nhờ build nhanh. Layo…",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "7e3090f01076ffd9015cde72",
@@ -374,11 +374,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…theo từng đảo Astro hướng đến website nhiều nội dung như blog, marketing và tài liệu. Với Islands Architecture, phần lớn trang được tạo thành HTML; chỉ vùng cần tương tác mới tải JavaScript riêng. Astro component mặc địn…",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "212294b54793cfaf73894c4c",
@@ -388,11 +388,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…ó thể là phần cần duy trì thêm; với ứng dụng Svelte sẵn có, sự thống nhất này lại có ích. Next.js: hệ sinh thái React và nhiều chế độ render Next.js là framework React có thể tạo trang tĩnh hoặc render trên …",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.525Z"
     },
     {
       "id": "a6788feddaa812fe4950526f",
@@ -402,11 +402,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…tĩnh hay framework ứng dụng nhiều tương tác hơn. Bài viết tham khảo chính là The top five static site generators for 2025 của David Large, do CloudCannon đăng ngày 5-12-2024 và cập nhật ngày 12-10-2026. Tôi diễn giải lại …",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "9c085a4d83e6474b1dbbaa10",
@@ -416,11 +416,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "sourceContext": "…gmoi chưa benchmark Hugo với Eleventy nên không thể tuyên bố công cụ nào nhanh hơn ở đây. SvelteKit: khi site tiến gần ứng dụng SvelteKit là framework ứng dụng Svelte, dùng Vite và hỗ trợ routing, tải dữ liệu,…",
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.535Z"
+      "updatedAt": "2026-10-23T01:58:34.524Z"
     },
     {
       "id": "b8e6965a48c9338ebeb1d0a5",
@@ -430,11 +430,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "sourceContext": "…ht, line-height, cỡ chữ và breakpoint thay vì dựa vào kiểu mặc định của trình duyệt. Chọn Be Vietnam Pro, cân nhắc Inter và IBM Plex Sans Be Vietnam Pro được chọn vì đây là sans-serif có mục tiêu sử dụng tiếng Việt…",
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.538Z"
+      "updatedAt": "2026-10-23T01:58:34.527Z"
     },
     {
       "id": "10d88ae364b9624100735ec0",
@@ -444,11 +444,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "sourceContext": "…chính, teal tạo điểm nhấn, còn các tiêu đề và điều hướng dùng trọng lượng đậm. Typography.css áp dụng cùng họ sans-serif cho body, heading, logo và card, thay cho cách tách serif hệ thống cho tiêu đề như…",
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.538Z"
+      "updatedAt": "2026-10-23T01:58:34.527Z"
     },
     {
       "id": "7222bd90c0a98f7b78a8fe49",
@@ -458,11 +458,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "sourceContext": "…y lần theo quyết định của Blogmoi từ font stack và WOFF2 đến cách stylesheet được đưa qua Eleventy. Các cấu hình dưới đây được đọc trực tiếp từ mã nguồn; hiệu năng và tính dễ đọc không được mô tả như kết quả …",
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.538Z"
+      "updatedAt": "2026-10-23T01:58:34.527Z"
     },
     {
       "id": "337be84f8f54f3db9f0d29ac",
@@ -472,11 +472,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "sourceContext": "…int thay vì dựa vào kiểu mặc định của trình duyệt. Chọn Be Vietnam Pro, cân nhắc Inter và IBM Plex Sans Be Vietnam Pro được chọn vì đây là sans-serif có mục tiêu sử dụng tiếng Việt rõ ràng. Metadata của dự án tron…",
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.537Z"
+      "updatedAt": "2026-10-23T01:58:34.527Z"
     },
     {
       "id": "c32215216d409c04566dd7be",
@@ -486,11 +486,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "sourceContext": "…à breakpoint thay vì dựa vào kiểu mặc định của trình duyệt. Chọn Be Vietnam Pro, cân nhắc Inter và IBM Plex Sans Be Vietnam Pro được chọn vì đây là sans-serif có mục tiêu sử dụng tiếng Việt rõ ràng. Metada…",
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.537Z"
+      "updatedAt": "2026-10-23T01:58:34.527Z"
     },
     {
       "id": "4932a3653626cbf3306db853",
@@ -500,11 +500,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "sourceContext": "Typography là một phần của trải nghiệm đọc kỹ thuật. Một font cần phân biệt tốt chữ cái gần nhau, giữ dấu tiếng Việt rõ …",
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:06:15.534Z"
+      "updatedAt": "2026-10-23T01:58:34.527Z"
     },
     {
       "id": "1cb2c10d9aed28e4973a2b77",
@@ -514,11 +514,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "… gặp - Phase 2: Visual CMS - Câu hỏi thường gặp Eleventy và cách tạo trang tĩnh Eleventy (11ty) là SSG (Static Site Generator), công cụ đọc nội dung và template lúc build rồi xuất HTML, CSS, JavaScript cù…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.541Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "85d51c0078150b8566818833",
@@ -528,11 +528,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…cung cấp tên, mô tả, origin, ngôn ngữ và prefix toàn site. Eleventy hợp nhất dữ liệu theo data cascade (thứ tự ưu tiên): computed data và front matter có thể ghi đè giá trị mặc định cấp thư mục hoặc toàn site. el…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.540Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "a7031b609f3516d22d1ab4ef",
@@ -542,11 +542,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…dung mà không cần máy chủ ứng dụng hay cơ sở dữ liệu. Blogmoi lưu bài bằng Markdown, dùng Eleventy tạo HTML rồi để GitHub Pages phân phối tệp. Hướng dẫn này giải thích cách hệ thống hiện tại hoạt động và cách…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.541Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "202a2607ef52f358b6f06b9f",
@@ -556,11 +556,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…Lỗi thường gặp - Phase 2: Visual CMS - Câu hỏi thường gặp Eleventy và cách tạo trang tĩnh Eleventy (11ty) là SSG (Static Site Generator), công cụ đọc nội dung và template lúc build rồi xuất HTML, CSS, JavaScript cùn…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.540Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "9295d92cc94b2356f89a664b",
@@ -570,11 +570,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…à partials/article-card.njk. Nunjucks cung cấp vòng lặp và điều kiện để tránh lặp markup. Filter biến đổi dữ liệu trong template. Repo định nghĩa dateReadable, readingTime, relatedPosts, searchData, xmlEsca…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.540Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "f74d5e0eb4b18d977dc98e15",
@@ -584,11 +584,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "… ứng dụng hay cơ sở dữ liệu. Blogmoi lưu bài bằng Markdown, dùng Eleventy tạo HTML rồi để GitHub Pages phân phối tệp. Hướng dẫn này giải thích cách hệ thống hiện tại hoạt động và cách bảo trì. Phạm vi: Các phiên …",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.541Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "f2e9c69077b1629970f5e805",
@@ -598,11 +598,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…e; khi thêm package, cập nhật cả manifest lẫn lockfile. Cấu trúc thư mục src/ là đầu vào. includes/ chứa layout và partial dùng lại; static/ được sao chép nguyên trạng. site/ là đầu ra tạo lại được, không sử…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.540Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "9b7e09a4b3572d3cd4d7cf79",
@@ -612,11 +612,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…G (Static Site Generator), công cụ đọc nội dung và template lúc build rồi xuất HTML, CSS, JavaScript cùng dữ liệu tĩnh. Trình duyệt nhận các tệp đã tạo, không cần máy chủ dựng lại từng trang cho mỗi lượt đọc. Ở…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.541Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "690abfa8aa6de9b1672e6842",
@@ -626,11 +626,11 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…để khai báo tiêu đề, slug, ngày và metadata. Eleventy chuyển nội dung thành HTML, đưa qua layout Nunjucks rồi ghi vào site/; người đọc không cần Eleventy để xem trang. Vì sao Blogmoi dùng Eleventy thay Hugo…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.540Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     },
     {
       "id": "8a60e452374788ffb65f5143",
@@ -640,23 +640,23 @@
       "field": "Công nghệ",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "sourceContext": "…: Visual CMS - Câu hỏi thường gặp Eleventy và cách tạo trang tĩnh Eleventy (11ty) là SSG (Static Site Generator), công cụ đọc nội dung và template lúc build rồi xuất HTML, CSS, JavaScript cùng dữ liệu tĩnh. Trình duyệt nh…",
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "status": "extracted",
       "translationDraft": null,
       "translationError": null,
-      "updatedAt": "2026-10-22T17:05:43.541Z"
+      "updatedAt": "2026-10-23T01:58:34.530Z"
     }
   ],
   "articleCache": {
     "posts/benchmark-eleventy-hugo-astro-cung-bo-noi-dung.md": {
       "extractorVersion": 2,
-      "articleHash": "c9f5b820127e934a33e56a1cf0c6e68babd29b93834cd5882bf3b34e97c2edbe",
+      "articleHash": "0d68d4fb211650b086ac4af212ed79620b2ae95af9bcc86890cf6a29c6b95f4f",
       "sourceArticle": "/benchmark-eleventy-hugo-astro-cung-bo-noi-dung/",
       "candidateIds": []
     },
     "posts/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal.md": {
       "extractorVersion": 2,
-      "articleHash": "a5a2517f2446ba571a94b10e3f7dbe656bf6c6130e909ccefeb7d05e224109b1",
+      "articleHash": "f1539937de478b0631b988714997a8fadd587bba6124ea441e8e2d949c91c187",
       "sourceArticle": "/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/",
       "candidateIds": [
         "bc207345431c43dfe3dbe842",
@@ -667,7 +667,7 @@
     },
     "posts/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy.md": {
       "extractorVersion": 2,
-      "articleHash": "b67ed72b664e0dfe675cb992d50f0d092c2b509e5962e1e2a0ce319cd6c21a85",
+      "articleHash": "d0ee671f00431d4f6ae59f318e93dbf800be4f1eb8a4293c83af1366e4a1ef12",
       "sourceArticle": "/chuyen-blog-tu-hugo-sang-eleventy-checklist-url-deploy/",
       "candidateIds": [
         "835229d8e5f03d7a44a23288",
@@ -677,7 +677,7 @@
     },
     "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md": {
       "extractorVersion": 2,
-      "articleHash": "db5e490745fa6cd48ed4c8031e59c3cfd40f542ce3e152a9e39e066829337ec1",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
       "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
       "candidateIds": [
         "72d7e0785c689ca033fcf115",
@@ -688,7 +688,7 @@
     },
     "posts/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai.md": {
       "extractorVersion": 2,
-      "articleHash": "235a0f854eb3a68d83f6f72ee91486cd2d40463113ae169364faaec811656f8b",
+      "articleHash": "9e74087ecc0b3e20f8ef0b044e2cb3958b02e1ac321fadaa6c9070768c2b0804",
       "sourceArticle": "/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/",
       "candidateIds": [
         "659e87e265b257e0df7cb5c9",
@@ -699,7 +699,7 @@
     },
     "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md": {
       "extractorVersion": 2,
-      "articleHash": "e81e6a7405c1ff09a79051b638241819099da933dffccbdf99abc3ff713a09e4",
+      "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
       "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
       "candidateIds": [
         "3f629d12e76e92689ddb6ce2",
@@ -712,7 +712,7 @@
     },
     "posts/top-5-cong-nghe-tao-website-tinh-2026.md": {
       "extractorVersion": 2,
-      "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
+      "articleHash": "0dc0d7f053b8d043ce53d0db642f82ffb1973738c37bc9680d70267563eb0ebb",
       "sourceArticle": "/top-5-cong-nghe-tao-website-tinh-2026/",
       "candidateIds": [
         "7e3090f01076ffd9015cde72",
@@ -728,7 +728,7 @@
     },
     "posts/vi-sao-blogmoi-chon-be-vietnam-pro.md": {
       "extractorVersion": 2,
-      "articleHash": "668a2eeab83f547bd2668b11416073b0b1fcb38ecb7c6fa76807c7b80975eabe",
+      "articleHash": "dd0d2ed7700cb1938a74bc393587b38041308717c41aaf21c6835c597ed1511a",
       "sourceArticle": "/vi-sao-blogmoi-chon-be-vietnam-pro/",
       "candidateIds": [
         "c32215216d409c04566dd7be",
@@ -741,7 +741,7 @@
     },
     "posts/xay-dung-blog-tinh-voi-eleventy-11ty.md": {
       "extractorVersion": 2,
-      "articleHash": "f8ae1cafcf33b07d3f6a5605b6fc853892888bf8c1d83d12fba8bbd46151c4fc",
+      "articleHash": "e07b4dd665c649f42c8c5dc5f49f3ae5749289b6c2754a5511bd93d90e8c4ea1",
       "sourceArticle": "/xay-dung-blog-tinh-voi-eleventy-11ty/",
       "candidateIds": [
         "202a2607ef52f358b6f06b9f",
@@ -760,11 +760,11 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-23T01:46:18.919Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39885850885",
+    "recordedAt": "2026-10-23T01:58:34.535Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39886982108",
     "articlesDiscovered": 9,
-    "articlesProcessed": 0,
-    "articlesSkippedValidCache": 9,
+    "articlesProcessed": 9,
+    "articlesSkippedValidCache": 0,
     "candidatesExtracted": 46,
     "newlyExtracted": 0,
     "awaitingManualTranslation": 46,
