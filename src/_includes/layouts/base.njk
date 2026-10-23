@@ -12,6 +12,7 @@
   {% if type == 'article' %}<link rel="stylesheet" href="{{ '/css/article.css' | url }}">{% endif %}
   <link rel="stylesheet" href="{{ '/css/reading-navigation.css' | url }}">
   {% if page.url == '/tu-dien-vi-kr/' %}<link rel="stylesheet" href="{{ '/css/dictionary.css' | url }}">{% endif %}
+  {% if page.url == '/yy-info/' %}<link rel="stylesheet" href="{{ '/css/yy-info.css' | url }}">{% endif %}
   {% if page.url == '/chi-phi-hang-thang/' %}<link rel="stylesheet" href="{{ '/css/expense-tracker.css' | url }}">{% endif %}
   <title>{{ title }}{% if title != site.title %} · {{ site.title }}{% else %} — Góc nhìn rõ ràng{% endif %}</title>
 </head>
@@ -21,6 +22,7 @@
   {% include "partials/footer.njk" %}
   {% include "components/reading-navigation.njk" %}
   <script src="{{ '/js/site.js' | url }}" defer></script>
+  {% if page.url == '/yy-info/' %}<script type="module" src="{{ '/js/yy-info.js' | url }}"></script>{% endif %}
   <script src="{{ '/js/reading-navigation.js' | url }}" defer></script>
   {% if page.url == '/tu-dien-vi-kr/' %}<script src="{{ '/js/dictionary.js' | url }}" type="module"></script>{% endif %}
   {% if page.url == '/search/' %}<script src="{{ '/js/search.js' | url }}" defer></script>{% endif %}

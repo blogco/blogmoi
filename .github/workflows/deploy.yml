@@ -12,8 +12,13 @@ on:
   schedule:
     # 00:00 UTC = 07:00 Asia/Bangkok (GMT+7); GitHub may delay runs.
     - cron: "0 0 * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
+      refresh_yy_info:
+        description: Refresh YY info public data
+        type: boolean
+        default: false
       news_source_url:
         description: Optional Korea Times Companies article URL to summarize and publish
         type: string
@@ -56,26 +61,26 @@ jobs:
         run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Set up Python for local news models
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
       - name: Restore local news model cache
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
           key: news-cpu-models-v1-${{ runner.os }}-${{ hashFiles('scripts/news/requirements.txt', 'scripts/news/local_brief.py') }}
 
       - name: Install CPU news model dependencies
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
         run: |
           python -m pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -r scripts/news/requirements.txt
 
       - name: Generate one Vietnamese Companies brief locally
-        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
         env:
           NEWS_SOURCE_URL: ${{ inputs.news_source_url || '' }}
           HF_HUB_DISABLE_TELEMETRY: '1'
@@ -83,17 +88,22 @@ jobs:
           TOKENIZERS_PARALLELISM: 'false'
         run: node scripts/publish-scheduled-news.mjs
 
+      - name: Refresh YY info public feeds
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh_yy_info)
+        run: node --use-env-proxy scripts/refresh-yy-info.mjs
+
       - name: Import translations confirmed in the dictionary page
         id: import
         if: github.event_name == 'workflow_dispatch' && inputs.dictionary_payload != ''
         run: npm run dictionary:import
 
       - name: Extract vocabulary from published articles
+        if: github.event.schedule != '*/30 * * * *'
         id: extract
         run: npm run dictionary:sync
 
       - name: Save private review queue artifact
-        if: always()
+        if: always() && github.event.schedule != '*/30 * * * *'
         uses: actions/upload-artifact@v4
         with:
           name: dictionary-review-queue
@@ -114,7 +124,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- data/dictionary/pending.json src/_data/dictionary-data.json data/editorial-topic-suggestions.json
+          git add -- data/dictionary/pending.json src/_data/dictionary-data.json data/editorial-topic-suggestions.json static/data/yy-info.json
           find src/posts -maxdepth 1 -name 'koreatimes-*.md' -type f -print0 | xargs -0 -r git add --
           if git diff --cached --quiet; then
             echo "Content is already current."
@@ -136,7 +146,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Report dictionary and deployment results
-        if: always()
+        if: always() && github.event.schedule != '*/30 * * * *'
         env:
           EXTRACT_OUTCOME: ${{ steps.extract.outcome || 'skipped' }}
           IMPORT_OUTCOME: ${{ steps.import.outcome || 'skipped' }}
