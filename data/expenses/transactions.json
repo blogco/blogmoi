@@ -16,6 +16,20 @@
       "updatedAt": "2026-10-23T01:06:53.016Z"
     },
     {
+      "id": "8fd29bf6-8b7b-40a1-8b79-4b22f491858d",
+      "merchant": "Starbucks",
+      "itemName": "Trà bưởi không đường",
+      "amount": 82000,
+      "date": "2026-10-13",
+      "taste": "Không đường",
+      "category": "Đồ uống",
+      "iconId": "tea",
+      "iconManuallySet": true,
+      "notes": "Starbucks Nguyen Van Troi",
+      "createdAt": "2026-10-23T03:16:54.426Z",
+      "updatedAt": "2026-10-23T03:16:54.426Z"
+    },
+    {
       "id": "b752b4de-44a2-4d42-9d32-0ca380b2d38a",
       "merchant": "Minh Tuấn 5",
       "itemName": "Hủ tíu thịt nạc heo",
