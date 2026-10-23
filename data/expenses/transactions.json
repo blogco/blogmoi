@@ -16,6 +16,20 @@
       "updatedAt": "2026-10-23T01:06:53.016Z"
     },
     {
+      "id": "4fd4f614-0bc4-4780-abbe-8c841d763a6e",
+      "merchant": "Viettel",
+      "itemName": "Zalopay 5G gói 36K",
+      "amount": 36000,
+      "date": "2026-10-23",
+      "taste": "gói Data lẻ",
+      "category": "Khác",
+      "iconId": "other",
+      "iconManuallySet": false,
+      "notes": "gói Data lẻ",
+      "createdAt": "2026-10-23T08:45:35.175Z",
+      "updatedAt": "2026-10-23T08:45:35.175Z"
+    },
+    {
       "id": "8fd29bf6-8b7b-40a1-8b79-4b22f491858d",
       "merchant": "Starbucks",
       "itemName": "Trà bưởi không đường",
