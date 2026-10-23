@@ -22,6 +22,12 @@ sourcePublicationDate: "2026-10-23T08:04:00+09:00"
 scheduledNewsDate: "2026-10-23"
 editorialNote: "Bài tiếng Việt được biên tập từ toàn bộ nội dung bài nguồn do người dùng cung cấp. Bài gốc của Kang Seung-woo đăng lúc 08:04 và cập nhật lúc 09:05 ngày 23-10-2026, giờ Hàn Quốc."
 copyrightNotice: "Bài nguồn thuộc The Korea Times và các chủ thể được ghi trong bài gốc. Blogmoi dẫn nguồn và không sử dụng lại ảnh Yonhap."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=1440&q=80
+coverAlt: Cặp kính đặt trước màn hình làm việc.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 **Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng.** Theo thông báo của SK hynix ngày 23-10, quyết định được đưa ra sau khi đánh giá biến động trên thị trường vốn và diễn biến gần đây của cổ phiếu bán dẫn.

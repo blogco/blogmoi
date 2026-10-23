@@ -47,6 +47,12 @@ sourcePublisher: "Tài liệu chính thức của Eleventy, Hugo, GitHub Pages, 
 copyrightHolder: "Blogmoi"
 editorialNote: "Lịch sử Git ghi nhận Blogmoi thay cấu hình và template Hugo bằng Eleventy ngày 22-10-2026. Điều đó xác nhận thay đổi mã nguồn, nhưng không chứng minh production cutover không gián đoạn hoặc kết quả kiểm thử sau deploy. Checklist dưới đây là hướng dẫn thực hành, không phải báo cáo kiểm thử migration."
 copyrightNotice: "Ví dụ và checklist mang tính hướng dẫn; hãy đối chiếu permalink, đường dẫn và workflow với repository thực tế trước khi triển khai."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1440&q=80
+coverAlt: Máy tính hiển thị mã lập trình trên bàn làm việc.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 *Chuyển đổi Static Site Generator không đơn giản là thay một công cụ build. Đó còn là quá trình bảo toàn cấu trúc nội dung, đường dẫn, SEO và trải nghiệm của người đọc.*

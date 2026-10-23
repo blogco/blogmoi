@@ -20,6 +20,12 @@ tags:
   - GitHub Pages
   - Blogmoi
 featured: true
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1440&q=80
+coverAlt: Một nhóm làm việc cùng máy tính quanh bàn.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 Blog tĩnh có thể phục vụ nội dung mà không cần máy chủ ứng dụng hay cơ sở dữ liệu. Blogmoi lưu bài bằng Markdown, dùng Eleventy tạo HTML rồi để GitHub Pages phân phối tệp. Hướng dẫn này giải thích cách hệ thống hiện tại hoạt động và cách bảo trì.

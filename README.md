@@ -34,6 +34,10 @@ lặp lại bài trong cùng mục và không lấy bài nháp. Đây là quy t�
 ## Ảnh bài viết
 
 Ảnh đầu tiên luôn là ảnh bìa Unsplash, kể cả bài từ CMS, agent hoặc lịch tự động.
-Nếu chưa chọn ảnh, hệ thống gán một ảnh minh họa từ bộ ảnh Unsplash theo slug;
-ảnh giữ ổn định qua các lần build. CMS cho phép đổi ảnh bằng Random. Từ ảnh thứ
+Mỗi bài dùng một mã ảnh Unsplash riêng, không trùng bài khác dù URL đổi kích
+thước. Các bài hiện có đã lưu ảnh vào front matter; bài mới được gán ảnh chưa
+dùng trong bộ ảnh Unsplash. CMS cho phép đổi ảnh bằng Random. Từ ảnh thứ
 hai, người dùng có thể tải ảnh lên trong nội dung. Xem [hướng dẫn CMS](docs/visual-cms.md).
+
+Bộ ảnh mặc định có hạn: khi hết ảnh chưa dùng, hệ thống yêu cầu bổ sung ảnh hoặc
+chọn ảnh Unsplash mới, không tự tái sử dụng thumbnail của bài khác.

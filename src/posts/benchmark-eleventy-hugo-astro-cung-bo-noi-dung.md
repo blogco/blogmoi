@@ -42,6 +42,12 @@ sourceUrl: "https://www.11ty.dev/docs/"
 copyrightHolder: "Blogmoi"
 editorialNote: "Kết quả được đo tuần tự trên một máy vào ngày 22-10-2026 UTC. Đây là benchmark tổng hợp của fixture Blogmoi, không phải số liệu chính thức do các framework công bố. Phiên bản runtime, mẫu chạy, cách tính và giới hạn được lưu trong thư mục benchmarks."
 copyrightNotice: "Bộ dữ liệu là nội dung tổng hợp xác định được tạo riêng cho phép thử; bài viết, biểu đồ và phép đo do Blogmoi biên soạn. Có thể tái chạy theo hướng dẫn trong repository."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1440&q=80
+coverAlt: Cận cảnh linh kiện trên một bảng mạch điện tử.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 Sau khi chọn Eleventy cho Blogmoi, tôi từng mô tả Hugo là công cụ nổi tiếng về tốc độ build. Nhưng nếu chưa chạy cùng nội dung trên cùng một máy, đó mới chỉ là nhận định phổ biến chứ chưa phải dữ liệu của dự án. Tôi muốn thay câu “công cụ nào nhanh hơn?” bằng một phép đo có thể lặp lại, có raw data và có giới hạn được nói rõ.

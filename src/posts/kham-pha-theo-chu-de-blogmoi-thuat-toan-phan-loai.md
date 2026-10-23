@@ -43,6 +43,12 @@ sourceUrl: "https://github.com/blogco/blogmoi/blob/main/lib/editorial-topic-disc
 copyrightHolder: "Blogmoi"
 editorialNote: "Bài viết đối chiếu mã nguồn Eleventy, template và backlog của Blogmoi tại ngày 23-10-2026. Ví dụ truy vết dùng metadata của bài Be Vietnam Pro hiện có; kết quả được giải thích theo các hàm đang chạy, không phải suy đoán từ giao diện."
 copyrightNotice: "Các đoạn mã được trích hoặc rút gọn từ repository Blogmoi để giải thích cách triển khai; chúng không mô tả một dịch vụ AI hay cơ sở dữ liệu không tồn tại trong source."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1440&q=80
+coverAlt: Màn hình hiển thị nhiều biểu đồ dữ liệu.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 **Series:** Behind the Build — Hậu trường xây dựng Blogmoi

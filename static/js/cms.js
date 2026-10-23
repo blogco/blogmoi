@@ -1,4 +1,4 @@
-import { resolveArticleCover, isUnsplashCover } from "./article-cover.js";
+import { resolveArticleCover, isUnsplashCover, assignArticleCovers, articleCoverKey, coverIdentity } from "./article-cover.js";
 import { unsplashProxyUrl } from "./cms-config.js";
 import {
   articleWordCount,
@@ -304,7 +304,14 @@ function currentMetadata() {
   if (metadata.cover !== (state.article?.metadata?.cover || "")) delete metadata.coverAttribution;
   if (metadata.seoTitle === metadata.title) delete metadata.seoTitle;
   if (metadata.seoDescription === metadata.description) delete metadata.seoDescription;
-  return Object.assign(metadata, resolveArticleCover(metadata));
+  delete metadata.coverAllocationError;
+  try {
+    const others = state.posts.filter(post => post.path !== state.article?.path && articleCoverKey(post.metadata) !== articleCoverKey(metadata)).map(post => post.metadata);
+    const used = new Set([...assignArticleCovers(others).values()].map(cover => coverIdentity(cover.cover)));
+    return Object.assign(metadata, resolveArticleCover(metadata, used));
+  } catch (error) {
+    return Object.assign(metadata, { cover: "", coverAlt: "", coverAllocationError: error.message });
+  }
 }
 
 function markModified() {
@@ -386,7 +393,7 @@ function updateCover() {
     source.textContent = "Unsplash";
     line.append(photographer, document.createTextNode(" on "), source);
   }
-  root.querySelector("[data-cover-state]").textContent = state.pendingUpload ? "Upload ready to commit" : fieldMap.get("cover").value.trim() ? "Current cover" : "Automatic Unsplash illustration";
+  root.querySelector("[data-cover-state]").textContent = metadata.coverAllocationError || (state.pendingUpload ? "Upload ready to commit" : fieldMap.get("cover").value.trim() ? "Current cover" : "Automatic Unsplash illustration");
 }
 
 function clearPendingUpload() {
@@ -690,6 +697,7 @@ function validForPublish(article) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(metadata.slug || "")) errors.push("Use a lowercase kebab case slug.");
   if (!metadata.description?.trim()) errors.push("Add a description.");
   if (!metadata.date || Number.isNaN(Date.parse(metadata.date))) errors.push("Add a valid date.");
+  if (metadata.coverAllocationError) errors.push(metadata.coverAllocationError);
   if (!isUnsplashCover(metadata.cover)) errors.push("Choose an Unsplash cover for the first image.");
   if ((state.article.missingUploadUrls || []).some(url => body.includes(url))) errors.push("Recovered image files are missing. Remove those images and upload them again before publishing.");
   if (metadata.cover && !metadata.coverAlt?.trim()) errors.push("Add descriptive cover alt text.");
@@ -853,8 +861,11 @@ function selectPhoto(photo) {
 
 function renderPhotos(photos) {
   const grid = root.querySelector("[data-photo-grid]"); grid.replaceChildren();
+  const used = reservedCmsPhotos();
   for (const photo of photos) {
     const button = document.createElement("button"); button.type = "button"; button.className = "cms-photo-option"; button.dataset.photoId = photo.id; button.setAttribute("aria-label", `Select photo by ${photo.user.name}`); button.setAttribute("aria-pressed", "false");
+    button.disabled = used.has(coverIdentity(photo.urls.regular));
+    if (button.disabled) button.title = "Ảnh đã được dùng cho bài khác";
     const image = document.createElement("img"); image.src = photo.urls.small; image.alt = photo.alt_description || photo.description || "Unsplash photo"; image.loading = "lazy"; button.append(image);
     button.addEventListener("click", () => selectPhoto(photo)); grid.append(button);
   }
@@ -909,8 +920,11 @@ async function randomUnsplash() {
   if (!unsplashProxyUrl) {
     if (!state.article) return;
     const current = currentMetadata().cover;
+    const used = reservedCmsPhotos();
+    used.add(coverIdentity(current));
     let next;
-    do { next = resolveArticleCover({ slug: crypto.randomUUID() }); } while (next.cover === current);
+    try { next = resolveArticleCover({ slug: crypto.randomUUID() }, used); }
+    catch (error) { status(root.querySelector("[data-unsplash-status]"), error.message, "error"); return; }
     Object.assign(state.article.metadata, next);
     fieldMap.get("cover").value = next.cover;
     fieldMap.get("coverAlt").value = next.coverAlt;
@@ -932,7 +946,7 @@ async function randomUnsplash() {
       status(target, "Finding a relevant image…");
       const result = await unsplashRequest(`/api/unsplash/random?query=${encodeURIComponent(query)}&orientation=landscape`);
       const photo = result.photo;
-      if (!state.randomSeen.has(photo?.id)) { state.randomSeen.add(photo.id); renderPhotos([photo]); selectPhoto(photo); status(target, "Random Unsplash result. Review it, then choose Use selected image.", "success"); return; }
+      if (!state.randomSeen.has(photo?.id) && !reservedCmsPhotos().has(coverIdentity(photo?.urls?.regular))) { state.randomSeen.add(photo.id); renderPhotos([photo]); selectPhoto(photo); status(target, "Random Unsplash result. Review it, then choose Use selected image.", "success"); return; }
     } catch (error) { status(target, error.message, "error"); return; }
   }
   status(target, "Unsplash returned the same result repeatedly. Search the topic to see other candidates.", "error");
@@ -948,10 +962,19 @@ function addUnsplashAttribution(metadata, photo) {
   metadata.coverAlt = photo.alt_description || photo.description || metadata.title || "Unsplash photo";
 }
 
+function reservedCmsPhotos() {
+  const articles = state.posts.filter(post => post.path !== state.article?.path).map(post => post.metadata);
+  return new Set([...assignArticleCovers(articles).values()].map(cover => coverIdentity(cover.cover)));
+}
+
 async function useSelectedPhoto() {
   if (!state.selectedPhoto || !state.article) return;
   const photo = state.selectedPhoto;
   const target = root.querySelector("[data-unsplash-status]");
+  if (reservedCmsPhotos().has(coverIdentity(photo.urls.regular))) {
+    status(target, "Ảnh này đã được dùng cho bài khác. Hãy chọn ảnh Unsplash khác.", "error");
+    return;
+  }
   status(target, "Recording Unsplash download event…");
   try {
     await unsplashRequest("/api/unsplash/track", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ download_location: photo.links.download_location }) });

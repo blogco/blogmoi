@@ -30,6 +30,12 @@ faq:
     answer: "Ghi NOT RUN để phân biệt rõ việc chưa kiểm thử với kết quả PASS. Tương tự, nếu chưa có commit thì ghi N/A."
   - question: "Báo cáo này có đảm bảo code không có lỗi không?"
     answer: "Không. Đây là cách ghi nhận minh bạch những gì đã làm và xác minh; bản thân báo cáo không thay thế kiểm thử hay bảo đảm chất lượng mã nguồn."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1440&q=80
+coverAlt: Không gian làm việc chung với máy tính.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 *Không chỉ viết code và thông báo “Done”. Tôi muốn biết chính xác điều gì đã thay đổi, điều gì đã được kiểm thử và phiên bản nào thực sự được đưa lên website.*

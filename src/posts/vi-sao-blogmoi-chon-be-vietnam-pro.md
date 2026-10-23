@@ -41,6 +41,12 @@ faq:
     answer: "Không. swap cho chữ fallback xuất hiện trong lúc font tải rồi đổi sang Be Vietnam Pro. Nếu metrics khác nhau, dòng có thể xuống hàng lại. Repo chưa có đo CLS hoặc font metric overrides để khẳng định layout shift đã được loại bỏ."
   - question: "Bài nào giải thích pipeline Eleventy của Blogmoi?"
     answer: "Xem bài Xây dựng blog tĩnh với Eleventy (11ty): Tech Stack, kiến trúc và hướng dẫn từ A–Z để đọc về Markdown, Nunjucks, thư mục static, _site và GitHub Pages."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1487014679447-9f8336841d58?auto=format&fit=crop&w=1440&q=80
+coverAlt: Máy tính và tài liệu thiết kế trên bàn.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 Typography là một phần của trải nghiệm đọc kỹ thuật. Một font cần phân biệt tốt chữ cái gần nhau, giữ dấu tiếng Việt rõ ở cỡ nhỏ, đồng thời tạo nhịp nhất quán giữa tiêu đề, đoạn văn, metadata và code. Bài này lần theo quyết định của Blogmoi từ font stack và WOFF2 đến cách stylesheet được đưa qua Eleventy. Các cấu hình dưới đây được đọc trực tiếp từ mã nguồn; hiệu năng và tính dễ đọc không được mô tả như kết quả benchmark khi chưa có phép đo.

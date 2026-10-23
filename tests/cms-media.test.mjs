@@ -6,7 +6,7 @@ import { JSDOM } from "jsdom";
 import yaml from "js-yaml";
 import MarkdownIt from "markdown-it";
 import * as core from "../static/js/cms-core.js";
-import { resolveArticleCover, isUnsplashCover } from "../static/js/article-cover.js";
+import { resolveArticleCover, isUnsplashCover, assignArticleCovers, articleCoverKey, coverIdentity } from "../static/js/article-cover.js";
 
 test("CMS keeps first image on Unsplash and commits multiple uploaded body images with the article", async () => {
   const dom = new JSDOM(await readFile("_site/cms/index.html", "utf8"), { url: "https://blogco.github.io/blogmoi/cms/" });
@@ -14,7 +14,7 @@ test("CMS keeps first image on Unsplash and commits multiple uploaded body image
   globalThis.jsyaml = yaml; globalThis.markdownit = MarkdownIt;
   dom.window.prompt = () => "Ảnh do người dùng tải lên";
   dom.window.confirm = () => true;
-  const context = vm.createContext({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, URL, crypto: globalThis.crypto, structuredClone, console, btoa, atob, TextEncoder, TextDecoder, unsplashProxyUrl: "", ...core, resolveArticleCover, isUnsplashCover, createImageBitmap: async () => ({ width: 100, height: 100, close() {} }) });
+  const context = vm.createContext({ window: dom.window, document: dom.window.document, localStorage: dom.window.localStorage, URL, crypto: globalThis.crypto, structuredClone, console, btoa, atob, TextEncoder, TextDecoder, unsplashProxyUrl: "", ...core, resolveArticleCover, isUnsplashCover, assignArticleCovers, articleCoverKey, coverIdentity, createImageBitmap: async () => ({ width: 100, height: 100, close() {} }) });
   const source = (await readFile("static/js/cms.js", "utf8")).replace(/^import[\s\S]*?;\n/gm, "");
   vm.runInContext(source + "\nglobalThis.api = { openEditor, uploadBodyImage, currentArticleForSave, currentBody, currentMetadata, validForPublish, saveRecoveryDraft, publish, state, clearBodyUploads };", context);
   const api = context.api;
@@ -24,7 +24,10 @@ test("CMS keeps first image on Unsplash and commits multiple uploaded body image
     assert.ok(!dom.window.document.querySelector(".cms-cover [data-upload-image]"));
     assert.ok(dom.window.document.querySelector(".cms-toolbar [data-upload-image]"));
     api.openEditor({ metadata: { title: "Kiểm tra ảnh", slug: "kiem-tra-anh", date: "2026-10-23T08:00:00+07:00", description: "Kiểm tra các ảnh nội dung", categories: ["Công nghệ"] }, body: "Nội dung bài viết đủ dài để kiểm tra chức năng xuất bản và tải ảnh." });
+    const initialCover = api.currentMetadata().cover;
+    api.state.posts = [{ path: "src/posts/existing.md", metadata: { slug: "zzz-existing", cover: initialCover + "&w=400" } }];
     const cover = api.currentMetadata().cover;
+    assert.notEqual(coverIdentity(cover), coverIdentity(initialCover));
     await api.uploadBodyImage(new File([new Uint8Array([1, 2, 3])], "first.png", { type: "image/png" }));
     await api.uploadBodyImage(new File([new Uint8Array([4, 5, 6])], "second.webp", { type: "image/webp" }));
     assert.equal(api.state.pendingBodyUploads.length, 2);

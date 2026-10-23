@@ -60,3 +60,20 @@ Local previews use temporary blob URLs; saved Markdown uses public
 `/blogmoi/uploads/` URLs. Image bytes are not persisted in browser local drafts.
 After recovering a draft, remove and re-upload missing pending images before
 publishing; the CMS blocks publishing references to those missing files.
+
+## Unique thumbnails
+
+Each published article owns a different Unsplash photo ID. Resized URLs of the
+same photo count as duplicates. Existing articles have their chosen covers
+stored in front matter. Builds reserve explicit selections first, then allocate
+unused catalog photos to new articles; input order does not change the result.
+CMS search disables photos used by other posts, Random skips them, and selection
+validation rejects duplicates. Scheduled briefs save an unused cover when the
+Markdown file is created. Uploads inside article bodies are unaffected.
+
+The bundled catalog currently contains 16 verified photos. It is finite: if
+there are no unused catalog photos left, publishing/building stops with a clear
+message instead of reusing another article's thumbnail. Add verified photos to
+`UNSPLASH_COVERS` in `static/js/article-cover.js`, or choose a different photo
+through the optional Unsplash API search. The catalog requires no API key;
+full Unsplash search requires the proxy configuration documented above.

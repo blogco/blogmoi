@@ -44,6 +44,12 @@ faq:
     answer: "Không tự động. HTML dựng sẵn giúp crawler đọc nội dung trực tiếp, nhưng thứ hạng còn phụ thuộc chất lượng nội dung, liên kết, khả năng truy cập, tốc độ thực tế và nhiều yếu tố khác."
   - question: "Blogmoi đã có Visual CMS chưa?"
     answer: "Chưa. Blogmoi hiện quản lý bài bằng Markdown trong repository và deploy qua GitHub Actions. Visual CMS là hướng phát triển dự kiến cho giai đoạn sau, không phải tính năng đang chạy."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=1440&q=80
+coverAlt: Đôi tay gõ phím trên máy tính xách tay.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 Năm 2026, tôi muốn Blogmoi có giao diện riêng, nội dung tiếng Việt dễ đọc và quy trình xuất bản gọn. Câu hỏi là nên chọn trình tạo site tĩnh hay framework ứng dụng nhiều tương tác hơn.

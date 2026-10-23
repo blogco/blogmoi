@@ -19,6 +19,12 @@ tags:
   - Testing
   - Blogmoi
 editorialNote: "Bài viết ghi lại hotfix 62732ce ngày 23-10-2026. Kết quả kiểm thử và triển khai có phạm vi cụ thể; phiên đồng bộ có xác thực và IndexedDB thực tế trong trình duyệt người dùng chưa được xác minh."
+coverSource: unsplash
+cover: https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1440&q=80
+coverAlt: Trái Đất về đêm nhìn từ không gian.
+coverCaption: Ảnh minh họa từ Unsplash; không phải ảnh chụp sự kiện trong bài.
+coverAttribution:
+  photoUrl: https://unsplash.com/?utm_source=blogmoi&utm_medium=referral
 ---
 
 Trang [chi phí hàng tháng của Blogmoi](/blogmoi/chi-phi-hang-thang/) từng hiển thị một tổ hợp thông báo rất khó hiểu: đã kết nối tài khoản GitHub, không có giao dịch chờ, có thời điểm đồng bộ thành công gần nhất, nhưng đồng thời lại báo không thể mở kho dữ liệu cục bộ và đồng bộ thất bại.
