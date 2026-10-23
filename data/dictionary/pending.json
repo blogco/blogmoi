@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-23T00:56:53.478Z",
+  "generatedAt": "2026-10-23T01:24:19.430Z",
   "candidates": [
     {
       "id": "bc207345431c43dfe3dbe842",
@@ -211,6 +211,90 @@
       "translationDraft": null,
       "translationError": null,
       "updatedAt": "2026-10-23T00:56:53.467Z"
+    },
+    {
+      "id": "3f629d12e76e92689ddb6ce2",
+      "articleId": "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md",
+      "term": "150 tỷ USD",
+      "sourceLanguage": "vi",
+      "field": "Kinh doanh",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "sourceContext": "…m cân nhắc IPO tại Mỹ sớm nhất vào năm tới, tức năm 2027, với mức định giá có thể lên tới 150 tỷ USD. Đây là khả năng được đề cập trong các thông tin trước đó, không phải mức định giá đã được xác lập qua một đợ…",
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "status": "extracted",
+      "translationDraft": null,
+      "translationError": null,
+      "updatedAt": "2026-10-23T01:24:19.414Z"
+    },
+    {
+      "id": "41ca9b8a0c36ffd534575cd4",
+      "articleId": "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md",
+      "term": "Bán dẫn",
+      "sourceLanguage": "vi",
+      "field": "Kinh doanh",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "sourceContext": "…c đưa ra sau khi đánh giá biến động trên thị trường vốn và diễn biến gần đây của cổ phiếu bán dẫn. Thông tin được The Korea Times đăng trong bài của Kang Seung-woo. SK hynix cho biết hoạt động kinh doanh của…",
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "status": "extracted",
+      "translationDraft": null,
+      "translationError": null,
+      "updatedAt": "2026-10-23T01:24:19.414Z"
+    },
+    {
+      "id": "abb5f91c08d840686185ddea",
+      "articleId": "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md",
+      "term": "Hàn Quốc",
+      "sourceLanguage": "vi",
+      "field": "Kinh doanh",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "sourceContext": "…uản lý khi công ty con có thể niêm yết ở nước ngoài trong lúc công ty mẹ vẫn niêm yết tại Hàn Quốc. Theo The Korea Times, giữa những tranh luận quanh khả năng niêm yết này, giới chức tài chính đã cảnh báo phư…",
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "status": "extracted",
+      "translationDraft": null,
+      "translationError": null,
+      "updatedAt": "2026-10-23T01:24:19.414Z"
+    },
+    {
+      "id": "235f5191f368447974a92a0d",
+      "articleId": "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md",
+      "term": "IPO",
+      "sourceLanguage": "vi",
+      "field": "Kinh doanh",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "sourceContext": "…huyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng. Theo thông báo của SK hynix ngày 23-10, quyết định được đưa ra sa…",
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "status": "extracted",
+      "translationDraft": null,
+      "translationError": null,
+      "updatedAt": "2026-10-23T01:24:19.414Z"
+    },
+    {
+      "id": "36c52206464e06cc8444c7cb",
+      "articleId": "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md",
+      "term": "SK hynix",
+      "sourceLanguage": "vi",
+      "field": "Kinh doanh",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "sourceContext": "Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO và chào bán cổ phiếu lần đầu ra công chúng. Theo thông …",
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "status": "extracted",
+      "translationDraft": null,
+      "translationError": null,
+      "updatedAt": "2026-10-23T01:24:19.414Z"
+    },
+    {
+      "id": "83fe2133ddfbc1ee89e3e6b1",
+      "articleId": "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md",
+      "term": "Solidigm",
+      "sourceLanguage": "vi",
+      "field": "Kinh doanh",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "sourceContext": "Solidigm, công ty con chuyên về bộ nhớ NAND flash của SK hynix, đã dừng xem xét các phương án huy động vốn trước IPO v…",
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "status": "extracted",
+      "translationDraft": null,
+      "translationError": null,
+      "updatedAt": "2026-10-23T01:24:19.414Z"
     },
     {
       "id": "32f4bc569b8c4fe88b2a3971",
@@ -613,6 +697,19 @@
         "4af1f359eeb20671c1b26bd3"
       ]
     },
+    "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md": {
+      "extractorVersion": 2,
+      "articleHash": "972d4fe6278630de3ff0cc1967ade52302012f280731b7e7253f3606d6a4be0e",
+      "sourceArticle": "/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my/",
+      "candidateIds": [
+        "3f629d12e76e92689ddb6ce2",
+        "36c52206464e06cc8444c7cb",
+        "83fe2133ddfbc1ee89e3e6b1",
+        "41ca9b8a0c36ffd534575cd4",
+        "235f5191f368447974a92a0d",
+        "abb5f91c08d840686185ddea"
+      ]
+    },
     "posts/top-5-cong-nghe-tao-website-tinh-2026.md": {
       "extractorVersion": 2,
       "articleHash": "e4c017a963fa12602a530898e5619dc010734d93646b3dcd909195ad1fba832a",
@@ -663,14 +760,14 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-23T01:04:59.152Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39881903142",
-    "articlesDiscovered": 8,
-    "articlesProcessed": 0,
+    "recordedAt": "2026-10-23T01:24:19.430Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39883781366",
+    "articlesDiscovered": 9,
+    "articlesProcessed": 1,
     "articlesSkippedValidCache": 8,
-    "candidatesExtracted": 40,
-    "newlyExtracted": 0,
-    "awaitingManualTranslation": 40,
+    "candidatesExtracted": 46,
+    "newlyExtracted": 6,
+    "awaitingManualTranslation": 46,
     "publishedEntries": 18
   }
 }
