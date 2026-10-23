@@ -111,6 +111,7 @@ function block(node) {
   if (node.nodeType === 3) return escapeText(node.nodeValue || "").trim();
   if (node.nodeType !== 1) return "";
   const tag = node.tagName.toLowerCase();
+  if (tag === "img") return inline(node);
   if (tag === "p") return [...node.childNodes].map(inline).join("").trim();
   if (/^h[1-6]$/.test(tag)) return `${"#".repeat(Number(tag[1]))} ${[...node.childNodes].map(inline).join("").trim()}`;
   if (tag === "ul" || tag === "ol") return listMarkdown(node);

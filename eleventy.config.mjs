@@ -1,3 +1,4 @@
+import { selectFeaturedPosts } from "./lib/featured-posts.js";
 import { resolveTopicSuggestions, syncEditorialTopicStatuses, removeLegacyTopicPanels } from "./lib/editorial-topic-discovery.js";
 
 const PATH_PREFIX = "/blogmoi/";
@@ -63,7 +64,7 @@ export default function (eleventyConfig, { syncTopicStatuses = true } = {}) {
   eleventyConfig.addFilter("topicSuggestions", (posts, currentUrl, relatedPosts = [], content = "") =>
     resolveTopicSuggestions(posts, currentUrl, relatedPosts, content));
   eleventyConfig.addFilter("withoutLegacyTopicPanels", removeLegacyTopicPanels);
-  eleventyConfig.addFilter("featuredPosts", (posts) => posts.filter((post) => post.data.featured));
+  eleventyConfig.addFilter("featuredPosts", selectFeaturedPosts);
   eleventyConfig.addFilter("dateReadable", (date, timeZone = "Asia/Ho_Chi_Minh") => {
     const parsed = new Date(date);
     const dateOnly = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ||

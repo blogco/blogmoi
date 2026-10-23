@@ -159,3 +159,6 @@
   }
   @media (prefers-reduced-motion: reduce) { .cms-body *, .cms-body *::before, .cms-body *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
 }
+
+.cms-main .cms-cover-source { display: flex; align-items: center; gap: 9px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--wash); }
+.cms-main .cms-cover-source input { width: 18px; height: 18px; margin: 0; padding: 0; accent-color: var(--teal); opacity: 1; }

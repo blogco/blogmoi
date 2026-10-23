@@ -1,3 +1,7 @@
+{% set cover = articleCover.cover %}
+{% set coverAlt = articleCover.coverAlt %}
+{% set coverCaption = articleCover.coverCaption %}
+{% set coverAttribution = articleCover.coverAttribution %}
 <nav class="article-breadcrumbs" aria-label="Đường dẫn">
   <ol>
     <li><a href="{{ '/' | url }}">Trang chủ</a></li>
@@ -39,7 +43,7 @@
       {% set safePhotoUrl = coverAttribution.photoUrl | safeExternalUrl %}
       {% if coverAttribution.photographer and safePhotographerUrl and safePhotoUrl %}
         <figcaption>Photo by <a href="{{ safePhotographerUrl }}" rel="noopener noreferrer">{{ coverAttribution.photographer }}</a> on <a href="{{ safePhotoUrl }}" rel="noopener noreferrer">Unsplash</a></figcaption>
-      {% elif coverCaption %}<figcaption>{{ coverCaption }}</figcaption>{% endif %}
+      {% elif coverCaption %}<figcaption>{{ coverCaption }}{% if safePhotoUrl %} <a href="{{ safePhotoUrl }}" rel="noopener noreferrer">Unsplash</a>{% endif %}</figcaption>{% endif %}
     </figure>
   {% else %}
     <div class="article-hero__media article-hero__media--empty" aria-hidden="true"><span>Blogmoi</span></div>

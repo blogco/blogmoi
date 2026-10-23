@@ -30,3 +30,33 @@ Unsplash requires applications to keep keys confidential, use API-returned hotli
 ## Local checks
 
 Run `npm run build` to generate the site and `npm run test:cms` for Markdown round-trip and proxy tests. The CMS can only verify real token authorization, GitHub commits and deployment status when you sign in with a correctly scoped token. Unsplash actions require the configured Cloudflare Worker and an approved API application.
+
+## First image and uploaded content images
+
+The first image is always an Unsplash cover. The CMS shows a checked, locked
+“Chọn ảnh từ Unsplash” option; cover URLs are read-only. Without the optional
+API proxy, a shared catalog of verified public Unsplash photos supplies a
+stable pseudo-random cover based on the article slug. The Random button can
+choose another catalog photo. Existing Unsplash selections and their recorded
+credits are preserved. No API key or paid agent is required for this default.
+Full Unsplash search still requires the proxy described above.
+
+The same cover rule applies during Eleventy builds to Markdown created by CMS,
+agents and scheduled jobs, including older articles without covers. Non-Unsplash
+cover references stay in source files but are replaced for display by the
+shared Unsplash illustration. Article cards, article headers and default social
+images use the same choice. Catalog illustrations are identified as illustrative,
+not photos of the reported event; photographer names are not invented.
+
+For image 2 and later, use **Tải ảnh nội dung (ảnh 2+)** in the content toolbar.
+The CMS accepts JPEG, PNG, WebP and AVIF, checks decoding and dimensions, and
+asks for alt text. Each upload is inserted at the end of the article body and
+can be moved in the visual editor. Limits: 5 MB per image, dimensions up to
+9000 pixels, 10 new files and 25 MB per publish. Files under `static/uploads/`
+and their Markdown references are saved together in one GitHub commit. A
+pending image removed from the body is not committed.
+
+Local previews use temporary blob URLs; saved Markdown uses public
+`/blogmoi/uploads/` URLs. Image bytes are not persisted in browser local drafts.
+After recovering a draft, remove and re-upload missing pending images before
+publishing; the CMS blocks publishing references to those missing files.

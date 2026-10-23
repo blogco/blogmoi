@@ -1,3 +1,4 @@
+import { resolveArticleCover, isUnsplashCover } from "./article-cover.js";
 import { unsplashProxyUrl } from "./cms-config.js";
 import {
   articleWordCount,
@@ -25,7 +26,7 @@ const editorBody = root.querySelector("[data-article-body]");
 const previewFrame = root.querySelector("[data-preview-frame]");
 const fieldElements = [...root.querySelectorAll("[data-field]")];
 const fieldMap = new Map(fieldElements.map((element) => [element.dataset.field, element]));
-const state = { token: "", user: null, posts: [], article: null, modified: false, selectedPhoto: null, pendingUpload: null, randomSeen: new Set(), randomQuery: "", drafts: {}, topicBacklog: null };
+const state = { token: "", user: null, posts: [], article: null, modified: false, selectedPhoto: null, pendingUpload: null, pendingBodyUploads: [], randomSeen: new Set(), randomQuery: "", drafts: {}, topicBacklog: null };
 const photoSearchCache = new Map();
 const markdown = markdownRenderer();
 let toastTimer = 0;
@@ -205,7 +206,7 @@ function emptyMetadata() {
     title: "",
     slug: "",
     description: "",
-    date: new Date().toISOString().slice(0, 10),
+    date: new Date().toISOString(),
     lang: "vi",
     author: "Blogmoi",
     categories: [],
@@ -226,9 +227,11 @@ function openEditor(article, draftKey = "") {
     body: article.body || "",
     draftKey: draftKey || article.draftKey || article.metadata.slug || `new-${crypto.randomUUID()}`,
     originalDate: article.metadata?.date || "",
-    uploadMissing: Boolean(article.uploadMissing)
+    uploadMissing: Boolean(article.uploadMissing),
+    missingUploadUrls: article.missingUploadUrls || []
   };
   clearPendingUpload();
+  clearBodyUploads();
   state.modified = false;
   root.querySelector("[data-editor-state]").textContent = article.path ? `Editing ${article.metadata.slug}` : draftKey ? "Recovered local draft" : "New article";
   for (const element of fieldElements) {
@@ -269,7 +272,9 @@ function addFaq(question = "", answer = "") {
 }
 
 function currentBody() {
-  return richTextToMarkdown(editorBody);
+  const copy = editorBody.cloneNode(true);
+  for (const image of copy.querySelectorAll("img[data-upload-url]")) image.setAttribute("src", image.dataset.uploadUrl);
+  return richTextToMarkdown(copy);
 }
 
 function currentMetadata() {
@@ -299,7 +304,7 @@ function currentMetadata() {
   if (metadata.cover !== (state.article?.metadata?.cover || "")) delete metadata.coverAttribution;
   if (metadata.seoTitle === metadata.title) delete metadata.seoTitle;
   if (metadata.seoDescription === metadata.description) delete metadata.seoDescription;
-  return metadata;
+  return Object.assign(metadata, resolveArticleCover(metadata));
 }
 
 function markModified() {
@@ -352,7 +357,8 @@ function siteCoverUrl(value) {
 
 function updateCover() {
   const preview = root.querySelector("[data-cover-preview]");
-  const url = state.pendingUpload?.previewUrl || siteCoverUrl(fieldMap.get("cover").value.trim());
+  const metadata = currentMetadata();
+  const url = state.pendingUpload?.previewUrl || siteCoverUrl(metadata.cover);
   preview.replaceChildren();
   if (!url) {
     const label = document.createElement("span");
@@ -361,11 +367,11 @@ function updateCover() {
   } else {
     const image = document.createElement("img");
     image.src = url;
-    image.alt = fieldMap.get("coverAlt").value.trim();
+    image.alt = metadata.coverAlt;
     image.loading = "lazy";
     preview.append(image);
   }
-  const attribution = currentMetadata().coverAttribution;
+  const attribution = metadata.coverAttribution;
   const line = root.querySelector("[data-cover-attribution]");
   line.replaceChildren();
   if (attribution?.photographer) {
@@ -380,7 +386,7 @@ function updateCover() {
     source.textContent = "Unsplash";
     line.append(photographer, document.createTextNode(" on "), source);
   }
-  root.querySelector("[data-cover-state]").textContent = state.pendingUpload ? "Upload ready to commit" : url ? "Current cover" : "Fallback image on article cards";
+  root.querySelector("[data-cover-state]").textContent = state.pendingUpload ? "Upload ready to commit" : fieldMap.get("cover").value.trim() ? "Current cover" : "Automatic Unsplash illustration";
 }
 
 function clearPendingUpload() {
@@ -396,6 +402,7 @@ function updateValidation() {
     ["Description is required", Boolean(metadata.description)],
     ["Date is valid", Boolean(metadata.date && !Number.isNaN(Date.parse(metadata.date)))],
     ["At least one category is recommended", Boolean(metadata.categories?.length)],
+    ["First image is from Unsplash", isUnsplashCover(metadata.cover)],
     ["Cover has descriptive alt text", !metadata.cover || Boolean(metadata.coverAlt)],
     ["Key points contain 3–5 reviewed items", !metadata.keyPoints?.length || (metadata.keyPoints.length >= 3 && metadata.keyPoints.length <= 5)],
     ["Q&A contains 3–5 reviewed items", !metadata.faq?.length || (metadata.faq.length >= 3 && metadata.faq.length <= 5)],
@@ -578,6 +585,9 @@ function updatePreview() {
   const h1 = doc.querySelector(".article-hero h1"); if (h1) h1.textContent = metadata.title || "Article title";
   const deck = doc.querySelector(".article-deck"); if (deck) deck.textContent = metadata.description || "Article description";
   const content = doc.querySelector(".article-content__body"); content.innerHTML = renderMarkdown(body);
+  for (const upload of state.pendingBodyUploads) {
+    for (const image of content.querySelectorAll("img")) if (image.getAttribute("src") === upload.url) image.src = upload.previewUrl;
+  }
   const publishedDate = doc.querySelector(".article-byline time");
   if (publishedDate && metadata.date) { publishedDate.dateTime = new Date(metadata.date).toISOString(); publishedDate.textContent = new Intl.DateTimeFormat("vi-VN", { dateStyle: "long", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(metadata.date)); }
   const cover = doc.querySelector(".article-hero__media");
@@ -599,6 +609,8 @@ function updatePreview() {
         if (photoUrl) { source.href = photoUrl; source.rel = "noopener noreferrer"; }
         source.textContent = "Unsplash";
         caption.append(photographer, doc.createTextNode(" on "), source); cover.append(caption);
+      } else if (metadata.coverCaption) {
+        const caption = doc.createElement("figcaption"); caption.textContent = metadata.coverCaption; cover.append(caption);
       }
     } else { cover.classList.add("article-hero__media--empty"); const label = doc.createElement("span"); label.textContent = "Blogmoi"; cover.append(label); }
   }
@@ -678,7 +690,8 @@ function validForPublish(article) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(metadata.slug || "")) errors.push("Use a lowercase kebab case slug.");
   if (!metadata.description?.trim()) errors.push("Add a description.");
   if (!metadata.date || Number.isNaN(Date.parse(metadata.date))) errors.push("Add a valid date.");
-  if (metadata.cover && !safeCoverUrl(metadata.cover)) errors.push("Cover URL must be HTTPS or a root-relative path.");
+  if (!isUnsplashCover(metadata.cover)) errors.push("Choose an Unsplash cover for the first image.");
+  if ((state.article.missingUploadUrls || []).some(url => body.includes(url))) errors.push("Recovered image files are missing. Remove those images and upload them again before publishing.");
   if (metadata.cover && !metadata.coverAlt?.trim()) errors.push("Add descriptive cover alt text.");
   if (metadata.sourceUrl && !safeWebUrl(metadata.sourceUrl)) errors.push("Source URL must use HTTPS or HTTP.");
   if (metadata.keyPoints?.length && (metadata.keyPoints.length < 3 || metadata.keyPoints.length > 5)) errors.push("Use 3–5 editor reviewed key points.");
@@ -699,7 +712,7 @@ function saveRecoveryDraft() {
   const value = currentArticleForSave();
   const key = draftKey(state.article);
   value.metadata.draft = true;
-  state.drafts[key] = { ...value, path: state.article.path, baseSha: state.article.baseSha, draftKey: key, updatedAt: new Date().toISOString(), uploadMissing: Boolean(state.pendingUpload || state.article.uploadMissing) };
+  state.drafts[key] = { ...value, path: state.article.path, baseSha: state.article.baseSha, draftKey: key, updatedAt: new Date().toISOString(), uploadMissing: Boolean(state.pendingBodyUploads.length || state.article.uploadMissing), missingUploadUrls: [...new Set([...(state.article.missingUploadUrls || []), ...state.pendingBodyUploads.map(upload => upload.url)])] };
   state.article.draftKey = key;
   writeDrafts();
 }
@@ -778,13 +791,16 @@ async function publish() {
     const remoteSha = await latestPathSha(path);
     if (remoteSha !== state.article.baseSha) throw new Error("This post changed on GitHub since you opened it. Reload the post before publishing; no changes were written.");
     const changes = [{ path, content: serializeArticle(article.metadata, article.body), encoding: "utf-8" }];
-    if (state.pendingUpload) changes.push({ path: state.pendingUpload.path, content: bufferToBase64(await state.pendingUpload.file.arrayBuffer()), encoding: "base64" });
+    for (const upload of state.pendingBodyUploads.filter(upload => article.body.includes(upload.url))) {
+      changes.push({ path: upload.path, content: bufferToBase64(await upload.file.arrayBuffer()), encoding: "base64" });
+    }
     status(output, "Creating one commit…");
     const commit = await createCommit(changes, `content(posts): ${state.article.path ? "update" : "publish"} ${article.metadata.slug}`, { path, expectedSha: state.article.baseSha });
     state.modified = false;
     delete state.drafts[draftKey(state.article)];
     writeDrafts();
     status(output, `Committed ${commit.sha.slice(0, 7)}. GitHub Actions is starting the site build.`, "success");
+    clearBodyUploads();
     state.article = null;
     showView("posts");
     await showDeploymentStatus(commit.sha, root.querySelector("[data-deployment-status]"));
@@ -890,6 +906,19 @@ async function searchUnsplash(query) {
 }
 
 async function randomUnsplash() {
+  if (!unsplashProxyUrl) {
+    if (!state.article) return;
+    const current = currentMetadata().cover;
+    let next;
+    do { next = resolveArticleCover({ slug: crypto.randomUUID() }); } while (next.cover === current);
+    Object.assign(state.article.metadata, next);
+    fieldMap.get("cover").value = next.cover;
+    fieldMap.get("coverAlt").value = next.coverAlt;
+    markModified(); updateCover();
+    status(root.querySelector("[data-unsplash-status]"), "Đã chọn ảnh khác từ bộ ảnh Unsplash.", "success");
+    return;
+  }
+
   const target = root.querySelector("[data-unsplash-status]");
   const query = searchQuery();
   state.selectedPhoto = null;
@@ -937,30 +966,36 @@ async function useSelectedPhoto() {
   } catch (error) { status(target, error.message, "error"); }
 }
 
-async function uploadCover(file) {
-  if (!file) return;
+function clearBodyUploads() {
+  for (const upload of state.pendingBodyUploads) URL.revokeObjectURL(upload.previewUrl);
+  state.pendingBodyUploads = [];
+}
+
+async function uploadBodyImage(file) {
+  if (!file || !state.article) return;
+  const activeArticle = state.article;
   const allowed = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
   if (!allowed.has(file.type) || file.size > 5 * 1024 * 1024) { toast("Choose a JPEG, PNG, WebP or AVIF image under 5 MB."); return; }
-  let image;
-  try { image = await createImageBitmap(file); } catch { toast("That image file could not be opened."); return; }
-  if (image.width > 9000 || image.height > 9000) { image.close(); toast("Image dimensions must be at most 9000 × 9000 pixels."); return; }
-  image.close();
-  clearPendingUpload();
+  if (state.pendingBodyUploads.length >= 10 || state.pendingBodyUploads.reduce((sum, upload) => sum + upload.file.size, file.size) > 25 * 1024 * 1024) { toast("Use at most 10 new images and 25 MB per publish."); return; }
+  let bitmap;
+  try { bitmap = await createImageBitmap(file); } catch { toast("That image file could not be opened."); return; }
+  if (state.article !== activeArticle) { bitmap.close(); return; }
+  if (bitmap.width > 9000 || bitmap.height > 9000) { bitmap.close(); toast("Image dimensions must be at most 9000 × 9000 pixels."); return; }
+  bitmap.close();
+  const alt = window.prompt("Mô tả ảnh nội dung (alt text)");
+  if (alt === null) return;
+  if (!alt.trim()) { toast("Hãy nhập mô tả cho ảnh."); return; }
   const slug = fieldMap.get("slug").value.trim() || suggestSlug(fieldMap.get("title").value) || "article";
   const extension = file.type.split("/")[1].replace("jpeg", "jpg");
-  const name = `${slug}-${Date.now()}.${extension}`;
-  state.pendingUpload = { file, path: `static/uploads/${name}`, url: `/uploads/${name}` };
-  fieldMap.get("cover").value = state.pendingUpload.url;
-  if (!fieldMap.get("coverAlt").value.trim()) fieldMap.get("coverAlt").value = fieldMap.get("title").value.trim();
-  const localUrl = URL.createObjectURL(file);
-  state.pendingUpload.previewUrl = localUrl;
-  root.querySelector("[data-cover-preview]").innerHTML = "";
-  const preview = document.createElement("img"); preview.src = localUrl; preview.alt = fieldMap.get("coverAlt").value; root.querySelector("[data-cover-preview]").append(preview);
-  state.article.metadata.cover = state.pendingUpload.url;
-  state.article.uploadMissing = false;
-  delete state.article.metadata.coverAttribution;
-  state.modified = true; updateCover(); updatePreview(); saveRecoveryDraft();
-  toast("Image validated. It will be committed with the article when you publish.");
+  const name = `${slug}-${crypto.randomUUID()}.${extension}`;
+  const upload = { file, path: `static/uploads/${name}`, url: `${PATH_PREFIX}uploads/${name}`, previewUrl: URL.createObjectURL(file) };
+  state.pendingBodyUploads.push(upload);
+  const paragraph = document.createElement("p");
+  const image = document.createElement("img"); image.src = upload.previewUrl; image.alt = alt.trim(); image.dataset.uploadUrl = upload.url;
+  paragraph.append(image);
+  editorBody.append(paragraph);
+  markModified();
+  toast("Đã thêm ảnh vào cuối nội dung. Bạn có thể di chuyển ảnh; file sẽ được đăng cùng bài viết.");
 }
 
 function removeDraft(key) {
@@ -1100,7 +1135,7 @@ root.addEventListener("click", async (event) => {
   if (target.matches("[data-insert-code]")) return insertCode();
   if (target.matches("[data-auto-suggest]")) { setUnsplashOpen(true); if (unsplashProxyUrl) await searchUnsplash(searchQuery()); return; }
   if (target.matches("[data-open-search]")) { setUnsplashOpen(true); root.querySelector("[data-unsplash-query]").focus(); return; }
-  if (target.matches("[data-random]")) { setUnsplashOpen(true); return randomUnsplash(); }
+  if (target.matches("[data-random]")) { if (unsplashProxyUrl) setUnsplashOpen(true); return randomUnsplash(); }
   if (target.matches("[data-use-photo]")) return useSelectedPhoto();
   if (target.matches("[data-upload-image]")) { root.querySelector("[data-image-file]").click(); return; }
 });
@@ -1115,7 +1150,10 @@ root.querySelector("[data-unsplash-query]").addEventListener("input", (event) =>
   window.clearTimeout(searchTimer); const query = event.target.value.trim();
   if (query.length >= 2) searchTimer = window.setTimeout(() => searchUnsplash(query), 450);
 });
-root.querySelector("[data-image-file]").addEventListener("change", (event) => uploadCover(event.target.files?.[0]));
+root.querySelector("[data-image-file]").addEventListener("change", async (event) => {
+  for (const file of event.target.files || []) await uploadBodyImage(file);
+  event.target.value = "";
+});
 editorBody.addEventListener("paste", (event) => {
   event.preventDefault(); const text = event.clipboardData?.getData("text/plain") || ""; document.execCommand("insertText", false, text); markModified();
 });

@@ -1,7 +1,6 @@
 <article class="article-card">
   <a class="article-card__link" href="{{ post.url | url }}">
-    {% if post.data.cover %}<div class="article-card__media"><img src="{{ post.data.cover | url }}" alt="{{ post.data.coverAlt or '' }}" loading="lazy" width="720" height="460"></div>
-    {% else %}<div class="article-card__media article-card__media--abstract" aria-hidden="true"><span class="card-placeholder">b.</span><i></i></div>{% endif %}
+    <div class="article-card__media"><img src="{{ post.data.articleCover.cover | url }}" alt="{{ post.data.articleCover.coverAlt }}" loading="lazy" width="720" height="460"></div>
     <div class="article-card__body">
       <p class="eyebrow">{{ (post.data.categories or ['Góc nhìn'])[0] }}</p>
       <h3>{{ post.data.title }}</h3>
