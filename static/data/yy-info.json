@@ -1,382 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:07:12.320Z",
-  "delays": {
-    "updatedAt": "2026-10-23T15:06:15.000Z",
-    "coverage": "US",
-    "items": [
-      {
-        "airport": "SFO",
-        "type": "Chương trình delay mặt đất",
-        "reason": "low ceilings",
-        "average": "57 minutes",
-        "minimum": "",
-        "maximum": "2 hours and 2 minutes",
-        "starts": "",
-        "ends": "",
-        "direction": ""
-      },
-      {
-        "airport": "AUS",
-        "type": "Chương trình delay mặt đất",
-        "reason": "other",
-        "average": "1 hour and 15 minutes",
-        "minimum": "",
-        "maximum": "2 hours and 14 minutes",
-        "starts": "",
-        "ends": "",
-        "direction": ""
-      },
-      {
-        "airport": "DEN",
-        "type": "Chậm đến / khởi hành",
-        "reason": "WX:Wind",
-        "average": "",
-        "minimum": "16 minutes",
-        "maximum": "30 minutes",
-        "starts": "",
-        "ends": "",
-        "direction": "Departure"
-      },
-      {
-        "airport": "LGA",
-        "type": "Chậm đến / khởi hành",
-        "reason": "WX:WIND/ RY CONFIG VOL",
-        "average": "",
-        "minimum": "16 minutes",
-        "maximum": "30 minutes",
-        "starts": "",
-        "ends": "",
-        "direction": "Departure"
-      },
-      {
-        "airport": "MIA",
-        "type": "Chậm đến / khởi hành",
-        "reason": "RWY:Construction",
-        "average": "",
-        "minimum": "16 minutes",
-        "maximum": "30 minutes",
-        "starts": "",
-        "ends": "",
-        "direction": "Departure"
-      },
-      {
-        "airport": "LAX",
-        "type": "Hạn chế sân bay · xem NOTAM",
-        "reason": "!LAX 05/277 LAX AD AP CLSD TO NON SKED TRANSIENT GA ACFT EXC 24HR PPR CTC ATLANTIC AVIATION 310-258-9884 OR SIGNATURE AVIATION 310-410-9605 2605271826-2705281600",
-        "average": "",
-        "minimum": "",
-        "maximum": "",
-        "starts": "May 27 at 18:26 UTC.",
-        "ends": "May 28 at 16:00 UTC.",
-        "direction": ""
-      },
-      {
-        "airport": "SAN",
-        "type": "Hạn chế sân bay · xem NOTAM",
-        "reason": "!SAN 10/004 SAN AD AP CLSD TO NON SKED TRANSIENT GA ACFT EXC PPR 619-298-7704 2610011633-2701010800",
-        "average": "",
-        "minimum": "",
-        "maximum": "",
-        "starts": "Oct 01 at 16:33 UTC.",
-        "ends": "Jan 01 at 08:00 UTC.",
-        "direction": ""
-      },
-      {
-        "airport": "AUS",
-        "type": "Hạn chế sân bay · xem NOTAM",
-        "reason": "!AUS 10/095 AUS AD AP CLSD TO GA ACFT EXC PPR SIGNATURE 512-530-5451 OR ATLANTIC 512-382-8810 OR MILLION AIR 737-208-1400 2610220500-2610262100",
-        "average": "",
-        "minimum": "",
-        "maximum": "",
-        "starts": "Oct 22 at 05:00 UTC.",
-        "ends": "Oct 26 at 21:00 UTC.",
-        "direction": ""
-      }
-    ],
-    "sourceUrl": "https://nasstatus.faa.gov/api/airport-status-information",
-    "status": "ok",
-    "fetchedAt": "2026-10-23T15:07:12.320Z",
-    "checkedAt": "2026-10-23T15:07:12.320Z"
-  },
-  "metar": {
-    "items": [
-      {
-        "icao": "CYYZ",
-        "observedAt": "2026-10-23T14:00:00.000Z",
-        "raw": "METAR CYYZ 231400Z 07007KT 15SM FEW030 FEW250 09/03 A3044 RMK SC1CI2 SC TR CONTRAILS SLP314",
-        "category": "VFR",
-        "temperature": 9,
-        "windKnots": 7,
-        "visibilityMiles": "15"
-      },
-      {
-        "icao": "EDDF",
-        "observedAt": "2026-10-23T14:50:00.000Z",
-        "raw": "METAR EDDF 231450Z AUTO 19014KT 9999 FEW033 13/09 Q1005 RESHRA TEMPO 20020G35KT SHRA BKN040CB",
-        "category": "VFR",
-        "temperature": 13,
-        "windKnots": 14,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "EGLL",
-        "observedAt": "2026-10-23T14:50:00.000Z",
-        "raw": "METAR EGLL 231450Z AUTO 28021G33KT 9999 -RA BKN019/// OVC025/// //////TCU 09/07 Q0999",
-        "category": "MVFR",
-        "temperature": 9,
-        "windKnots": 21,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "EHAM",
-        "observedAt": "2026-10-23T14:55:00.000Z",
-        "raw": "METAR EHAM 231455Z 08015G25KT 3000 DZRA FEW005 SCT008 BKN012 11/10 Q0988 BECMG BKN008 TEMPO 6000 BKN014",
-        "category": "IFR",
-        "temperature": 11,
-        "windKnots": 15,
-        "visibilityMiles": "1.86"
-      },
-      {
-        "icao": "KATL",
-        "observedAt": "2026-10-23T14:52:00.000Z",
-        "raw": "METAR KATL 231452Z 06009KT 10SM CLR 18/07 A3027 RMK AO2 SLP249 T01780067 53022 $",
-        "category": "VFR",
-        "temperature": 17.8,
-        "windKnots": 9,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "KDFW",
-        "observedAt": "2026-10-23T14:53:00.000Z",
-        "raw": "METAR KDFW 231453Z 15005KT 10SM BKN250 22/09 A3018 RMK AO2 SLP212 T02170089 53017",
-        "category": "VFR",
-        "temperature": 21.7,
-        "windKnots": 5,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "KEWR",
-        "observedAt": "2026-10-23T14:51:00.000Z",
-        "raw": "METAR KEWR 231451Z 02012G20KT 10SM CLR 13/00 A3037 RMK AO2 SLP283 T01280000 51019 $",
-        "category": "VFR",
-        "temperature": 12.8,
-        "windKnots": 12,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "KJFK",
-        "observedAt": "2026-10-23T14:51:00.000Z",
-        "raw": "METAR KJFK 231451Z 05014KT 10SM FEW047 13/M01 A3037 RMK AO2 SLP284 T01331011 51020",
-        "category": "VFR",
-        "temperature": 13.3,
-        "windKnots": 14,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "KLAX",
-        "observedAt": "2026-10-23T14:53:00.000Z",
-        "raw": "METAR KLAX 231453Z 06004KT 10SM FEW010 FEW022 SCT095 SCT150 16/13 A3000 RMK AO2 SLP156 T01610133 51004",
-        "category": "VFR",
-        "temperature": 16.1,
-        "windKnots": 4,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "KORD",
-        "observedAt": "2026-10-23T14:51:00.000Z",
-        "raw": "METAR KORD 231451Z 17004KT 10SM CLR 16/08 A3034 RMK AO2 SLP275 T01610083 53009",
-        "category": "VFR",
-        "temperature": 16.1,
-        "windKnots": 4,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "KSFO",
-        "observedAt": "2026-10-23T14:56:00.000Z",
-        "raw": "METAR KSFO 231456Z 31003KT 10SM BKN017 BKN039 14/12 A3004 RMK AO2 SLP172 T01440122 51013",
-        "category": "MVFR",
-        "temperature": 14.4,
-        "windKnots": 3,
-        "visibilityMiles": "10+"
-      },
-      {
-        "icao": "LFPG",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR LFPG 231500Z 26027G43KT 9999 OVC033 12/06 Q1006 TEMPO 22030G50KT 4000 -SHRA",
-        "category": "VFR",
-        "temperature": 12,
-        "windKnots": 27,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "LTFM",
-        "observedAt": "2026-10-23T14:50:00.000Z",
-        "raw": "METAR LTFM 231450Z 03009KT 350V050 9999 -SHRA SCT004 FEW017TCU BKN025 15/14 Q1019 RESHRA NOSIG RMK RWY17L 01009KT RWY34L 01008KT RWY16R 01007KT RWY36 03009KT RWY18 03006KT 360V080",
-        "category": "MVFR",
-        "temperature": 15,
-        "windKnots": 9,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "OMDB",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR OMDB 231500Z 27009KT CAVOK 33/23 Q1012 NOSIG",
-        "category": "VFR",
-        "temperature": 33,
-        "windKnots": 9,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "OTHH",
-        "observedAt": "2026-10-23T14:00:00.000Z",
-        "raw": "METAR OTHH 231400Z VRB02KT 9999 FEW040 32/18 Q1012 NOSIG",
-        "category": "VFR",
-        "temperature": 32,
-        "windKnots": 2,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "RCTP",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR RCTP 231430Z 34019G41KT 310V030 7000 -SHRA FEW008 BKN015 BKN020 26/25 Q0990 WS ALL RWY NOSIG RMK A2926",
-        "category": "MVFR",
-        "temperature": 26,
-        "windKnots": 19,
-        "visibilityMiles": "4.35"
-      },
-      {
-        "icao": "RJAA",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR RJAA 231430Z AUTO 35004KT 320V020 9999 BKN031 OVC050 17/14 Q1026 NOSIG",
-        "category": "VFR",
-        "temperature": 17,
-        "windKnots": 4,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "RJTT",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR RJTT 231430Z 01005KT 360V060 9999 BKN030 BKN040 19/13 Q1026 NOSIG",
-        "category": "MVFR",
-        "temperature": 19,
-        "windKnots": 5,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "RKSI",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR RKSI 231500Z 04004KT CAVOK 16/13 Q1020 NOSIG",
-        "category": "VFR",
-        "temperature": 16,
-        "windKnots": 4,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "VHHH",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR VHHH 231500Z 35010KT CAVOK 29/19 Q1007 NOSIG",
-        "category": "VFR",
-        "temperature": 29,
-        "windKnots": 10,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "VIDP",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR VIDP 231500Z 23003KT 3000 HZ FEW100 24/14 Q1012 NOSIG",
-        "category": "IFR",
-        "temperature": 24,
-        "windKnots": 3,
-        "visibilityMiles": "1.86"
-      },
-      {
-        "icao": "VTBS",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR VTBS 231500Z 00000KT 9999 FEW020 30/25 Q1010 NOSIG",
-        "category": "VFR",
-        "temperature": 30,
-        "windKnots": 0,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "VVDN",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR VVDN 231500Z 25003KT 9999 FEW015 27/23 Q1011 NOSIG",
-        "category": "VFR",
-        "temperature": 27,
-        "windKnots": 3,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "VVNB",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR VVNB 231500Z 14008KT CAVOK 28/24 Q1009 NOSIG",
-        "category": "VFR",
-        "temperature": 28,
-        "windKnots": 8,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "VVTS",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR VVTS 231500Z 14006KT 9999 FEW030 28/25 Q1010 NOSIG",
-        "category": "VFR",
-        "temperature": 28,
-        "windKnots": 6,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "WSSS",
-        "observedAt": "2026-10-23T15:00:00.000Z",
-        "raw": "METAR WSSS 231500Z 09005KT 010V140 5000 HZ FEW018 BKN280 30/26 Q1011 NOSIG",
-        "category": "MVFR",
-        "temperature": 30,
-        "windKnots": 5,
-        "visibilityMiles": "3.11"
-      },
-      {
-        "icao": "YMML",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR YMML 231430Z AUTO 15003KT 9999 -SHRA FEW048 BKN060 OVC074 16/15 Q1014",
-        "category": "VFR",
-        "temperature": 16,
-        "windKnots": 3,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "YSSY",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR YSSY 231430Z AUTO 02010KT 9999 // NCD 20/17 Q1016",
-        "category": "VFR",
-        "temperature": 20,
-        "windKnots": 10,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "ZBAA",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR ZBAA 231430Z 08001MPS CAVOK 09/08 Q1018 NOSIG",
-        "category": "VFR",
-        "temperature": 9,
-        "windKnots": 2,
-        "visibilityMiles": "6+"
-      },
-      {
-        "icao": "ZSPD",
-        "observedAt": "2026-10-23T14:30:00.000Z",
-        "raw": "METAR ZSPD 231430Z 04008MPS 9999 -SHRA SCT010 20/19 Q1014 BECMG TL1530 BKN011",
-        "category": "VFR",
-        "temperature": 20,
-        "windKnots": 16,
-        "visibilityMiles": "6+"
-      }
-    ],
-    "sourceUrl": "https://aviationweather.gov/api/data/metar?format=json&ids=VVTS,VVNB,VVDN,RKSI,RJAA,RJTT,WSSS,VTBS,VHHH,RCTP,ZSPD,ZBAA,OMDB,OTHH,VIDP,EGLL,LFPG,EDDF,EHAM,LTFM,KJFK,KEWR,KLAX,KSFO,KORD,KDFW,KATL,CYYZ,YSSY,YMML",
-    "status": "ok",
-    "fetchedAt": "2026-10-23T15:07:12.320Z",
-    "checkedAt": "2026-10-23T15:07:12.320Z"
-  },
+  "generatedAt": "2026-10-23T16:07:03.226Z",
   "news": {
     "items": [
       {
@@ -431,6 +55,393 @@
     "sourceUrl": "https://www.flightglobal.com/rss",
     "status": "unavailable",
     "fetchedAt": "2026-10-23T02:25:03.412Z",
-    "checkedAt": "2026-10-23T15:07:12.320Z"
+    "checkedAt": "2026-10-23T16:07:03.226Z"
+  },
+  "delays": {
+    "updatedAt": "2026-10-23T16:06:10.000Z",
+    "coverage": "US",
+    "items": [
+      {
+        "airport": "SAN",
+        "type": "Chương trình delay mặt đất",
+        "reason": "airport volume",
+        "average": "30 minutes",
+        "minimum": "",
+        "maximum": "1 hour and 34 minutes",
+        "starts": "",
+        "ends": "",
+        "direction": ""
+      },
+      {
+        "airport": "SFO",
+        "type": "Chương trình delay mặt đất",
+        "reason": "low ceilings",
+        "average": "57 minutes",
+        "minimum": "",
+        "maximum": "2 hours and 2 minutes",
+        "starts": "",
+        "ends": "",
+        "direction": ""
+      },
+      {
+        "airport": "AUS",
+        "type": "Chương trình delay mặt đất",
+        "reason": "other",
+        "average": "1 hour and 15 minutes",
+        "minimum": "",
+        "maximum": "2 hours and 14 minutes",
+        "starts": "",
+        "ends": "",
+        "direction": ""
+      },
+      {
+        "airport": "MIA",
+        "type": "Chậm đến / khởi hành",
+        "reason": "RWY:Construction",
+        "average": "",
+        "minimum": "15 minutes",
+        "maximum": "29 minutes",
+        "starts": "",
+        "ends": "",
+        "direction": "Departure"
+      },
+      {
+        "airport": "SAN",
+        "type": "Chậm đến / khởi hành",
+        "reason": "VOL:Volume",
+        "average": "",
+        "minimum": "16 minutes",
+        "maximum": "30 minutes",
+        "starts": "",
+        "ends": "",
+        "direction": "Departure"
+      },
+      {
+        "airport": "SEA",
+        "type": "Chậm đến / khởi hành",
+        "reason": "RWY:Construction",
+        "average": "",
+        "minimum": "16 minutes",
+        "maximum": "30 minutes",
+        "starts": "",
+        "ends": "",
+        "direction": "Departure"
+      },
+      {
+        "airport": "LAX",
+        "type": "Hạn chế sân bay · xem NOTAM",
+        "reason": "!LAX 05/277 LAX AD AP CLSD TO NON SKED TRANSIENT GA ACFT EXC 24HR PPR CTC ATLANTIC AVIATION 310-258-9884 OR SIGNATURE AVIATION 310-410-9605 2605271826-2705281600",
+        "average": "",
+        "minimum": "",
+        "maximum": "",
+        "starts": "May 27 at 18:26 UTC.",
+        "ends": "May 28 at 16:00 UTC.",
+        "direction": ""
+      },
+      {
+        "airport": "SAN",
+        "type": "Hạn chế sân bay · xem NOTAM",
+        "reason": "!SAN 10/004 SAN AD AP CLSD TO NON SKED TRANSIENT GA ACFT EXC PPR 619-298-7704 2610011633-2701010800",
+        "average": "",
+        "minimum": "",
+        "maximum": "",
+        "starts": "Oct 01 at 16:33 UTC.",
+        "ends": "Jan 01 at 08:00 UTC.",
+        "direction": ""
+      },
+      {
+        "airport": "AUS",
+        "type": "Hạn chế sân bay · xem NOTAM",
+        "reason": "!AUS 10/095 AUS AD AP CLSD TO GA ACFT EXC PPR SIGNATURE 512-530-5451 OR ATLANTIC 512-382-8810 OR MILLION AIR 737-208-1400 2610220500-2610262100",
+        "average": "",
+        "minimum": "",
+        "maximum": "",
+        "starts": "Oct 22 at 05:00 UTC.",
+        "ends": "Oct 26 at 21:00 UTC.",
+        "direction": ""
+      }
+    ],
+    "sourceUrl": "https://nasstatus.faa.gov/api/airport-status-information",
+    "status": "ok",
+    "fetchedAt": "2026-10-23T16:07:03.226Z",
+    "checkedAt": "2026-10-23T16:07:03.226Z"
+  },
+  "metar": {
+    "items": [
+      {
+        "icao": "CYYZ",
+        "observedAt": "2026-10-23T15:00:00.000Z",
+        "raw": "METAR CYYZ 231500Z 09008KT 070V140 15SM FEW030 SCT260 11/05 A3044 RMK SC1CI4 SC TR CONTRAILS SLP315",
+        "category": "VFR",
+        "temperature": 11,
+        "windKnots": 8,
+        "visibilityMiles": "15"
+      },
+      {
+        "icao": "EDDF",
+        "observedAt": "2026-10-23T15:50:00.000Z",
+        "raw": "METAR EDDF 231550Z AUTO 19017G28KT 150V220 9999 BKN042 14/07 Q1005 TEMPO 20020G35KT SHRA BKN040CB",
+        "category": "VFR",
+        "temperature": 14,
+        "windKnots": 17,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "EGLL",
+        "observedAt": "2026-10-23T15:50:00.000Z",
+        "raw": "METAR EGLL 231550Z AUTO 28021KT 9999 -RA BKN018/// BKN023/// OVC027/// 08/06 Q1001",
+        "category": "MVFR",
+        "temperature": 8,
+        "windKnots": 21,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "EHAM",
+        "observedAt": "2026-10-23T15:55:00.000Z",
+        "raw": "METAR EHAM 231555Z 08014KT 5000 -DZRA FEW005 SCT007 BKN012 11/10 Q0986 REDZRA TEMPO 9999 BECMG 36015KT",
+        "category": "MVFR",
+        "temperature": 11,
+        "windKnots": 14,
+        "visibilityMiles": "3.11"
+      },
+      {
+        "icao": "KATL",
+        "observedAt": "2026-10-23T15:52:00.000Z",
+        "raw": "METAR KATL 231552Z 11007KT 10SM CLR 19/07 A3027 RMK AO2 SLP247 T01940067 $",
+        "category": "VFR",
+        "temperature": 19.4,
+        "windKnots": 7,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "KDFW",
+        "observedAt": "2026-10-23T15:53:00.000Z",
+        "raw": "METAR KDFW 231553Z 12003KT 10SM BKN250 23/08 A3018 RMK AO2 SLP212 T02330083",
+        "category": "VFR",
+        "temperature": 23.3,
+        "windKnots": 3,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "KEWR",
+        "observedAt": "2026-10-23T15:51:00.000Z",
+        "raw": "METAR KEWR 231551Z 02012G22KT 10SM CLR 14/M01 A3038 RMK AO2 SLP287 T01441006 $",
+        "category": "VFR",
+        "temperature": 14.4,
+        "windKnots": 12,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "KJFK",
+        "observedAt": "2026-10-23T15:51:00.000Z",
+        "raw": "METAR KJFK 231551Z 06011KT 10SM FEW055 14/M01 A3038 RMK AO2 SLP287 T01391006",
+        "category": "VFR",
+        "temperature": 13.9,
+        "windKnots": 11,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "KLAX",
+        "observedAt": "2026-10-23T15:53:00.000Z",
+        "raw": "METAR KLAX 231553Z VRB04KT 10SM FEW010 FEW032 SCT100 SCT140 18/13 A3001 RMK AO2 SLP161 T01780133",
+        "category": "VFR",
+        "temperature": 17.8,
+        "windKnots": 4,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "KORD",
+        "observedAt": "2026-10-23T15:51:00.000Z",
+        "raw": "METAR KORD 231551Z VRB03KT 10SM CLR 19/08 A3034 RMK AO2 SLP274 T01890083",
+        "category": "VFR",
+        "temperature": 18.9,
+        "windKnots": 3,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "KSFO",
+        "observedAt": "2026-10-23T15:56:00.000Z",
+        "raw": "METAR KSFO 231556Z 34005KT 10SM SCT014 BKN039 15/12 A3007 RMK AO2 SLP181 T01500122",
+        "category": "VFR",
+        "temperature": 15,
+        "windKnots": 5,
+        "visibilityMiles": "10+"
+      },
+      {
+        "icao": "LFPG",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR LFPG 231600Z 26029G43KT 9999 SCT040 BKN053 12/05 Q1007 TEMPO 26020G35KT",
+        "category": "VFR",
+        "temperature": 12,
+        "windKnots": 29,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "LTFM",
+        "observedAt": "2026-10-23T15:50:00.000Z",
+        "raw": "METAR LTFM 231550Z 36012KT 9999 -SHRA SCT004 FEW017CB BKN022 15/14 Q1019 NOSIG RMK RWY17L 36012KT RWY34L 35012KT RWY16R 35010KT RWY36 36011KT RWY18 36012KT",
+        "category": "MVFR",
+        "temperature": 15,
+        "windKnots": 12,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "OMDB",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR OMDB 231600Z 29009KT CAVOK 33/22 Q1012 NOSIG",
+        "category": "VFR",
+        "temperature": 33,
+        "windKnots": 9,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "OTHH",
+        "observedAt": "2026-10-23T15:00:00.000Z",
+        "raw": "METAR OTHH 231500Z VRB02KT CAVOK 31/19 Q1013 NOSIG",
+        "category": "VFR",
+        "temperature": 31,
+        "windKnots": 2,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "RCTP",
+        "observedAt": "2026-10-23T15:30:00.000Z",
+        "raw": "METAR RCTP 231530Z 36018G33KT 320V030 7000 -SHRA FEW008 BKN015 BKN020 26/25 Q0991 RESHRA WS ALL RWY NOSIG RMK A2927",
+        "category": "MVFR",
+        "temperature": 26,
+        "windKnots": 18,
+        "visibilityMiles": "4.35"
+      },
+      {
+        "icao": "RJAA",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR RJAA 231600Z AUTO 32004KT 280V340 9999 BKN031 OVC050 17/14 Q1026 NOSIG",
+        "category": "VFR",
+        "temperature": 17,
+        "windKnots": 4,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "RJTT",
+        "observedAt": "2026-10-23T15:30:00.000Z",
+        "raw": "METAR RJTT 231530Z 01007KT 9999 -RA BKN030 BKN040 19/14 Q1026 NOSIG",
+        "category": "MVFR",
+        "temperature": 19,
+        "windKnots": 7,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "RKSI",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR RKSI 231600Z 04003KT CAVOK 16/12 Q1020 NOSIG",
+        "category": "VFR",
+        "temperature": 16,
+        "windKnots": 3,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "VHHH",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR VHHH 231600Z 36012KT CAVOK 28/18 Q1007 NOSIG",
+        "category": "VFR",
+        "temperature": 28,
+        "windKnots": 12,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "VIDP",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR VIDP 231600Z VRB02KT 3000 HZ FEW100 23/15 Q1012 NOSIG",
+        "category": "IFR",
+        "temperature": 23,
+        "windKnots": 2,
+        "visibilityMiles": "1.86"
+      },
+      {
+        "icao": "VTBS",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR VTBS 231600Z 20003KT 9999 FEW020 30/26 Q1010 NOSIG",
+        "category": "VFR",
+        "temperature": 30,
+        "windKnots": 3,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "VVDN",
+        "observedAt": "2026-10-23T15:30:00.000Z",
+        "raw": "METAR VVDN 231530Z 25002KT 9999 FEW020 26/23 Q1011 NOSIG",
+        "category": "VFR",
+        "temperature": 26,
+        "windKnots": 2,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "VVNB",
+        "observedAt": "2026-10-23T15:30:00.000Z",
+        "raw": "METAR VVNB 231530Z 14008KT CAVOK 28/25 Q1009 NOSIG",
+        "category": "VFR",
+        "temperature": 28,
+        "windKnots": 8,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "VVTS",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR VVTS 231600Z 14005KT 070V190 9999 FEW017 SCT039 BKN045 28/25 Q1010 NOSIG",
+        "category": "VFR",
+        "temperature": 28,
+        "windKnots": 5,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "WSSS",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR WSSS 231600Z 11005KT 070V160 5000 HZ FEW018 BKN280 30/26 Q1010 NOSIG",
+        "category": "MVFR",
+        "temperature": 30,
+        "windKnots": 5,
+        "visibilityMiles": "3.11"
+      },
+      {
+        "icao": "YMML",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR YMML 231600Z AUTO 07004KT 9999 -SHRA OVC110 16/15 Q1012",
+        "category": "VFR",
+        "temperature": 16,
+        "windKnots": 4,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "YSSY",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR YSSY 231600Z AUTO 05007KT 9999 // NCD 19/17 Q1015",
+        "category": "VFR",
+        "temperature": 19,
+        "windKnots": 7,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "ZBAA",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR ZBAA 231600Z 00000MPS CAVOK 11/07 Q1018 NOSIG",
+        "category": "VFR",
+        "temperature": 11,
+        "windKnots": 0,
+        "visibilityMiles": "6+"
+      },
+      {
+        "icao": "ZSPD",
+        "observedAt": "2026-10-23T16:00:00.000Z",
+        "raw": "METAR ZSPD 231600Z 04008MPS 9999 -SHRA SCT007 18/18 Q1014 RESHRA BECMG TL1740 SHRA BKN009",
+        "category": "VFR",
+        "temperature": 18,
+        "windKnots": 16,
+        "visibilityMiles": "6+"
+      }
+    ],
+    "sourceUrl": "https://aviationweather.gov/api/data/metar?format=json&ids=VVTS,VVNB,VVDN,RKSI,RJAA,RJTT,WSSS,VTBS,VHHH,RCTP,ZSPD,ZBAA,OMDB,OTHH,VIDP,EGLL,LFPG,EDDF,EHAM,LTFM,KJFK,KEWR,KLAX,KSFO,KORD,KDFW,KATL,CYYZ,YSSY,YMML",
+    "status": "ok",
+    "fetchedAt": "2026-10-23T16:07:03.226Z",
+    "checkedAt": "2026-10-23T16:07:03.226Z"
   }
 }
