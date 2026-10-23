@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-23T02:55:34.220Z",
+  "generatedAt": "2026-10-23T02:59:00.220Z",
   "candidates": [
     {
       "id": "bc207345431c43dfe3dbe842",
@@ -99,62 +99,6 @@
       "translationDraft": null,
       "translationError": null,
       "updatedAt": "2026-10-23T01:58:34.515Z"
-    },
-    {
-      "id": "72d7e0785c689ca033fcf115",
-      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
-      "term": "105 bài kiểm thử đạt",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
-      "sourceContext": "… xác nhận dữ liệu và metadata được rollback cùng nhau. Kết quả tại thời điểm chốt hotfix: 105 bài kiểm thử đạt, lint đạt và production build thành công. Con số 105 là tổng của bộ kiểm thử chạy trong phiên đó, bao gồm cả …",
-      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-23T01:58:34.516Z"
-    },
-    {
-      "id": "d79a6553f65e5d84c49becc4",
-      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
-      "term": "GitHub",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
-      "sourceContext": "…g tháng của Blogmoi từng hiển thị một tổ hợp thông báo rất khó hiểu: đã kết nối tài khoản GitHub, không có giao dịch chờ, có thời điểm đồng bộ thành công gần nhất, nhưng đồng thời lại báo không thể mở kho d…",
-      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-23T01:58:34.516Z"
-    },
-    {
-      "id": "69808c67c80c383c175fd1ee",
-      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
-      "term": "IndexedDB",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
-      "sourceContext": "…m rộng hơn việc thêm một dòng khai báo. Phải tìm ra vì sao lỗi giao diện bị báo thành lỗi IndexedDB, và vì sao một lần ghi GitHub có thể thành công nhưng cả quy trình vẫn bị trình bày như thất bại. Biến có tồn…",
-      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-23T01:58:34.516Z"
-    },
-    {
-      "id": "14c17fe306a175c3c33196ca",
-      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
-      "term": "JavaScript",
-      "sourceLanguage": "vi",
-      "field": "Công nghệ",
-      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
-      "sourceContext": "…g thao tác mở IndexedDB đã thất bại. Đây là phần gây hiểu nhầm đáng kể của sự cố. Một lỗi JavaScript có địa chỉ tương đối rõ đã bị chuyển thành tín hiệu chẩn đoán sai tầng. Bản sửa phân biệt lỗi lưu trữ với lỗi…",
-      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
-      "status": "extracted",
-      "translationDraft": null,
-      "translationError": null,
-      "updatedAt": "2026-10-23T01:58:34.516Z"
     },
     {
       "id": "659e87e265b257e0df7cb5c9",
@@ -595,12 +539,7 @@
       "extractorVersion": 2,
       "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
       "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
-      "candidateIds": [
-        "72d7e0785c689ca033fcf115",
-        "14c17fe306a175c3c33196ca",
-        "69808c67c80c383c175fd1ee",
-        "d79a6553f65e5d84c49becc4"
-      ]
+      "candidateIds": []
     },
     "posts/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai.md": {
       "extractorVersion": 2,
@@ -669,14 +608,14 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "manual-workflow",
-    "recordedAt": "2026-10-23T02:55:34.220Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39892192657",
+    "recordedAt": "2026-10-23T02:59:00.220Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/39892499592",
     "articlesDiscovered": 9,
     "articlesProcessed": 0,
     "articlesSkippedValidCache": 9,
-    "candidatesExtracted": 40,
+    "candidatesExtracted": 36,
     "newlyExtracted": 0,
-    "awaitingManualTranslation": 40,
-    "publishedEntries": 24
+    "awaitingManualTranslation": 36,
+    "publishedEntries": 28
   }
 }

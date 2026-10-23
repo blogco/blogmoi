@@ -552,6 +552,98 @@
       "status": "reviewed",
       "reviewStatus": "reviewed",
       "updatedAt": "2026-10-23T02:55:34.060Z"
+    },
+    {
+      "id": "72d7e0785c689ca033fcf115",
+      "vi": "105 bài kiểm thử đạt",
+      "ko": "105개 테스트 통과",
+      "en": "105 tests passed",
+      "definition": "",
+      "examples": {
+        "vi": "… xác nhận dữ liệu và metadata được rollback cùng nhau. Kết quả tại thời điểm chốt hotfix: 105 bài kiểm thử đạt, lint đạt và production build thành công. Con số 105 là tổng của bộ kiểm thử chạy trong phiên đó, bao gồm cả …",
+        "ko": "",
+        "en": ""
+      },
+      "relatedExpressions": [],
+      "field": "Công nghệ",
+      "sourceLanguage": "vi",
+      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
+      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
+      "sourceContext": "… xác nhận dữ liệu và metadata được rollback cùng nhau. Kết quả tại thời điểm chốt hotfix: 105 bài kiểm thử đạt, lint đạt và production build thành công. Con số 105 là tổng của bộ kiểm thử chạy trong phiên đó, bao gồm cả …",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
+      "translationSource": "manual",
+      "status": "reviewed",
+      "reviewStatus": "reviewed",
+      "updatedAt": "2026-10-23T02:59:00.017Z"
+    },
+    {
+      "id": "d79a6553f65e5d84c49becc4",
+      "vi": "GitHub",
+      "ko": "GitHub",
+      "en": "GitHub",
+      "definition": "",
+      "examples": {
+        "vi": "…g tháng của Blogmoi từng hiển thị một tổ hợp thông báo rất khó hiểu: đã kết nối tài khoản GitHub, không có giao dịch chờ, có thời điểm đồng bộ thành công gần nhất, nhưng đồng thời lại báo không thể mở kho d…",
+        "ko": "",
+        "en": ""
+      },
+      "relatedExpressions": [],
+      "field": "Công nghệ",
+      "sourceLanguage": "vi",
+      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
+      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
+      "sourceContext": "…g tháng của Blogmoi từng hiển thị một tổ hợp thông báo rất khó hiểu: đã kết nối tài khoản GitHub, không có giao dịch chờ, có thời điểm đồng bộ thành công gần nhất, nhưng đồng thời lại báo không thể mở kho d…",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
+      "translationSource": "manual",
+      "status": "reviewed",
+      "reviewStatus": "reviewed",
+      "updatedAt": "2026-10-23T02:59:00.017Z"
+    },
+    {
+      "id": "69808c67c80c383c175fd1ee",
+      "vi": "IndexedDB",
+      "ko": "IndexedDB",
+      "en": "IndexedDB",
+      "definition": "",
+      "examples": {
+        "vi": "…m rộng hơn việc thêm một dòng khai báo. Phải tìm ra vì sao lỗi giao diện bị báo thành lỗi IndexedDB, và vì sao một lần ghi GitHub có thể thành công nhưng cả quy trình vẫn bị trình bày như thất bại. Biến có tồn…",
+        "ko": "",
+        "en": ""
+      },
+      "relatedExpressions": [],
+      "field": "Công nghệ",
+      "sourceLanguage": "vi",
+      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
+      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
+      "sourceContext": "…m rộng hơn việc thêm một dòng khai báo. Phải tìm ra vì sao lỗi giao diện bị báo thành lỗi IndexedDB, và vì sao một lần ghi GitHub có thể thành công nhưng cả quy trình vẫn bị trình bày như thất bại. Biến có tồn…",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
+      "translationSource": "manual",
+      "status": "reviewed",
+      "reviewStatus": "reviewed",
+      "updatedAt": "2026-10-23T02:59:00.017Z"
+    },
+    {
+      "id": "14c17fe306a175c3c33196ca",
+      "vi": "JavaScript",
+      "ko": "JavaScript",
+      "en": "JavaScript",
+      "definition": "",
+      "examples": {
+        "vi": "…g thao tác mở IndexedDB đã thất bại. Đây là phần gây hiểu nhầm đáng kể của sự cố. Một lỗi JavaScript có địa chỉ tương đối rõ đã bị chuyển thành tín hiệu chẩn đoán sai tầng. Bản sửa phân biệt lỗi lưu trữ với lỗi…",
+        "ko": "",
+        "en": ""
+      },
+      "relatedExpressions": [],
+      "field": "Công nghệ",
+      "sourceLanguage": "vi",
+      "sourceArticle": "/fix-loi-scope-label-dong-bo-github-indexeddb/",
+      "articleId": "posts/fix-loi-scope-label-dong-bo-github-indexeddb.md",
+      "sourceContext": "…g thao tác mở IndexedDB đã thất bại. Đây là phần gây hiểu nhầm đáng kể của sự cố. Một lỗi JavaScript có địa chỉ tương đối rõ đã bị chuyển thành tín hiệu chẩn đoán sai tầng. Bản sửa phân biệt lỗi lưu trữ với lỗi…",
+      "articleHash": "dd464a8b5e639643cc1700c0b1c650fa7da1c4b4db1730bde9c4228ceb741fec",
+      "translationSource": "manual",
+      "status": "reviewed",
+      "reviewStatus": "reviewed",
+      "updatedAt": "2026-10-23T02:59:00.017Z"
     }
   ]
 }
