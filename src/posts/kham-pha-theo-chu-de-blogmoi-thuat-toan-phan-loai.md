@@ -5,7 +5,7 @@ description: "Giải mã mã nguồn Topic Discovery của Blogmoi: category l�
 seoTitle: "Topic Discovery trên Blogmoi: thuật toán hoạt động thế nào?"
 seoDescription: "Khám phá cách Blogmoi dùng category từ front matter và backlog biên tập để gợi ý bài bằng JavaScript trong lúc Eleventy build, không cần AI hay database."
 canonical: "https://blogco.github.io/blogmoi/kham-pha-theo-chu-de-blogmoi-thuat-toan-phan-loai/"
-date: 2026-10-23
+date: "2026-10-23T00:31:32+07:00"
 lastModified: 2026-10-23
 lang: vi
 author: Blogmoi

@@ -108,3 +108,7 @@ không gọi tính năng đã vận hành thành công chỉ vì đã cấu hìn
 Hai model đều khai báo giấy phép Apache-2.0 trong metadata Hugging Face tại
 revision đã ghim. Không commit trọng số model, cache hoặc môi trường Python
 vào Git.
+
+Ngày đăng bản tin (`date`) lưu chính xác thời điểm chạy có múi giờ, không chỉ
+`YYYY-MM-DD`. `scheduledNewsDate` vẫn là ngày GMT+7 để chống trùng. Ngày đăng
+bài nguồn là trường riêng, không được dùng thay thời điểm xuất bản trên blog.

@@ -9,6 +9,7 @@
 - Use Nunjucks for templates and minimal vanilla JavaScript for progressive enhancement. Do not add React, Vite, Tailwind, or a client-side app framework.
 
 ## Naming and content
+- For new articles, record the actual publication time as a quoted ISO 8601 `date` with an explicit timezone (for example `2026-10-23T08:23:57+07:00`), not a date-only value. Do not invent publication times or use a source article's time as the blog publication time.
 - Keep public article URLs stable at `/<slug>/`. Use lowercase kebab-case source filenames and explicit `slug` front matter when a legacy URL requires it.
 - Preserve existing content, media, metadata, and URLs during migrations. Do not delete valuable published content.
 - Do not invent articles, translations, citations, author identities, contacts, or claims. English and Korean content can be added under `src/en/` and `src/ko/` with explicit language metadata; do not create placeholder translations.

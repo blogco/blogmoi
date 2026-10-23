@@ -14,7 +14,7 @@ export async function publishScheduledNews({ root = process.cwd(), now = new Dat
   const article = extractArticle(await fetchHtml(url), url);
   if (Date.parse(article.publishedAt) > now.getTime()) throw new Error("Source publication date is in the future.");
   const brief = await generate(article);
-  const post = renderPost(brief, article, day);
+  const post = renderPost(brief, article, day, now.toISOString());
   if (!dryRun) await writeFile(resolve(directory, post.filename), post.content, { flag: "wx" });
   return { status: dryRun ? "validated" : "created", filename: post.filename, source: url, day };
 }

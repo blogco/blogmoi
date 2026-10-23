@@ -2,7 +2,7 @@
 title: "SK hynix dừng xem xét đưa Solidigm lên sàn chứng khoán Mỹ"
 slug: sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my
 description: "SK hynix cho biết Solidigm dừng xem xét huy động vốn trước IPO và niêm yết, giữa biến động thị trường vốn và lo ngại về quyền lợi cổ đông."
-date: 2026-10-23
+date: "2026-10-23T08:23:57+07:00"
 lastModified: 2026-10-23
 lang: vi
 author: Blogmoi

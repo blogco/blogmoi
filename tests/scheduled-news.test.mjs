@@ -41,7 +41,7 @@ test("model output must be concise Vietnamese, supported by source, and inert", 
   assert.throws(() => validateBrief(change({ facts: [{ text: brief.facts[0].text, evidence: "Fabricated evidence that does not occur in this source article." }] }), article), /evidence/);
   assert.throws(() => validateBrief(change({ facts: [{ text: '<script>alert("hi")</script>', evidence }] }), article));
   assert.throws(() => validateBrief(change({ facts: [{ text: "Nội dung rất dài. ".repeat(80), evidence }] }), article));
-  const post = renderPost(brief, article, "2026-10-23");
+  const post = renderPost(brief, article, "2026-10-23", "2026-10-23T01:00:00Z");
   assert.match(post.filename, /^koreatimes-2026-10-23-[a-f0-9]{12}\.md$/);
   assert.match(post.content, /sourcePublisher: "The Korea Times"/);
   assert.equal(readPublicationState([post.content], "2026-10-23").publishedToday, true);

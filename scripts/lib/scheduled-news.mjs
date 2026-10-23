@@ -150,9 +150,12 @@ export function validateBrief(brief, article) {
   return brief;
 }
 
-export function renderPost(brief, article, day) {
+export function renderPost(brief, article, day, publishedAt = new Date().toISOString()) {
+  if (!Number.isFinite(Date.parse(publishedAt)) || bangkokDay(new Date(publishedAt)) !== day) {
+    throw new Error("Publication timestamp must match the Bangkok publication date.");
+  }
   const hash = createHash("sha256").update(article.url).digest("hex").slice(0, 12);
   const slug = `koreatimes-${day}-${hash}`;
   const quote = value => JSON.stringify(value);
-  return { filename: `${slug}.md`, content: `---\ntitle: ${quote(brief.title)}\nslug: ${slug}\ndescription: ${quote(brief.description)}\ndate: ${day}\nlastModified: ${day}\nlang: vi\nauthor: Blogmoi\ncategories:\n  - Kinh doanh\n  - Doanh nghiệp\ntags:\n  - Hàn Quốc\nsourcePublisher: "The Korea Times"\nsourceUrl: ${quote(article.url)}\nsourcePublicationDate: ${quote(article.publishedAt)}\nscheduledNewsDate: ${quote(day)}\neditorialNote: "Bản tin tiếng Việt được biên soạn tự động, tóm lược bằng lời riêng từ bài nguồn; không phải bản dịch toàn văn. Hãy đọc bài gốc để xem đầy đủ thông tin."\ncopyrightNotice: "Bài nguồn thuộc The Korea Times và các chủ thể được ghi trong bài gốc. Blogmoi không sử dụng lại ảnh hoặc toàn văn của nguồn."\n---\n\n${brief.facts.map(fact => fact.text).join("\n\n")}\n\nNguồn: [The Korea Times](${article.url}).\n` };
+  return { filename: `${slug}.md`, content: `---\ntitle: ${quote(brief.title)}\nslug: ${slug}\ndescription: ${quote(brief.description)}\ndate: ${quote(publishedAt)}\nlastModified: ${day}\nlang: vi\nauthor: Blogmoi\ncategories:\n  - Kinh doanh\n  - Doanh nghiệp\ntags:\n  - Hàn Quốc\nsourcePublisher: "The Korea Times"\nsourceUrl: ${quote(article.url)}\nsourcePublicationDate: ${quote(article.publishedAt)}\nscheduledNewsDate: ${quote(day)}\neditorialNote: "Bản tin tiếng Việt được biên soạn tự động, tóm lược bằng lời riêng từ bài nguồn; không phải bản dịch toàn văn. Hãy đọc bài gốc để xem đầy đủ thông tin."\ncopyrightNotice: "Bài nguồn thuộc The Korea Times và các chủ thể được ghi trong bài gốc. Blogmoi không sử dụng lại ảnh hoặc toàn văn của nguồn."\n---\n\n${brief.facts.map(fact => fact.text).join("\n\n")}\n\nNguồn: [The Korea Times](${article.url}).\n` };
 }

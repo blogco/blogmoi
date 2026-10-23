@@ -5,7 +5,7 @@ description: "Khám phá cách tôi sử dụng BLOGMOI CODEX REPORT để theo 
 seoTitle: "BLOGMOI CODEX REPORT: Theo dõi kết quả lập trình AI"
 seoDescription: "Khám phá cách tôi sử dụng BLOGMOI CODEX REPORT để theo dõi thay đổi mã nguồn, Git commit, kiểm thử và triển khai GitHub Pages sau mỗi tác vụ lập trình với Codex."
 canonical: "https://blogco.github.io/blogmoi/blogmoi-codex-report-theo-doi-lap-trinh-ai-terminal/"
-date: 2026-10-23
+date: "2026-10-23T02:52:48+07:00"
 lastModified: 2026-10-23
 lang: vi
 author: Blogmoi
