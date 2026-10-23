@@ -2,20 +2,6 @@
   "schemaVersion": 1,
   "transactions": [
     {
-      "id": "0328d9d0-1196-4a5e-b9c6-3db9a989c3cf",
-      "merchant": "Starbucks",
-      "itemName": "Matcha Latte",
-      "amount": 50000,
-      "date": "2026-10-23",
-      "taste": "không đường",
-      "category": "Đồ uống",
-      "iconId": "matcha",
-      "iconManuallySet": false,
-      "notes": "Nguyen Van Troi",
-      "createdAt": "2026-10-22T18:44:58.654Z",
-      "updatedAt": "2026-10-22T18:44:58.654Z"
-    },
-    {
       "id": "b752b4de-44a2-4d42-9d32-0ca380b2d38a",
       "merchant": "Minh Tuấn 5",
       "itemName": "Hủ tíu thịt nạc heo",
@@ -28,23 +14,13 @@
       "notes": "ăn sáng",
       "createdAt": "2026-10-23T00:59:39.152Z",
       "updatedAt": "2026-10-23T00:59:39.152Z"
-    },
-    {
-      "id": "f2e9098d-2a70-457c-bf65-2a95648f93eb",
-      "merchant": "Starbucks",
-      "itemName": "Matcha Latte",
-      "amount": 225000,
-      "date": "2026-09-25",
-      "taste": "không đường",
-      "category": "Đồ uống",
-      "iconId": "matcha",
-      "iconManuallySet": false,
-      "notes": "",
-      "createdAt": "2026-10-22T18:56:43.244Z",
-      "updatedAt": "2026-10-22T18:56:43.244Z"
     }
   ],
   "tombstones": [
+    {
+      "id": "0328d9d0-1196-4a5e-b9c6-3db9a989c3cf",
+      "deletedAt": "2026-10-23T01:00:41.994Z"
+    },
     {
       "id": "4b38c1ef-ad95-45b2-ba91-ccfa46afb27e",
       "deletedAt": "2026-10-23T01:00:35.570Z"
@@ -52,6 +28,10 @@
     {
       "id": "bd6015a4-bc31-4969-adcb-2c15316d9065",
       "deletedAt": "2026-10-23T01:00:32.785Z"
+    },
+    {
+      "id": "f2e9098d-2a70-457c-bf65-2a95648f93eb",
+      "deletedAt": "2026-10-23T01:00:44.360Z"
     }
   ]
 }
