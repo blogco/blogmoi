@@ -9,8 +9,16 @@ on:
       - data/dictionary/pending.json
       - src/_data/dictionary-data.json
       - data/expenses/transactions.json
+  schedule:
+    # 00:00 UTC = 07:00 Asia/Bangkok (GMT+7); GitHub may delay runs.
+    - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
+      news_source_url:
+        description: Optional Korea Times Companies article URL to summarize and publish
+        type: string
+        required: false
+        default: ""
       dictionary_payload:
         description: Verified manual translations submitted from the dictionary page
         type: string
@@ -29,6 +37,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment:
       name: github-pages
     steps:
@@ -46,6 +55,34 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit --no-fund
 
+      - name: Set up Python for local news models
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Restore local news model cache
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: news-cpu-models-v1-${{ runner.os }}-${{ hashFiles('scripts/news/requirements.txt', 'scripts/news/local_brief.py') }}
+
+      - name: Install CPU news model dependencies
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        run: |
+          python -m pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r scripts/news/requirements.txt
+
+      - name: Generate one Vietnamese Companies brief locally
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        env:
+          NEWS_SOURCE_URL: ${{ inputs.news_source_url || '' }}
+          HF_HUB_DISABLE_TELEMETRY: '1'
+          HF_HUB_DISABLE_XET: '1'
+          TOKENIZERS_PARALLELISM: 'false'
+        run: node scripts/publish-scheduled-news.mjs
+
       - name: Import translations confirmed in the dictionary page
         id: import
         if: github.event_name == 'workflow_dispatch' && inputs.dictionary_payload != ''
@@ -54,22 +91,6 @@ jobs:
       - name: Extract vocabulary from published articles
         id: extract
         run: npm run dictionary:sync
-
-      - name: Persist dictionary files before build
-        id: persist_dictionary
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- data/dictionary/pending.json src/_data/dictionary-data.json
-          if git diff --cached --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Dictionary files are already current."
-            exit 0
-          fi
-          git commit -m "chore(dictionary): sync article vocabulary"
-          git pull --rebase origin main
-          git push origin "HEAD:main"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Save private review queue artifact
         if: always()
@@ -87,6 +108,23 @@ jobs:
         run: |
           npm run build
           node -e "const fs=require('node:fs'); for (const p of ['_site/sitemap.xml','_site/index.xml','_site/search-index.json','_site/dictionary-index.json','_site/dictionary-candidates.json']) if (!fs.existsSync(p)) throw new Error('Missing build output: '+p); const source=JSON.parse(fs.readFileSync('src/_data/dictionary-data.json','utf8')); const index=JSON.parse(fs.readFileSync('_site/dictionary-index.json','utf8')); if (source.entries.filter(e=>['published','reviewed'].includes(e.status)).length !== index.length) throw new Error('Dictionary index count does not match published source data'); const candidates=JSON.parse(fs.readFileSync('_site/dictionary-candidates.json','utf8')); if (!Array.isArray(candidates)) throw new Error('Dictionary candidate feed must be an array'); console.log('Dictionary JSON and required static outputs verified.');"
+
+      - name: Persist validated content before deployment
+        id: persist_dictionary
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/dictionary/pending.json src/_data/dictionary-data.json data/editorial-topic-suggestions.json
+          find src/posts -maxdepth 1 -name 'koreatimes-*.md' -type f -print0 | xargs -0 -r git add --
+          if git diff --cached --quiet; then
+            echo "Content is already current."
+            exit 0
+          fi
+          git commit -m "chore(content): publish validated news and sync vocabulary"
+          git pull --rebase origin main
+          git push origin "HEAD:main"
+          # Rebuild from the exact merged tree, including concurrent data changes.
+          npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

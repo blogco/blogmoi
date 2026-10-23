@@ -34,7 +34,7 @@ const rows = [
   ["Candidates in built list", publicCandidates.length],
   ["Import translations", importOutcome.toUpperCase()],
   ["Vocabulary extraction", extractOutcome.toUpperCase()],
-  ["Persist before build", persistOutcome.toUpperCase()],
+  ["Persist before deployment", persistOutcome.toUpperCase()],
   ["GitHub Pages deployment", deployOutcome.toUpperCase()]
 ];
 const width = Math.max("DICTIONARY PIPELINE REPORT".length, ...rows.map(([label]) => label.length));
@@ -53,7 +53,7 @@ if (!indexConsistent) notes += `\nBuild mismatch: ${published} published source 
 if (!candidatesConsistent) notes += `\nBuild mismatch: ${candidates.length} persistent candidates do not match ${publicCandidates.length} public candidates.\n`;
 if (importOutcome === "failure") notes += "\nThe submitted translations were rejected. No dictionary files were committed.\n";
 if (extractOutcome !== "success") notes += "\nVocabulary extraction failed. Check the extraction step.\n";
-if (persistOutcome !== "success") notes += "\nDictionary files were not confirmed in the repository before build.\n";
+if (persistOutcome !== "success") notes += "\nDictionary files were not confirmed in the repository before deployment.\n";
 if (deployOutcome !== "success") notes += "\nGitHub Pages deployment did not complete successfully.\n";
 if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `\n\n\`\`\`text\n${report}\n\`\`\`${notes}\n`);
 

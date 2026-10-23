@@ -1,0 +1,6 @@
+# torch is installed separately from the official CPU wheel index.
+transformers==4.57.1
+sentencepiece==0.2.1
+sacremoses==0.1.1
+safetensors==0.6.2
+huggingface-hub==0.35.3
