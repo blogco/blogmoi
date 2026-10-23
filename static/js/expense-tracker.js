@@ -448,7 +448,7 @@ export function buildHealthInsights(transactions, period) {
   const unknownInsight = { type: "unknown", title: "Chưa thể đánh giá toàn bộ khẩu phần", text: `Có ${records.length} giao dịch trong ${scopeLabel}; ${drinksWithoutSugarDetails} giao dịch thuộc danh mục đồ uống chưa ghi mức đường. Sổ chi tiêu không phản ánh mọi món đã ăn và không cho biết công thức hoặc khẩu phần, nên chưa thể đánh giá tổng lượng đường, dầu mỡ hay caffeine.` };
   const lowerSugar = notes.filter(({ text }) => /không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt/iu.test(text));
   if (lowerSugar.length) {
-    insights.push({ type: "positive", title: "Đã ghi nhận lựa chọn ít / không đường", text: `${lowerSugar.length} giao dịch có ghi khẩu vị không đường, ít đường hoặc ít ngọt. Đây là thông tin theo ghi chép của bạn; công thức thực tế có thể khác.` });
+    insights.push({ type: "positive", iconId: "tea", count: lowerSugar.length, total: records.length, title: "Đã ghi nhận lựa chọn ít / không đường", text: `${lowerSugar.length} giao dịch có ghi khẩu vị không đường, ít đường hoặc ít ngọt. Đây là thông tin theo ghi chép của bạn; công thức thực tế có thể khác.` });
   }
 
   const explicitlySweet = notes.filter(({ text }) => /nhiều\s+đường|thêm\s+đường|đầy\s+đường|full\s+đường/iu.test(text));
@@ -458,22 +458,22 @@ export function buildHealthInsights(transactions, period) {
   });
   if (explicitlySweet.length || sweetDrinkNames.length) {
     const count = new Set([...explicitlySweet, ...sweetDrinkNames].map(record => record.transaction.id)).size;
-    insights.push({ type: "consider", title: "Đồ uống có thể ngọt", text: `${count} giao dịch được ghi rõ nhiều đường hoặc có tên nhóm thường được pha ngọt như trà sữa / nước ngọt. Nếu phù hợp, bạn có thể chọn ít đường hơn; ghi chép không cho biết lượng đường thực tế.` });
+    insights.push({ type: "consider", iconId: "milk-tea", count, total: records.length, title: "Đồ uống có thể ngọt", text: `${count} giao dịch được ghi rõ nhiều đường hoặc có tên nhóm thường được pha ngọt như trà sữa / nước ngọt. Nếu phù hợp, bạn có thể chọn ít đường hơn; ghi chép không cho biết lượng đường thực tế.` });
   }
 
   const dessert = notes.filter(({ transaction, iconId }) => iconId === "cake" || /bánh ngọt|bánh kem|chè\b|kem\b|dessert|donut|croissant/iu.test(transaction.itemName));
-  if (dessert.length) insights.push({ type: "consider", title: "Bánh ngọt / món tráng miệng", text: `Bạn đã ghi nhận ${dessert.length} giao dịch thuộc nhóm bánh ngọt hoặc món tráng miệng theo tên món. Có thể cân nhắc tần suất và khẩu phần; dữ liệu chi tiêu không cho biết thành phần dinh dưỡng.` });
+  if (dessert.length) insights.push({ type: "consider", iconId: "cake", count: dessert.length, total: records.length, title: "Bánh ngọt / món tráng miệng", text: `Bạn đã ghi nhận ${dessert.length} giao dịch thuộc nhóm bánh ngọt hoặc món tráng miệng theo tên món. Có thể cân nhắc tần suất và khẩu phần; dữ liệu chi tiêu không cho biết thành phần dinh dưỡng.` });
 
   const fried = notes.filter(({ transaction, iconId }) => iconId === "fried" || /chiên|rán|fried|fries/iu.test(`${transaction.itemName} ${transaction.notes}`));
-  if (fried.length) insights.push({ type: "consider", title: "Món được mô tả là chiên", text: `${fried.length} giao dịch có tên món hoặc icon thuộc nhóm chiên. Nếu phù hợp, bạn có thể luân phiên với món luộc / hấp; ghi chép không cho biết lượng dầu hay chất béo.` });
+  if (fried.length) insights.push({ type: "consider", iconId: "fried", count: fried.length, total: records.length, title: "Món được mô tả là chiên", text: `${fried.length} giao dịch có tên món hoặc icon thuộc nhóm chiên. Nếu phù hợp, bạn có thể luân phiên với món luộc / hấp; ghi chép không cho biết lượng dầu hay chất béo.` });
 
   const caffeine = notes.filter(({ transaction, iconId }) => iconId === "coffee" || iconId === "matcha" || /cà\s*phê|coffee|cafe|espresso|americano|matcha|trà\s+xanh|green\s+tea/iu.test(transaction.itemName));
-  if (caffeine.length) insights.push({ type: "consider", title: "Đồ uống có thể chứa caffeine", text: `${caffeine.length} giao dịch có tên cà phê, matcha hoặc trà xanh. Hàm lượng và việc dùng loại khử caffeine không thể xác định từ ghi chép; cân nhắc thời điểm uống nếu điều đó phù hợp với bạn.` });
+  if (caffeine.length) insights.push({ type: "consider", iconId: "coffee", count: caffeine.length, total: records.length, title: "Đồ uống có thể chứa caffeine", text: `${caffeine.length} giao dịch có tên cà phê, matcha hoặc trà xanh. Hàm lượng và việc dùng loại khử caffeine không thể xác định từ ghi chép; cân nhắc thời điểm uống nếu điều đó phù hợp với bạn.` });
 
   const countsByIcon = new Map();
   for (const { iconId } of notes) countsByIcon.set(iconId, (countsByIcon.get(iconId) || 0) + 1);
   for (const [iconId, count] of [...countsByIcon].filter(([, count]) => count >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3)) {
-    insights.push({ type: "consider", title: `Lặp lại: ${FOOD_ICONS[iconId].label}`, text: `Nhóm ${FOOD_ICONS[iconId].label.toLocaleLowerCase("vi-VN")} xuất hiện ${count} lần trong ${scopeLabel}. Bạn có thể dùng tần suất này để cân nhắc sự đa dạng món; số giao dịch không thể hiện toàn bộ khẩu phần.` });
+    insights.push({ type: "consider", iconId, count, total: records.length, title: `Lặp lại: ${FOOD_ICONS[iconId].label}`, text: `Nhóm ${FOOD_ICONS[iconId].label.toLocaleLowerCase("vi-VN")} xuất hiện ${count} lần trong ${scopeLabel}. Bạn có thể dùng tần suất này để cân nhắc sự đa dạng món; số giao dịch không thể hiện toàn bộ khẩu phần.` });
   }
 
   if (!insights.some(item => item.type === "positive" || item.type === "consider")) {
@@ -1156,14 +1156,37 @@ function renderInsights(transactions, summary, comparison, selection) {
   }
 }
 
-function renderHealthInsights(transactions, period) {
+export function renderHealthInsights(transactions, period) {
   const container = document.querySelector("#health-insight-list");
   container.replaceChildren();
+  const spriteUrl = document.querySelector("#expense-app").dataset.iconSprite || "/icons/food-drink.svg";
   for (const record of buildHealthInsights(transactions, period)) {
     const card = makeElement("article", `insight-card health-insight-card health-insight-card--${record.type}`);
+    const visual = makeElement("div", "health-insight-card__visual");
+    visual.append(createFoodIcon(record.iconId || "other", spriteUrl));
+    if (Number.isInteger(record.count) && record.total > 0) {
+      const metric = makeElement("p", "health-insight-card__metric");
+      metric.append(makeElement("strong", "", String(record.count)), makeElement("span", "", ` / ${record.total} giao dịch`));
+      visual.append(metric);
+    } else {
+      visual.append(makeElement("span", "health-insight-card__prompt", transactions.length ? "Thêm ghi chú, hiểu hơn nhé!" : "Bắt đầu từ một món nhỏ!"));
+    }
+    card.append(visual);
     card.append(makeElement("p", "insight-card__type", record.type === "positive" ? "Positive · Có thể có lợi" : record.type === "consider" ? "Consider · Đáng cân nhắc" : "Unknown · Chưa đủ dữ liệu"));
     card.append(makeElement("h4", "health-insight-card__title", record.title));
-    card.append(makeElement("p", "", record.text));
+    if (Number.isInteger(record.count) && record.total > 0) {
+      const chart = makeElement("div", "health-insight-card__chart");
+      const percent = Math.round(record.count / record.total * 100);
+      chart.append(makeElement("p", "health-insight-card__caption", `${percent}% giao dịch trong phạm vi đã chọn`));
+      const track = makeElement("div", "health-insight-card__track");
+      track.setAttribute("aria-hidden", "true");
+      const fill = makeElement("span");
+      fill.style.width = `${percent}%`;
+      track.append(fill);
+      chart.append(track);
+      card.append(chart);
+    }
+    card.append(makeElement("p", "health-insight-card__advice", record.text));
     container.append(card);
   }
 }

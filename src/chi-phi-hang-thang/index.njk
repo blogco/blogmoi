@@ -267,7 +267,16 @@ description: Ghi chép chi phí cá nhân, xem xu hướng theo tháng và nhậ
         <div><p class="expense-index">GÓC NHÌN SỨC KHỎE · RULE-BASED OFFLINE</p><h3 id="health-insights-title">Góc nhìn sức khỏe</h3></div>
         <span class="insights-badge">Phân tích trên thiết bị</span>
       </div>
+      <div class="health-story">
+        <div class="health-story__art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><use href="{{ '/icons/food-drink.svg' | url }}#food-icon-tea"></use></svg>
+          <svg viewBox="0 0 64 64"><use href="{{ '/icons/food-drink.svg' | url }}#food-icon-rice"></use></svg>
+          <svg viewBox="0 0 64 64"><use href="{{ '/icons/food-drink.svg' | url }}#food-icon-cake"></use></svg>
+        </div>
+        <div><p class="health-story__title">Mỗi món một câu chuyện!</p><p>Cùng nhìn lại những lựa chọn đã ghi. Thanh màu đếm giao dịch, không chấm điểm sức khỏe.</p></div>
+      </div>
       <p class="health-insight-period" id="health-insight-period">Phạm vi dữ liệu: Toàn bộ thời gian.</p>
+      <p class="health-chart-key">Một giao dịch có thể xuất hiện ở nhiều thẻ; các tỷ lệ không cộng thành 100%.</p>
       <div class="insight-list health-insight-list" id="health-insight-list" aria-live="polite"></div>
       <p class="health-note">Nhận xét chỉ dựa trên tên món, khẩu vị, danh mục và tần suất giao dịch đã ghi. Không suy đoán calories, lượng đường, caffeine hay chẩn đoán sức khỏe; chi tiêu không đại diện cho toàn bộ khẩu phần ăn.</p>
     </section>

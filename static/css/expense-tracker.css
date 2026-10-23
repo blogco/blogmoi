@@ -432,3 +432,38 @@ html[data-theme="dark"] .food-bubble { color: #17212a; }
   .transaction-row { padding: 8px !important; }
   a { color: inherit !important; text-decoration: none !important; }
 }
+
+/* A small illustrated journal: counts describe purchases, never nutrition. */
+.health-story { display: flex; align-items: center; gap: 22px; margin-bottom: 24px; padding: 20px; border: 1px dashed var(--line); border-radius: 20px; background: color-mix(in srgb, var(--mint), var(--surface) 75%); }
+.health-story__art { display: flex; align-items: center; flex: 0 0 auto; padding: 6px; }
+.health-story__art svg { width: 64px; height: 64px; padding: 8px; border-radius: 22px; background: #e3f3ef; transform: rotate(-12deg); }
+.health-story__art svg:nth-child(2) { width: 82px; height: 82px; margin: 0 -8px; z-index: 1; background: #edf2e3; transform: rotate(6deg) translateY(-5px); border: 3px solid var(--surface); }
+.health-story__art svg:nth-child(3) { background: #fbe8ec; transform: rotate(14deg); }
+.health-story p { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.65; }
+.health-story .health-story__title { margin-bottom: 4px; color: var(--ink); font-size: 1.15rem; font-weight: 800; }
+.health-chart-key { margin: 0 0 16px; color: var(--muted); font-size: .76rem; }
+.health-insight-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.health-insight-card { --health-accent: var(--teal); padding: 20px; border-radius: 20px; border-top: 1px solid var(--line); background: var(--paper); }
+.health-insight-card--consider { --health-accent: #a86824; }
+.health-insight-card--unknown { --health-accent: var(--muted); border-style: dashed; }
+.health-insight-card__visual { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.health-insight-card__visual .food-icon-tile { width: 66px; height: 66px; flex-basis: 66px; border-radius: 22px; transform: rotate(-6deg); }
+.health-insight-card__visual .food-icon-svg { width: 52px; height: 52px; }
+.health-insight-card__metric { margin: 0; color: var(--muted); font-size: .76rem; }
+.health-insight-card__metric strong { color: var(--ink); font-size: 2rem; line-height: 1.2; }
+.health-insight-card__metric span { display: block; }
+.health-insight-card__prompt { color: var(--muted); font-size: .85rem; font-weight: 700; }
+.health-insight-card .insight-card__type { color: var(--health-accent); letter-spacing: .02em; }
+.health-insight-card__chart { margin: 16px 0; }
+.health-insight-card__caption { margin: 0 0 7px; color: var(--muted); font-size: .75rem; }
+.health-insight-card__track { height: 10px; overflow: hidden; border-radius: 20px; background: var(--wash); border: 1px solid var(--line); }
+.health-insight-card__track span { display: block; height: 100%; border-radius: inherit; background: var(--health-accent); print-color-adjust: exact; }
+.health-insight-card__advice { margin: 0; }
+@media (max-width: 640px) {
+  .health-story { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .health-insight-list { grid-template-columns: minmax(0, 1fr); }
+}
+@media print {
+  .health-story { padding: 10px; }
+  .health-insight-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
