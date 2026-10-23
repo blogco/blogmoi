@@ -443,9 +443,33 @@ export function buildHealthInsights(transactions, period) {
     text: `${transaction.itemName} ${transaction.taste || ""} ${transaction.notes || ""}`.toLocaleLowerCase("vi-VN"),
     iconId: Object.hasOwn(FOOD_ICONS, transaction.iconId) ? transaction.iconId : resolveFoodIcon(transaction.itemName),
   }));
+  // Classify recorded meals without inferring portions or nutrient quantities.
+  const foodRules = [
+    { iconId: "rice", title: "Cơm và món từ gạo", pattern: /\b(com|rice|bibimbap|xoi|chao)\b/u, advice: "Khi chọn bữa cơm, bạn có thể kết hợp rau và nguồn đạm như cá, trứng hoặc đậu; điều chỉnh phần cơm theo nhu cầu và mức vận động của mình." },
+    { iconId: "noodles", title: "Phở, bún và mì", pattern: /\b(pho|bun|mi|noodle|ramen|mien|hu tieu|banh canh)\b/u, advice: "Bạn có thể thêm rau và nguồn đạm vào bữa phở, bún hoặc mì; nếm trước khi thêm nước chấm, và dùng lượng nước dùng phù hợp với nhu cầu của mình." },
+    { iconId: "bread", title: "Bánh mì và món ăn nhanh", pattern: /\b(banh mi|bread|sandwich|burger|pizza)\b/u, advice: "Có thể chọn phần có rau, trứng, cá hoặc đậu; gọi sốt riêng để tự điều chỉnh. Tên món chưa cho biết loại bột, nhân hay lượng muối thực tế." },
+    { iconId: "rice", title: "Rau, củ, quả và các loại đậu", pattern: /\b(rau|salad|cu qua|trai cay|hoa qua|tao|chuoi|cam|oi|du du|dau|nam|vegetable|fruit|tofu|bean)\b/u, advice: "Bạn đã ghi nhận tên món có rau, củ, quả hoặc đậu. Có thể luân phiên nhiều loại và màu sắc; với trái cây, ưu tiên dạng nguyên miếng khi phù hợp. Số lần mua không cho biết bạn đã ăn đủ rau quả hay chưa." },
+    { iconId: "rice", title: "Thịt, cá, trứng và hải sản", pattern: /\b(thit|bo|ga|heo|lon|vit|ca|tom|cua|muc|hai san|trung|beef|chicken|pork|fish|egg|seafood)\b/u, advice: "Bạn có thể luân phiên các nguồn đạm và cách chế biến như hấp, luộc hoặc kho vừa vị; kết hợp rau trong bữa ăn. Ghi thêm loại thịt, cá và cách chế biến sẽ giúp nhận xét sát hơn." },
+    { iconId: "fried", title: "Món chế biến sẵn và vị mặn", pattern: /\b(xuc xich|jambon|ham|bacon|thi[t]? nguoi|do hop|kho bo|kho ga|snack|nhieu muoi|man)\b/u, advice: "Nếu thường dùng các món này, bạn có thể luân phiên với thực phẩm tươi, nếm trước khi thêm gia vị và xem thông tin natri trên nhãn khi có. Chưa thể tính lượng muối từ tên món." },
+  ];
+  const foodNotes = notes.filter(({ transaction, iconId }) => transaction.category === "Đồ ăn"
+    || ["rice", "noodles", "bread", "cake", "fried"].includes(iconId));
+  const matchedFoods = new Set();
+  for (const rule of foodRules) {
+    const matched = foodNotes.filter(note => rule.pattern.test(note.text.normalize("NFD").replace(/\p{M}/gu, "").replace(/đ/gu, "d")));
+    if (!matched.length) continue;
+    matched.forEach(note => matchedFoods.add(note));
+    insights.push({ type: "consider", iconId: rule.iconId, count: matched.length, total: records.length, title: rule.title,
+      text: `Đã ghi: ${[...new Set(matched.map(note => note.transaction.itemName))].join(", ")}. Có ${matched.length} giao dịch trong nhóm này. ${rule.advice}` });
+  }
+  const otherFoods = foodNotes.filter(note => !matchedFoods.has(note)
+    && !["cake", "fried"].includes(note.iconId));
+  if (otherFoods.length) insights.push({ type: "consider", iconId: "other", count: otherFoods.length, total: records.length,
+    title: "Các món ăn khác trong sổ",
+    text: `Đã ghi: ${[...new Set(otherFoods.map(note => note.transaction.itemName))].join(", ")}. Có ${otherFoods.length} giao dịch món ăn chưa nhận diện rõ nhóm nguyên liệu. Bạn có thể ghi thêm thành phần chính, cách chế biến và khẩu phần; khi chọn bữa ăn, cân nhắc kết hợp rau, nguồn đạm và món cung cấp tinh bột phù hợp với nhu cầu của mình.` });
   const drinksWithoutSugarDetails = notes.filter(({ transaction, text }) => transaction.category === "Đồ uống"
     && !/không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt|nhiều\s+đường|thêm\s+đường/iu.test(text)).length;
-  const unknownInsight = { type: "unknown", title: "Chưa thể đánh giá toàn bộ khẩu phần", text: `Có ${records.length} giao dịch trong ${scopeLabel}; ${drinksWithoutSugarDetails} giao dịch thuộc danh mục đồ uống chưa ghi mức đường. Sổ chi tiêu không phản ánh mọi món đã ăn và không cho biết công thức hoặc khẩu phần, nên chưa thể đánh giá tổng lượng đường, dầu mỡ hay caffeine.` };
+  const unknownInsight = { type: "unknown", title: "Chưa thể đánh giá toàn bộ khẩu phần", text: `Có ${records.length} giao dịch trong ${scopeLabel}; ${drinksWithoutSugarDetails} giao dịch thuộc danh mục đồ uống chưa ghi mức đường. Bạn có thể ghi thêm nguyên liệu, cách chế biến, khẩu phần món ăn và khẩu vị đồ uống. Sổ chi tiêu không phản ánh mọi món đã ăn và không cho biết công thức hoặc khẩu phần, nên chưa thể đánh giá tổng lượng đường, dầu mỡ hay caffeine.` };
   const lowerSugar = notes.filter(({ text }) => /không\s+đường|không\s+ngọt|ít\s+đường|giảm\s+đường|ít\s+ngọt/iu.test(text));
   if (lowerSugar.length) {
     insights.push({ type: "positive", iconId: "tea", count: lowerSugar.length, total: records.length, title: "Đã ghi nhận lựa chọn ít / không đường", text: `${lowerSugar.length} giao dịch có ghi khẩu vị không đường, ít đường hoặc ít ngọt. Đây là thông tin theo ghi chép của bạn; công thức thực tế có thể khác.` });
@@ -458,7 +482,7 @@ export function buildHealthInsights(transactions, period) {
   });
   if (explicitlySweet.length || sweetDrinkNames.length) {
     const count = new Set([...explicitlySweet, ...sweetDrinkNames].map(record => record.transaction.id)).size;
-    insights.push({ type: "consider", iconId: "milk-tea", count, total: records.length, title: "Đồ uống có thể ngọt", text: `${count} giao dịch được ghi rõ nhiều đường hoặc có tên nhóm thường được pha ngọt như trà sữa / nước ngọt. Nếu phù hợp, bạn có thể chọn ít đường hơn; ghi chép không cho biết lượng đường thực tế.` });
+    insights.push({ type: "consider", iconId: "milk-tea", count, total: records.length, title: "Món ăn / đồ uống có thể ngọt", text: `${count} giao dịch được ghi rõ nhiều đường hoặc có tên nhóm thường được pha ngọt như trà sữa / nước ngọt. Nếu phù hợp, bạn có thể chọn ít đường hơn; ghi chép không cho biết lượng đường thực tế.` });
   }
 
   const dessert = notes.filter(({ transaction, iconId }) => iconId === "cake" || /bánh ngọt|bánh kem|chè\b|kem\b|dessert|donut|croissant/iu.test(transaction.itemName));
@@ -479,7 +503,7 @@ export function buildHealthInsights(transactions, period) {
   if (!insights.some(item => item.type === "positive" || item.type === "consider")) {
     insights.push({ type: "unknown", title: "Thông tin còn hạn chế", text: "Tên món và ghi chú tháng này chưa cho biết rõ về đường, dầu mỡ hoặc caffeine. Chưa đủ dữ liệu để nhận xét; bạn có thể ghi thêm khẩu vị nếu muốn." });
   }
-  return [...insights.filter(item => item.type !== "unknown").slice(0, 7), unknownInsight];
+  return [...insights.filter(item => item.type !== "unknown"), unknownInsight];
 }
 
 function formatPercent(value) {

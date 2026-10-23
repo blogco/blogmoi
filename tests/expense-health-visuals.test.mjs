@@ -35,3 +35,23 @@ test("health charts reflect selected transactions and reset for empty periods", 
     dom.window.close();
   }
 });
+
+test("meal advice covers food groups, unrecognized meals and drinks without truncation", () => {
+  const names = ["Cơm gà", "Phở bò", "Bánh mì trứng", "Salad rau", "Cá hấp", "Xúc xích", "Món đặc biệt", "Bánh ngọt", "Gà rán", "Trà sữa", "Cà phê"];
+  const meals = names.map((itemName, index) => ({ id: String(index), date: "2026-10-11", itemName, amount: 30000, category: index < 9 ? "Đồ ăn" : "Đồ uống" }));
+  const insights = buildHealthInsights(meals, "2026-10");
+  for (const title of ["Cơm và món từ gạo", "Phở, bún và mì", "Bánh mì và món ăn nhanh", "Rau, củ, quả và các loại đậu", "Thịt, cá, trứng và hải sản", "Món chế biến sẵn và vị mặn", "Các món ăn khác trong sổ", "Bánh ngọt / món tráng miệng", "Món được mô tả là chiên", "Món ăn / đồ uống có thể ngọt", "Đồ uống có thể chứa caffeine"]) {
+    assert.ok(insights.some(item => item.title === title), title);
+  }
+  assert.ok(insights.filter(item => item.count).every(item => item.total === meals.length && item.count <= item.total));
+  assert.ok(insights.find(item => item.title === "Các món ăn khác trong sổ").text.includes("Món đặc biệt"));
+  assert.equal(insights.at(-1).type, "unknown");
+  assert.equal(buildHealthInsights(meals, "2026-09").length, 1);
+});
+
+test("food advice does not infer missing vegetables or diagnose nutritional deficiency", () => {
+  const insights = buildHealthInsights([{ id: "rice", date: "2026-10-11", itemName: "Cơm", category: "Đồ ăn", amount: 20000 }], "all");
+  assert.ok(insights.some(item => item.title === "Cơm và món từ gạo"));
+  assert.ok(!insights.some(item => /thiếu chất|bạn ăn thiếu|bạn bị|chẩn đoán bạn/iu.test(item.text)));
+  assert.ok(!insights.some(item => item.title === "Rau, củ, quả và các loại đậu"));
+});
