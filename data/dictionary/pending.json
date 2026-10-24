@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-23T02:59:00.220Z",
+  "generatedAt": "2026-10-24T04:45:13.164Z",
   "candidates": [
     {
       "id": "bc207345431c43dfe3dbe842",
@@ -552,6 +552,12 @@
         "4af1f359eeb20671c1b26bd3"
       ]
     },
+    "posts/koreatimes-2026-10-24-58181f21b2f2.md": {
+      "extractorVersion": 2,
+      "articleHash": "25c337e2d24fb9309ec1655470990c4a28d325cb2921a97956780bc86ffb0015",
+      "sourceArticle": "/koreatimes-2026-10-24-58181f21b2f2/",
+      "candidateIds": []
+    },
     "posts/sk-hynix-dung-xem-xet-niem-yet-solidigm-tai-my.md": {
       "extractorVersion": 2,
       "articleHash": "5a31a0814c70cb800f9715a23c012df5cb048441401c85e254f2adddc165d683",
@@ -608,10 +614,10 @@
   "lastRun": {
     "mode": "incremental",
     "trigger": "automatic-publish",
-    "recordedAt": "2026-10-24T04:28:48.335Z",
-    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/40062482199",
-    "articlesDiscovered": 9,
-    "articlesProcessed": 0,
+    "recordedAt": "2026-10-24T04:45:13.164Z",
+    "workflowRunUrl": "https://github.com/blogco/blogmoi/actions/runs/40063564762",
+    "articlesDiscovered": 10,
+    "articlesProcessed": 1,
     "articlesSkippedValidCache": 9,
     "candidatesExtracted": 36,
     "newlyExtracted": 0,
