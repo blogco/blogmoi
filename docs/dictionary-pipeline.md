@@ -1,32 +1,39 @@
-# Từ điển VI-KR-EN
+# Từ điển thủ công VI · KR · EN
 
-## Quy trình
+Trang `/tu-dien-vi-kr/` có hai chế độ: **Tra cứu & học** và **Nhập mục mới**.
+Không cần chọn bài, Content ID hoặc mục trích xuất để nhập. Các trường gồm:
+Tiếng Việt, tiếng Hàn, tiếng Anh, ví dụ sử dụng bằng tiếng Hàn, ghi chú và lĩnh vực.
+Ba ngôn ngữ và lĩnh vực là bắt buộc; ví dụ, ghi chú và liên kết bài nguồn tùy chọn.
 
-GitHub Actions quét bài Markdown đã xuất bản trong `src/posts/`, `src/en/` và `src/ko/`. Bộ trích xuất không gọi dịch vụ AI: nó lấy mục có trong `dictionaryTerms`, cụm được nhấn mạnh trong Markdown và tag có mặt trong nội dung. Mỗi mục giữ Content ID, đường dẫn bài gốc, ngôn ngữ nguồn, content hash và câu chứa từ.
+Tất cả ô văn bản dùng textarea nhiều dòng, không có giới hạn ký tự ứng dụng,
+không cắt nội dung hoặc giới hạn từ/câu. Dữ liệu giữ nguyên Unicode và xuống dòng.
+Thẻ kết quả chỉ hiển thị bản xem trước; hộp chi tiết và sao chép giữ toàn bộ nội dung.
+Dung lượng thực tế vẫn phụ thuộc bộ nhớ trình duyệt và giới hạn file/API GitHub.
+Có thể tải bản nháp JSON, kể cả khi chưa điền xong. Không lưu token trong bản nháp.
 
-Trang `/tu-dien-vi-kr/` có hai phần làm việc:
+## Lưu dữ liệu
 
-1. Chọn bài, xem danh sách từ/cụm và ngữ cảnh gốc. Có thể sao chép danh sách đã chọn để dịch bên ngoài.
-2. Điền ba cột VI/KR/EN, đánh dấu từng mục đã kiểm tra, rồi gửi cho workflow bằng fine-grained GitHub token.
+Người nhập xác nhận đã kiểm tra nội dung trước khi xuất bản. Dùng fine-grained
+GitHub token giới hạn `blogco/blogmoi`, quyền **Contents: Read and write**.
+Token chỉ nằm trong bộ nhớ và được gửi tới `api.github.com`; không ghi vào
+storage/repository. Trường token được xóa khi bắt đầu gửi.
 
-Workflow xác nhận token dispatch chỉ mở đúng một bài trong hàng chờ, hash bài còn hiện hành, các candidate ID hợp lệ, mọi bản dịch đã được đánh dấu và đủ ba ngôn ngữ. Workflow dùng `GITHUB_TOKEN` của Actions để ghi `src/_data/dictionary-data.json`, xóa các mục đã duyệt khỏi hàng chờ, chạy Eleventy rồi deploy. Mục từ cũ đã duyệt không bị ghi đè; mục trùng được giữ nguyên.
+UI đọc HEAD hiện tại và Git blob của `src/_data/dictionary-data.json`, giữ dữ
+liệu cũ và thêm mục mới. Git Data API không dùng payload workflow 65 KB hay
+Contents content đọc giới hạn 1 MB. Một commit chỉ sửa file dữ liệu từ điển.
+Ref cập nhật không force: thay đổi đồng thời sẽ bị từ chối, giữ nguyên biểu mẫu
+để tải bản nháp hoặc thử lại với bản dữ liệu mới. Retry mục có cùng ID/nội dung
+không tạo bản trùng. Không ghi đè mục cũ có ID trùng nhưng nội dung khác.
 
-## Cấp token cho giao diện
+Commit từ người dùng kích hoạt workflow Pages hiện có. UI phân biệt lưu trên
+GitHub với việc triển khai hoàn tất; liên kết commit cho phép kiểm tra kết quả.
+Bộ trích xuất/import cũ vẫn tồn tại để tương thích, nhưng không còn là điều kiện
+cho nhập thủ công. Các mục cũ cùng nguồn bài viết không bị xóa hoặc chuyển đổi.
 
-Tạo fine-grained personal access token giới hạn vào repository `blogco/blogmoi`, cấp quyền repository `Actions: Read and write`, sau đó nhập token vào ô trong trang từ điển. Trang chỉ gửi token tới GitHub REST API để gọi `workflow_dispatch`; không lưu token trong local storage, session storage, JSON hay repository. Có thể thu hồi token trong GitHub bất cứ lúc nào.
+## Tra cứu
 
-Workflow chỉ nhận payload bản dịch tối đa 60 mục cho một bài và từ chối payload quá lớn. Token không có quyền sửa nội dung repository trực tiếp; workflow xác thực payload và ghi đúng hai file dữ liệu từ điển.
-
-## Lệnh cục bộ
-
-```sh
-npm run dictionary:sync
-npm run dictionary:import # chỉ chạy trong workflow_dispatch có dictionary_payload
-npm run build
-```
-
-Danh sách candidate công khai được build thành `dictionary-candidates.json` để giao diện đọc. Chỉ mục tra cứu `dictionary-index.json` chỉ chứa mục có đủ ba ngôn ngữ và trạng thái `reviewed` hoặc `published`.
-
-## Lưu dữ liệu và chống workflow loop
-
-Workflow commit `data/dictionary/pending.json` và `src/_data/dictionary-data.json` về `main` trước khi build. Push-trigger bỏ qua đúng hai file dữ liệu này nên commit tự động không tạo vòng lặp; build hiện tại vẫn dùng ngay dữ liệu vừa lưu.
+Tìm trên VI/KR/EN, ví dụ tiếng Hàn, ghi chú và lĩnh vực. Có thể lọc lĩnh vực hoặc
+độ dài nội dung. Mục thủ công không bắt buộc có bài nguồn hay ví dụ để xuất hiện
+trong chỉ mục. Nguồn bài chỉ hiển thị nếu có liên kết nội bộ hợp lệ. Chỉ nội dung
+đã xác nhận được đưa vào chỉ mục công khai; giao diện hiển thị dưới dạng text,
+không thực thi HTML nhập trong các trường.

@@ -7,7 +7,6 @@ on:
     # Those data-only commits must not start another Pages deployment.
     paths-ignore:
       - data/dictionary/pending.json
-      - src/_data/dictionary-data.json
       - data/expenses/transactions.json
   schedule:
     # 00:00 UTC = 07:00 Asia/Bangkok (GMT+7); GitHub may delay runs.

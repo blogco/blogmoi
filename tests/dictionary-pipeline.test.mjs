@@ -164,17 +164,17 @@ test("rejects unverified, stale, or tampered article submissions without changin
   assert.equal((await json(root, "src/_data/dictionary-data.json")).entries.length, 0);
 });
 
-test("the deployed page uses a transient token and dispatches only the dictionary workflow", async () => {
-  const template = await readFile(resolve(repositoryRoot, "src/tu-dien-vi-kr/index.njk"), "utf8");
-  const script = await readFile(resolve(repositoryRoot, "static/js/dictionary.js"), "utf8");
-  const workflow = await readFile(resolve(repositoryRoot, ".github/workflows/deploy.yml"), "utf8");
-  assert.match(template, /data-github-token[^>]*type="password"/);
-  assert.match(template, /Content ID/);
-  assert.match(template, /data-candidate-list/);
-  assert.match(workflow, /workflow_dispatch:[\s\S]*dictionary_payload/);
-  assert.match(workflow, /npm run dictionary:import/);
-  assert.match(workflow, /npm run dictionary:sync/);
-  assert.match(template, /actions\/workflows\/deploy\.yml\/dispatches/);
-  assert.match(script, /root\.dataset\.dispatchUrl/);
-  assert.doesNotMatch(script, /localStorage|sessionStorage/);
+test("manual entry uses a transient Contents token and preserves the legacy importer", async () => {
+  const template=await readFile(resolve(repositoryRoot,"src/tu-dien-vi-kr/index.njk"),"utf8");
+  const script=await readFile(resolve(repositoryRoot,"static/js/dictionary-manual.js"),"utf8");
+  const workflow=await readFile(resolve(repositoryRoot,".github/workflows/deploy.yml"),"utf8");
+  assert.match(template,/data-github-token[^>]*type="password"/);
+  assert.match(template,/Contents: Read and write/);
+  assert.match(script,/force:false/);
+  assert.match(script,/src\/_data\/dictionary-data\.json/);
+  assert.doesNotMatch(script,/localStorage|sessionStorage/);
+  assert.match(workflow,/npm run dictionary:import/);
+  assert.match(workflow,/npm run dictionary:sync/);
+  const ignored=workflow.split("paths-ignore:")[1].split("schedule:")[0];
+  assert.doesNotMatch(ignored,/src\/_data\/dictionary-data\.json/);
 });

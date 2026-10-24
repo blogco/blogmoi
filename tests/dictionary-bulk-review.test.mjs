@@ -46,34 +46,13 @@ test("the existing workflow's 60-item limit is honored for 50–100 selected wor
   assert.throws(() => makeDictionaryDispatchChunks(base, [{ id: "large", content: "x".repeat(61_000) }]), RangeError);
 });
 
-test("review UI separates selection from quality confirmation and keeps failures reviewable", async () => {
-  const [template, script, styles, workflow, importer, layout] = await Promise.all([
-    readFile(resolve(repositoryRoot, "src/tu-dien-vi-kr/index.njk"), "utf8"),
-    readFile(resolve(repositoryRoot, "static/js/dictionary.js"), "utf8"),
-    readFile(resolve(repositoryRoot, "static/css/dictionary.css"), "utf8"),
-    readFile(resolve(repositoryRoot, ".github/workflows/deploy.yml"), "utf8"),
-    readFile(resolve(repositoryRoot, "scripts/import-dictionary-entries.mjs"), "utf8"),
-    readFile(resolve(repositoryRoot, "src/_includes/layouts/base.njk"), "utf8")
-  ]);
-  assert.match(template, /data-review-select-all/);
-  assert.match(template, /data-review-selected-count/);
-  assert.match(template, /data-review-mark-selected/);
-  assert.match(script, /selectReview\.dataset\.reviewId = candidate\.id/);
-  assert.match(script, /currentReviewCandidates\(\)/);
-  assert.match(script, /reviewSelectAll\.indeterminate = someSelected/);
-  assert.match(script, /window\.confirm\(/);
-  assert.match(script, /ensureDraft\(candidate\)\.verified = true/);
-  assert.match(script, /uncertainDispatchIds\.add\(id\)/);
-  assert.match(script, /Dữ liệu nháp vẫn còn trên trang/);
-  assert.match(script, /selectedReviewIds\.clear\(\)/);
-  assert.match(script, /event\.key === "Escape"/);
-  assert.match(script, /setVisibleReviewSelection\(currentReviewCandidates\(\)\.map/);
-  assert.match(styles, /@media \(max-width:/);
-  assert.match(styles, /dictionary-review-row-select:focus-visible/);
-  assert.match(layout, /\/js\/dictionary\.js'.*type="module"/);
-  assert.match(workflow, /workflow_dispatch:[\s\S]*dictionary_payload/);
-  assert.match(importer, /payload\.items\.length > 60/);
-  const submitFunction = script.match(/async function submitManualTranslations\(\) \{([\s\S]*?)\n  \}/)?.[1];
-  assert.ok(submitFunction);
-  assert.doesNotMatch(submitFunction, /selectedReviewIds\.clear\(\)/);
+test("manual UI replaces extraction review controls without character caps", async () => {
+  const template=await readFile(resolve(repositoryRoot,"src/tu-dien-vi-kr/index.njk"),"utf8");
+  const script=await readFile(resolve(repositoryRoot,"static/js/dictionary.js"),"utf8");
+  assert.match(template,/data-manual-form/);
+  assert.doesNotMatch(template,/data-candidate-list|data-review-select-all|maxlength=/);
+  assert.match(template,/name="exampleKo"/);
+  assert.match(template,/name="notes"/);
+  assert.match(template,/name="field"/);
+  assert.match(script,/publish\(entry,token/);
 });

@@ -1,173 +1,34 @@
 ---
 layout: layouts/base.njk
-title: Từ điển VI-KR
-description: Tra cứu từ vựng tiếng Việt, tiếng Hàn và tiếng Anh từ các bài viết Blogmoi đã được biên tập.
+title: Từ điển Việt · Hàn · Anh
+description: "Sổ ngôn ngữ ba thứ tiếng: tự nhập từ, câu hoặc đoạn văn, lưu ví dụ tiếng Hàn, ghi chú và lĩnh vực để tra cứu lại."
 permalink: /tu-dien-vi-kr/index.html
 type: page
 ---
-<div class="dictionary-page" data-dictionary data-index-url="{{ '/dictionary-index.json' | url }}" data-candidates-url="{{ '/dictionary-candidates.json' | url }}" data-dispatch-url="https://api.github.com/repos/blogco/blogmoi/actions/workflows/deploy.yml/dispatches" data-actions-url="https://github.com/blogco/blogmoi/actions/workflows/deploy.yml">
-  <nav class="dictionary-breadcrumb" aria-label="Đường dẫn">
-    <a href="{{ '/' | url }}">Blogmoi</a>
-    <span aria-hidden="true">/</span>
-    <span aria-current="page">Từ điển VI-KR</span>
-  </nav>
+<div class="dictionary-page" data-dictionary data-index-url="{{ '/dictionary-index.json' | url }}" data-posts-url="{{ '/search-index.json' | url }}">
+  <nav class="dict-breadcrumb" aria-label="Đường dẫn"><a href="{{ '/' | url }}">Blogmoi</a><span>/</span><span aria-current="page">Sổ ngôn ngữ</span></nav>
+  <header class="dict-hero"><div><p class="dict-eyebrow">VIỆT · 한국어 · ENGLISH</p><h1>Từ một từ mới,<br>đến cả một <em>đoạn văn.</em></h1><p>Nhập cách diễn đạt của bạn, lưu câu ví dụ tiếng Hàn và ghi chú theo lĩnh vực. Một không gian chung cho từ vựng, câu và văn bản dài.</p></div><div class="dict-hero-mark" aria-hidden="true"><span>Việt</span><b>한</b><span>English</span></div></header>
+  <div class="dict-stats" aria-label="Thống kê"><div><strong data-total-count>{{ dictionary.entryCount }}</strong><span>Mục đã xuất bản</span></div><div><strong data-domain-count>{{ dictionary.fieldCount }}</strong><span>Lĩnh vực</span></div><div><strong>3</strong><span>Ngôn ngữ, cùng một nơi</span></div></div>
+  <nav class="dict-tabs" role="tablist" aria-label="Chế độ từ điển"><button type="button" role="tab" id="dict-browse-tab" aria-controls="dict-browse" aria-selected="true" data-dict-tab="browse">Tra cứu & học</button><button type="button" role="tab" id="dict-editor-tab" aria-controls="dict-editor" aria-selected="false" tabindex="-1" data-dict-tab="editor">＋ Nhập mục mới</button></nav>
 
-  <section class="dictionary-workbench" aria-labelledby="dictionary-workbench-title">
-    <header class="dictionary-workbench__header">
-      <div>
-        <p class="dictionary-eyebrow">Tự trích xuất · bạn tự dịch và duyệt</p>
-        <h2 id="dictionary-workbench-title">Đưa từ trong bài viết vào từ điển</h2>
-        <p>Bài viết được quét để lấy từ/cụm từ có đánh dấu, thẻ và ngữ cảnh gốc. Chọn bài, sao chép danh sách sang Google Dịch, điền bản dịch rồi xác nhận từng mục trước khi đồng bộ.</p>
-      </div>
-      <div class="dictionary-workbench__stats" aria-label="Trạng thái từ điển">
-        <span><strong>{{ dictionaryStatus.candidateCount }}</strong> từ đang chờ dịch</span>
-        <span><strong>{{ dictionaryStatus.publishedVocabulary }}</strong> mục trong từ điển</span>
-      </div>
-    </header>
-
-    <div class="dictionary-workbench__grid">
-      <section class="dictionary-workbench__panel" aria-labelledby="dictionary-candidates-title">
-        <p class="dictionary-step">01 · Danh sách trích xuất</p>
-        <h3 id="dictionary-candidates-title">Chọn bài và từ cần dịch</h3>
-        <label class="dictionary-field-label" for="dictionary-article-select">Bài viết / Content ID</label>
-        <select id="dictionary-article-select" data-article-select><option value="">Đang tải danh sách bài viết…</option></select>
-        <p class="dictionary-article-meta" data-article-meta role="status">Chọn một bài viết để xem từ trích xuất.</p>
-        <div class="dictionary-candidate-actions">
-          <button class="dictionary-action" type="button" data-candidates-select>Chọn tất cả</button>
-          <button class="dictionary-action" type="button" data-candidates-clear>Bỏ chọn</button>
-          <button class="dictionary-action dictionary-action--primary" type="button" data-candidates-copy>Sao chép từ đã chọn</button>
-        </div>
-        <p class="dictionary-paste-hint">Sao chép các dòng đã chọn, dịch từng dòng trên <a href="https://translate.google.com/" target="_blank" rel="noopener noreferrer">Google Dịch ↗</a>, rồi dán kết quả vào các cột ở bước 02.</p>
-        <div class="dictionary-candidate-list" data-candidate-list></div>
-        <p class="dictionary-live" data-candidate-status role="status" aria-live="polite">Đang tải từ cần dịch…</p>
-      </section>
-
-      <section class="dictionary-workbench__panel" aria-labelledby="dictionary-translation-title">
-        <p class="dictionary-step">02 · Bản dịch do bạn nhập</p>
-        <h3 id="dictionary-translation-title">Đã kiểm — quản lý từ vựng</h3>
-        <div class="dictionary-import-meta" data-import-meta>Chọn từ ở bước 01 để bắt đầu.</div>
-        <div class="dictionary-bulk-paste" data-bulk-fields></div>
-        <button class="dictionary-action dictionary-action--primary" type="button" data-apply-bulk disabled>Áp dụng bản dịch đã dán</button>
-        <p class="dictionary-live" data-bulk-status role="status" aria-live="polite"></p>
-        <section class="dictionary-review-bulk" data-review-bulk aria-label="Thao tác hàng loạt cho danh sách bản dịch">
-          <div class="dictionary-review-bulk__summary">
-            <strong>Đã chọn: <span data-review-selected-count aria-live="polite">0 từ</span></strong>
-            <span data-review-scope>Danh sách bản dịch hiện tại · 0 từ</span>
-          </div>
-          <div class="dictionary-review-bulk__actions">
-            <button class="dictionary-action" type="button" data-review-select-visible>Chọn tất cả</button>
-            <button class="dictionary-action" type="button" data-review-clear-selection>Bỏ chọn</button>
-            <button class="dictionary-action dictionary-action--primary" type="button" data-review-mark-selected disabled>Đánh dấu đã kiểm (0)</button>
-            <button class="dictionary-action" type="button" data-review-unmark-selected disabled>Bỏ dấu đã kiểm</button>
-          </div>
-          <p class="dictionary-review-bulk__note">Checkbox chỉ chọn phạm vi thao tác; chỉ nút xác nhận mới ghi nhận bạn đã kiểm tra bản dịch. Chọn áp dụng cho các dòng đang hiển thị trong bảng hiện tại. Dùng Ctrl/⌘ + A để chọn tất cả, Escape để bỏ chọn.</p>
-          <p class="dictionary-live dictionary-review-bulk__status" data-review-bulk-status role="status" aria-live="polite"></p>
-        </section>
-        <div class="dictionary-translation-table-wrap">
-          <table class="dictionary-translation-table">
-            <caption class="visually-hidden">Bản dịch Việt, Hàn, Anh cho các từ đã chọn</caption>
-            <thead><tr><th scope="col" class="dictionary-review-select-column"><label><input type="checkbox" data-review-select-all aria-label="Chọn tất cả từ trong danh sách bản dịch hiện tại"><span>Chọn</span></label></th><th scope="col">Từ gốc</th><th scope="col">VI</th><th scope="col">KR</th><th scope="col">EN</th><th scope="col">Đã kiểm</th></tr></thead>
-            <tbody data-translation-rows></tbody>
-          </table>
-        </div>
-        <p class="dictionary-paste-hint">Mỗi dòng bản dịch tương ứng với một từ đã chọn. Hãy kiểm tra cách dịch và đánh dấu “Đã kiểm” trước khi lưu.</p>
-        <label class="dictionary-field-label" for="dictionary-github-token">GitHub fine-grained token</label>
-        <input id="dictionary-github-token" class="dictionary-token-input" data-github-token type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
-        <p class="dictionary-token-note">Token chỉ cần quyền <b>Actions: Read and write</b> trên repo <code>blogco/blogmoi</code>. Trang chỉ gửi token tới GitHub để mở workflow lưu dữ liệu; token không được ghi vào storage hay repository.</p>
-        <button class="dictionary-action dictionary-action--primary dictionary-submit" type="button" data-submit-translations disabled>Lưu và đồng bộ lên GitHub</button>
-        <p class="dictionary-live" data-import-status role="status" aria-live="polite"></p>
-        <a class="dictionary-workflow-link" data-workflow-link href="https://github.com/blogco/blogmoi/actions/workflows/deploy.yml" target="_blank" rel="noopener noreferrer" hidden>Theo dõi build và deploy ↗</a>
-      </section>
-    </div>
+  <section id="dict-browse" role="tabpanel" aria-labelledby="dict-browse-tab" data-dict-panel="browse">
+    <div class="dict-searchbar"><form data-search-form role="search"><label class="visually-hidden" for="dict-query">Tìm trong cả ba ngôn ngữ, ví dụ và ghi chú</label><input id="dict-query" type="search" data-search-input placeholder="Tìm tiếng Việt, 한국어, English, ghi chú…" autocomplete="off"><button type="submit" aria-label="Tìm kiếm">⌕</button></form><label class="visually-hidden" for="dict-domain">Lọc lĩnh vực</label><select id="dict-domain" data-domain-filter><option value="">Tất cả lĩnh vực</option></select><label class="visually-hidden" for="dict-kind">Lọc loại nội dung</label><select id="dict-kind" data-kind-filter><option value="">Mọi độ dài</option><option value="short">Từ & câu ngắn</option><option value="long">Đoạn văn dài</option></select></div>
+    <div class="dict-results-heading"><h2>Thư viện ngôn ngữ</h2><p role="status" aria-live="polite" data-dictionary-status>Đang tải dữ liệu…</p></div>
+    <div class="dict-card-grid" data-dictionary-cards></div><nav class="dict-pagination" data-pagination aria-label="Phân trang từ điển"></nav>
   </section>
 
-  <div class="dictionary-layout">
-    <aside class="dictionary-intro" aria-labelledby="dictionary-title">
-      <p class="dictionary-eyebrow">Blogmoi / Học ngôn ngữ</p>
-      <h1 id="dictionary-title">Từ điển<br><span>Việt — Hàn</span></h1>
-      <p class="dictionary-intro__copy">Từ vựng ba ngôn ngữ do Blogmoi trích xuất, sau đó được người biên tập dịch và xác nhận.</p>
-      <div class="dictionary-illustration" aria-hidden="true">
-        <div class="dictionary-illustration__orbit"></div>
-        <div class="dictionary-illustration__book">
-          <span>VI</span><span>KR</span><span>EN</span>
-        </div>
-        <span class="dictionary-illustration__spark dictionary-illustration__spark--one">✦</span>
-        <span class="dictionary-illustration__spark dictionary-illustration__spark--two">+</span>
-      </div>
-      <p class="dictionary-note">Mỗi mục từ giữ liên kết tới bài viết gốc. Chỉ các bản dịch đã được xác nhận mới xuất hiện trong phần tra cứu.</p>
-    </aside>
-
-    <main class="dictionary-main" aria-label="Tra cứu từ vựng">
-      <form class="dictionary-search" data-search-form role="search">
-        <label class="visually-hidden" for="dictionary-query">Tìm tiếng Việt, tiếng Hàn hoặc tiếng Anh</label>
-        <span class="dictionary-search__icon" aria-hidden="true">⌕</span>
-        <input id="dictionary-query" type="search" data-dictionary-query data-search-input autocomplete="off" placeholder="Tìm tiếng Việt / 한국어 / English…">
-        <kbd aria-hidden="true">⌘ K</kbd>
-      </form>
-
-      <div class="dictionary-toolbar">
-        <label class="visually-hidden" for="dictionary-field">Lọc theo lĩnh vực</label>
-        <select id="dictionary-field" data-dictionary-field>
-          <option value="">Tất cả lĩnh vực</option>
-          {% for field in dictionary.fields %}<option value="{{ field.name }}">{{ field.name }} · {{ field.count }}</option>{% endfor %}
-        </select>
-        <span class="dictionary-result-count">{{ dictionary.entryCount }} mục từ</span>
-      </div>
-
-      <div class="dictionary-stats" aria-label="Thống kê từ điển">
-        <div><strong>{{ dictionary.entryCount }}</strong><span>Mục từ</span></div>
-        <div><strong>{{ dictionary.fieldCount }}</strong><span>Lĩnh vực</span></div>
-        <div><strong>{{ dictionary.sourcePostCount }}</strong><span>Bài viết nguồn</span></div>
-      </div>
-
-      <p class="dictionary-live" data-dictionary-status role="status" aria-live="polite">Đang tải từ điển…</p>
-
-      <div class="dictionary-table-wrap" data-table-wrap>
-        <table class="dictionary-table">
-          <caption class="visually-hidden">Từ vựng tiếng Việt, tiếng Hàn, tiếng Anh, ví dụ và lĩnh vực</caption>
-          <thead><tr><th scope="col">#</th><th scope="col">Tiếng Việt</th><th scope="col">Tiếng Hàn</th><th scope="col">Tiếng Anh</th><th scope="col">Ví dụ / cách biểu hiện</th><th scope="col">Lĩnh vực</th><th scope="col"><span class="visually-hidden">Thao tác</span></th></tr></thead>
-          <tbody data-dictionary-rows></tbody>
-        </table>
-      </div>
-      <div class="dictionary-cards" data-dictionary-cards></div>
-
-      <div class="dictionary-empty" data-dictionary-empty hidden>
-        <span aria-hidden="true">文</span>
-        <h2>Chưa có mục từ được xuất bản</h2>
-        <p>Từ vựng sẽ xuất hiện sau khi bản dịch được nhập, xác nhận và đồng bộ lên GitHub.</p>
-      </div>
-      <div class="dictionary-empty" data-dictionary-no-results hidden>
-        <span aria-hidden="true">⌕</span>
-        <h2>Chưa tìm thấy kết quả</h2>
-        <p>Thử từ khóa khác hoặc chọn “Tất cả lĩnh vực”.</p>
-      </div>
-
-      <nav class="dictionary-pagination" data-dictionary-pagination aria-label="Phân trang kết quả"></nav>
-    </main>
-
-    <aside class="dictionary-topics" aria-labelledby="dictionary-topics-title">
-      <p class="dictionary-eyebrow">Khám phá theo chủ đề</p>
-      <h2 id="dictionary-topics-title">Từ vựng nổi bật</h2>
-      <div class="dictionary-topic-list" data-dictionary-topics>
-        {% if dictionary.fields.length %}
-          {% for field in dictionary.fields %}<div class="dictionary-topic"><span>{{ field.name }}</span><b>{{ field.count }}</b></div>{% endfor %}
-        {% else %}
-          <p class="dictionary-topic-empty">Chủ đề sẽ hiện khi có mục từ được duyệt.</p>
-        {% endif %}
-      </div>
-      <div class="dictionary-topics__foot"><span class="dictionary-dot" aria-hidden="true"></span>Chỉ mục từ đã được người biên tập xác nhận mới được công khai</div>
-    </aside>
-  </div>
+  <section id="dict-editor" role="tabpanel" aria-labelledby="dict-editor-tab" hidden data-dict-panel="editor">
+    <div class="dict-editor-heading"><div><p class="dict-eyebrow">TỰ NHẬP · TỰ KIỂM TRA · LƯU LẠI</p><h2>Một mục, ba cách diễn đạt.</h2><p>Nhập trực tiếp, không cần chọn bài hay chờ trích xuất. Tất cả ô văn bản hỗ trợ nhiều dòng và không áp giới hạn ký tự.</p></div><span class="dict-chip">Từ · Câu · Đoạn văn</span></div>
+    <form data-manual-form>
+      <div class="dict-language-grid"><label for="dict-vi"><span><b>VI</b> Tiếng Việt <small>Bắt buộc</small></span><textarea id="dict-vi" name="vi" lang="vi" required rows="7" placeholder="Nhập từ, câu hoặc toàn bộ đoạn văn tiếng Việt…"></textarea></label><label for="dict-ko"><span><b>KR</b> 한국어 <small>Bắt buộc</small></span><textarea id="dict-ko" name="ko" lang="ko" required rows="7" placeholder="한국어 단어, 문장 또는 긴 글을 입력하세요…"></textarea></label><label for="dict-en"><span><b>EN</b> English <small>Bắt buộc</small></span><textarea id="dict-en" name="en" lang="en" required rows="7" placeholder="Enter a word, sentence, or a full passage in English…"></textarea></label></div>
+      <div class="dict-context-grid"><label for="dict-example">Ví dụ sử dụng bằng tiếng Hàn <small>Không bắt buộc</small><textarea id="dict-example" name="exampleKo" lang="ko" rows="5" placeholder="Viết câu hoặc đoạn hội thoại để nhớ cách dùng…"></textarea></label><label for="dict-notes">Ghi chú <small>Không bắt buộc</small><textarea id="dict-notes" name="notes" rows="5" placeholder="Sắc thái, ngữ pháp, cách phát âm, tình huống sử dụng…"></textarea></label></div>
+      <div class="dict-context-grid"><label for="dict-field">Lĩnh vực <small>Bắt buộc · có thể tự nhập</small><input id="dict-field" name="field" list="dict-domains" required placeholder="Ví dụ: Giao tiếp, Công nghệ, Tài chính…"><datalist id="dict-domains"></datalist></label><label for="dict-source">Bài Blogmoi liên quan <small>Không bắt buộc</small><select id="dict-source" name="sourceArticle"><option value="">Không gắn bài nguồn</option></select></label></div>
+      <div class="dict-review"><label><input name="verified" type="checkbox" required> Tôi đã kiểm tra nội dung và đồng ý xuất bản công khai mục này.</label><p>Không giới hạn độ dài ở biểu mẫu; dung lượng lưu thực tế vẫn phụ thuộc trình duyệt và GitHub. Bản nháp ở trong phiên hiện tại — tải JSON để giữ một bản trên máy.</p></div>
+      <details class="dict-publish"><summary>Xuất bản lên từ điển Blogmoi</summary><div><label for="dict-token">GitHub token <input id="dict-token" data-github-token type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label><p>Fine-grained token cho <code>blogco/blogmoi</code>, quyền <b>Contents: Read and write</b>. Token chỉ gửi tới GitHub API, không lưu trong trình duyệt hay repository.</p></div></details>
+      <div class="dict-editor-actions"><button class="dict-button dict-button--primary" type="submit" data-publish-entry>Lưu & xuất bản</button><button class="dict-button" type="button" data-download-draft>Tải bản nháp JSON</button><button class="dict-button dict-button--quiet" type="button" data-clear-editor>Nhập mục khác</button></div>
+      <p class="dict-feedback" data-entry-status role="status" aria-live="polite"></p><a data-commit-link hidden target="_blank" rel="noopener noreferrer">Xem commit trên GitHub ↗</a>
+    </form>
+  </section>
+  <p class="dict-footnote">Mỗi mục do người nhập kiểm tra. Nội dung cũ cùng liên kết bài nguồn vẫn được giữ; bản nhập thủ công không cần có bài nguồn. Danh sách có thể rút gọn phần xem trước — mở chi tiết để đọc và sao chép đầy đủ.</p>
 </div>
-
-<dialog class="dictionary-dialog" data-dictionary-dialog aria-labelledby="dictionary-dialog-title">
-  <div class="dictionary-dialog__header">
-    <div><p class="dictionary-eyebrow">Từ điển VI-KR</p><h2 id="dictionary-dialog-title">Chi tiết từ vựng</h2></div>
-    <button class="dictionary-close" type="button" data-dialog-close aria-label="Đóng chi tiết">×</button>
-  </div>
-  <div class="dictionary-detail" data-dictionary-detail></div>
-  <div class="dictionary-dialog__actions">
-    <button class="dictionary-action dictionary-action--primary" type="button" data-detail-copy>Sao chép ba ngôn ngữ</button>
-    <a class="dictionary-action" data-detail-source href="#">Mở bài viết gốc ↗</a>
-  </div>
-</dialog>
+<dialog class="dict-dialog" data-dictionary-dialog aria-labelledby="dict-detail-title"><header><div><p class="dict-eyebrow">ĐỌC ĐẦY ĐỦ · KHÔNG RÚT GỌN</p><h2 id="dict-detail-title">Chi tiết mục</h2></div><button type="button" data-dialog-close aria-label="Đóng chi tiết">×</button></header><div data-dictionary-detail></div><footer><button class="dict-button dict-button--primary" type="button" data-copy-detail>Sao chép đầy đủ</button><a class="dict-button" data-detail-source hidden target="_blank" rel="noopener noreferrer">Mở bài viết nguồn ↗</a></footer></dialog>
