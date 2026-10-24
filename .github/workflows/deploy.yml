@@ -14,12 +14,16 @@ on:
     - cron: "*/30 * * * *"
   workflow_dispatch:
     inputs:
+      publish_daily_news:
+        description: Publish a random English-Korean brief now if today has no post
+        type: boolean
+        default: false
       refresh_yy_info:
         description: Refresh YY info public data
         type: boolean
         default: false
       news_source_url:
-        description: Optional Korea Times Companies article URL to summarize and publish
+        description: Optional Korea Times article URL for an English-Korean brief
         type: string
         required: false
         default: ""
@@ -59,33 +63,57 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit --no-fund
 
+      - name: Check daily news publication and retry window
+        id: news_due
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.publish_daily_news || inputs.news_source_url != ''))
+        env:
+          NEWS_MANUAL: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
+        run: node scripts/check-scheduled-news.mjs
+
       - name: Set up Python for local news models
-        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        if: steps.news_due.outputs.due == 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
       - name: Restore local news model cache
-        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
-        uses: actions/cache@v4
+        id: news_model_cache
+        if: steps.news_due.outputs.due == 'true'
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/huggingface
           key: news-cpu-models-v1-${{ runner.os }}-${{ hashFiles('scripts/news/requirements.txt', 'scripts/news/local_brief.py') }}
 
       - name: Install CPU news model dependencies
-        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+        if: steps.news_due.outputs.due == 'true'
         run: |
           python -m pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -r scripts/news/requirements.txt
 
-      - name: Generate one Vietnamese Companies brief locally
-        if: (github.event_name == 'schedule' && github.event.schedule == '0 0 * * *') || (github.event_name == 'workflow_dispatch' && inputs.news_source_url != '')
+      - name: Generate one English-Korean news brief locally
+        id: generate_news
+        if: steps.news_due.outputs.due == 'true'
         env:
           NEWS_SOURCE_URL: ${{ inputs.news_source_url || '' }}
           HF_HUB_DISABLE_TELEMETRY: '1'
           HF_HUB_DISABLE_XET: '1'
           TOKENIZERS_PARALLELISM: 'false'
-        run: node scripts/publish-scheduled-news.mjs
+        run: node --use-env-proxy scripts/publish-scheduled-news.mjs
+
+      - name: Save downloaded local news models even after a generation failure
+        if: always() && steps.news_due.outputs.due == 'true' && steps.news_model_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/huggingface
+          key: ${{ steps.news_model_cache.outputs.cache-primary-key }}
+
+      - name: Report scheduled news outcome
+        if: always() && steps.news_due.outputs.due == 'true'
+        env:
+          NEWS_OUTCOME: ${{ steps.generate_news.outcome }}
+        run: |
+          echo "English-Korean news generation: $NEWS_OUTCOME" >> "$GITHUB_STEP_SUMMARY"
+          echo "Source: Korea Times South Korea homepage. Daily target 07:00 GMT+7; retries until 10:00. Publication requires the subsequent build and deploy to succeed." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Refresh YY info public feeds
         if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.refresh_yy_info)

@@ -1,0 +1,10 @@
+import { readdir,readFile,appendFile } from "node:fs/promises";
+import { bangkokDay,readPublicationState } from "./lib/scheduled-news.mjs";
+const now=new Date(), day=bangkokDay(now);
+const files=(await readdir("src/posts")).filter(file=>file.endsWith(".md"));
+const state=readPublicationState(await Promise.all(files.map(file=>readFile("src/posts/"+file,"utf8"))),day);
+const hour=Number(new Intl.DateTimeFormat("en",{timeZone:"Asia/Bangkok",hour:"numeric",hourCycle:"h23"}).format(now));
+const manual=process.env.NEWS_MANUAL==="true";
+const due=!state.publishedToday && (manual || (hour>=7 && hour<10));
+console.log(due?"Today's English-Korean brief is due.":state.publishedToday?"Today's brief already exists; skipping models.":"Outside the 07:00-10:00 GMT+7 retry window.");
+if(process.env.GITHUB_OUTPUT)await appendFile(process.env.GITHUB_OUTPUT,`due=${due}\n`);

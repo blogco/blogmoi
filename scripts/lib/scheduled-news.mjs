@@ -1,17 +1,18 @@
 import { assignArticleCovers } from "../../static/js/article-cover.js";
-import { createHash } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import matter from "gray-matter";
 
 export const COMPANIES_URL = "https://www.koreatimes.co.kr/business/companies";
-const ARTICLE_PATH = /^\/business\/companies\/(\d{8})\/[a-z0-9-]+$/;
+export const NEWS_HOME_URL = "https://www.koreatimes.co.kr/?edition=south-korea";
+const ARTICLE_PATH = /^\/(?:[a-z][a-z0-9-]*\/){1,4}(\d{8})\/[a-z0-9-]+$/;
 
 export function sourceUrl(value) {
   const url = new URL(value, COMPANIES_URL);
   if (url.origin !== new URL(COMPANIES_URL).origin || !ARTICLE_PATH.test(url.pathname) || url.username || url.password) {
-    throw new Error("Only public Korea Times Companies article URLs are supported.");
+    throw new Error("Only public Korea Times article URLs are supported.");
   }
   return url.origin + url.pathname;
 }
@@ -33,7 +34,7 @@ export function readPublicationState(files, day) {
   return { urls, publishedToday, articles };
 }
 
-export function pickArticle(html, publishedUrls, day) {
+export function pickArticle(html, publishedUrls, day, random = randomInt) {
   const dom = new JSDOM(html);
   try {
     const links = [...dom.window.document.querySelectorAll("a[href]")].flatMap(link => {
@@ -47,7 +48,7 @@ export function pickArticle(html, publishedUrls, day) {
     });
     // Sort by the date in each validated path; preserve listing order within a day.
     candidates.sort((a, b) => ARTICLE_PATH.exec(new URL(b).pathname)[1].localeCompare(ARTICLE_PATH.exec(new URL(a).pathname)[1]));
-    return candidates[0] || null;
+    return candidates.length ? candidates[random(candidates.length)] : null;
   } finally { dom.window.close(); }
 }
 
@@ -131,25 +132,15 @@ export async function generateBrief(article, { python = process.env.NEWS_PYTHON 
 }
 
 export function validateBrief(brief, article) {
-  const safeText = (value, max) => typeof value === "string" && value.trim().length >= 10 && value.length <= max
-    && !/[<>{}\[\]`#*_\\]|https?:\/\//u.test(value) && /[ăâđêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵ]/iu.test(value);
-  if (!brief || !safeText(brief.title, 160) || !safeText(brief.description, 260) || !Array.isArray(brief.facts) || brief.facts.length < 1 || brief.facts.length > 5) throw new Error("Brief failed required format checks.");
-  for (const text of [brief.title, brief.description]) {
-    for (const number of text.match(/\d+(?:[.,]\d+)*/g) || []) {
-      if (!article.body.includes(number)) throw new Error("Brief headline or description contains an ungrounded number.");
-    }
-  }
+  const safe = (value,max) => typeof value === "string" && value.trim().length >= 3 && value.length <= max && !/[<>{}\[\]`#*_\\]|https?:\/\//u.test(value);
+  if (!brief || !safe(brief.title,200) || !safe(brief.titleKo,240) || !/[가-힣]/u.test(brief.titleKo) || !Array.isArray(brief.facts) || brief.facts.length < 1 || brief.facts.length > 5) throw new Error("Bilingual brief failed required format checks.");
   for (const fact of brief.facts) {
-    if (!safeText(fact.text, 650) || typeof fact.evidence !== "string" || fact.evidence.length < 40 || fact.evidence.length > 400 || !article.body.includes(fact.evidence)) {
-      throw new Error("Brief contains unsupported evidence or unsafe text.");
-    }
-    // Numeric facts must be present in each paragraph's supporting evidence.
-    for (const number of fact.text.match(/\d+(?:[.,]\d+)*/g) || []) {
-      if (!fact.evidence.includes(number)) throw new Error("Brief contains an ungrounded number.");
-    }
+    if (!safe(fact.en,1200) || !safe(fact.ko,1600) || !/[가-힣]/u.test(fact.ko) || typeof fact.evidence !== "string" || fact.evidence.length < 40 || fact.evidence.length > 800 || !article.body.includes(fact.evidence)) throw new Error("Brief contains unsupported evidence or unsafe text.");
+    for (const number of fact.en.match(/\d+(?:[.,]\d+)*/g) || []) if (!fact.evidence.includes(number)) throw new Error("Brief contains an ungrounded number.");
+    for (const number of fact.ko.match(/\d+(?:[.,]\d+)*/g) || []) if (!fact.en.includes(number)) throw new Error("Korean translation contains an ungrounded number.");
   }
-  const words = brief.facts.map(fact => fact.text).join(" ").trim().split(/\s+/).length;
-  if (words > 180 || words > article.body.split(/\s+/).length * 0.35) throw new Error("Brief is too long relative to the source.");
+  const words = brief.facts.map(fact => fact.en).join(" ").split(/\s+/).length;
+  if (words > 160 || words > article.body.split(/\s+/).length * 0.35) throw new Error("Brief is too long relative to the source.");
   return brief;
 }
 
@@ -161,5 +152,5 @@ export function renderPost(brief, article, day, publishedAt = new Date().toISOSt
   const slug = `koreatimes-${day}-${hash}`;
   const cover = assignArticleCovers([...existingArticles, { slug, title: brief.title }]).get(slug);
   const quote = value => JSON.stringify(value);
-  return { filename: `${slug}.md`, content: `---\ntitle: ${quote(brief.title)}\nslug: ${slug}\ndescription: ${quote(brief.description)}\ndate: ${quote(publishedAt)}\nlastModified: ${day}\ncoverSource: unsplash\ncover: ${quote(cover.cover)}\ncoverAlt: ${quote(cover.coverAlt)}\ncoverCaption: ${quote(cover.coverCaption)}\ncoverAttribution: ${JSON.stringify(cover.coverAttribution)}\nlang: vi\nauthor: Blogmoi\ncategories:\n  - Kinh doanh\n  - Doanh nghiệp\ntags:\n  - Hàn Quốc\nsourcePublisher: "The Korea Times"\nsourceUrl: ${quote(article.url)}\nsourcePublicationDate: ${quote(article.publishedAt)}\nscheduledNewsDate: ${quote(day)}\neditorialNote: "Bản tin tiếng Việt được biên soạn tự động, tóm lược bằng lời riêng từ bài nguồn; không phải bản dịch toàn văn. Hãy đọc bài gốc để xem đầy đủ thông tin."\ncopyrightNotice: "Bài nguồn thuộc The Korea Times và các chủ thể được ghi trong bài gốc. Blogmoi không sử dụng lại ảnh hoặc toàn văn của nguồn."\n---\n\n${brief.facts.map(fact => fact.text).join("\n\n")}\n\nNguồn: [The Korea Times](${article.url}).\n` };
+  return { filename: `${slug}.md`, content: `---\ntitle: ${quote(brief.title)}\nslug: ${slug}\ndescription: ${quote(brief.description || brief.facts.map(fact=>fact.en).join(" ").slice(0,220))}\ndate: ${quote(publishedAt)}\nlastModified: ${day}\ncoverSource: unsplash\ncover: ${quote(cover.cover)}\ncoverAlt: ${quote(cover.coverAlt)}\ncoverCaption: ${quote(cover.coverCaption)}\ncoverAttribution: ${JSON.stringify(cover.coverAttribution)}\nlang: en\nlanguages: [en, ko]\ntitleKo: ${quote(brief.titleKo || "")}\nbilingual: true\nauthor: Blogmoi\ncategories:\n  - Tin Hàn Quốc\n  - English–한국어\ntags:\n  - Hàn Quốc\nsourcePublisher: "The Korea Times"\nsourceUrl: ${quote(article.url)}\nsourcePublicationDate: ${quote(article.publishedAt)}\nscheduledNewsDate: ${quote(day)}\neditorialNote: "An automatically generated English–Korean news brief, summarized from the linked source. This is not a full-article translation. Please consult the original report."\ncopyrightNotice: "Bài nguồn thuộc The Korea Times và các chủ thể được ghi trong bài gốc. Blogmoi không sử dụng lại ảnh hoặc toàn văn của nguồn."\n---\n\n${brief.facts.map(fact => `### English\n\n${fact.en}\n\n### 한국어\n\n${fact.ko}`).join("\n\n---\n\n")}\n\nNguồn: [The Korea Times](${article.url}).\n` };
 }

@@ -46,6 +46,6 @@ test("YY page works with real-source-shaped fixtures and handles outages without
 });
 test("workflow refreshes every 30 minutes without running the daily news models each time",async()=>{
  const workflow=yaml.load(await readFile(".github/workflows/deploy.yml","utf8"));assert.ok(workflow.on.schedule.some(item=>item.cron==="*/30 * * * *"));
- const steps=workflow.jobs.deploy.steps;const modelStep=steps.find(step=>step.name==="Generate one Vietnamese Companies brief locally");assert.match(modelStep.if,/github.event.schedule == '0 0 \* \* \*'/);
+ const steps=workflow.jobs.deploy.steps;const modelStep=steps.find(step=>step.name==="Generate one English-Korean news brief locally");assert.match(modelStep.if,/news_due/);
  assert.ok(steps.find(step=>step.name==="Refresh YY info public feeds").run.includes("refresh-yy-info.mjs"));assert.ok(steps.find(step=>step.id==="persist_dictionary").run.includes("static/data/yy-info.json"));
 });
